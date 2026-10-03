@@ -10,3 +10,5 @@ nbproject/
 *.class
 .DS_Store
 *.log
+# The in-game probe log is evidence for Task 8, not build noise.
+!docs/probe/raw.log
