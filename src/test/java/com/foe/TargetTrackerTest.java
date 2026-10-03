@@ -136,4 +136,32 @@ public class TargetTrackerTest
 		t.playerAttacks(7, 9_000);
 		assertEquals(7, t.current(18_000, LINGER));
 	}
+
+	// docs/probe/raw.log lines 265-267: the player switched to 22005 at tick 707, then a hit
+	// already in flight landed on 22009 at tick 709. That hit must not pull the target back.
+	@Test
+	public void inFlightHitOnOldNpcDoesNotStealNewTarget()
+	{
+		t.playerAttacks(22009, 0);
+		t.playerAttacks(22005, 1_800);
+		t.playerHit(22009, 3_000, LINGER);
+		assertEquals(22005, t.current(3_000, LINGER));
+	}
+
+	@Test
+	public void playerHitRefreshesTheTarget()
+	{
+		t.playerAttacks(7, 0);
+		t.playerHit(7, 9_000, LINGER);
+		assertEquals(7, t.current(18_000, LINGER));
+	}
+
+	@Test
+	public void playerHitAdoptedWhenNoLiveTarget()
+	{
+		t.playerHit(7, 0, LINGER);
+		assertEquals(7, t.current(0, LINGER));
+		t.playerHit(3, 10_001, LINGER);
+		assertEquals(3, t.current(10_001, LINGER));
+	}
 }

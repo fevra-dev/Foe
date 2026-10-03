@@ -4,8 +4,9 @@ package com.foe;
  * Decides which NPC is the foe. Pure: no RuneLite types, so time and NPC indices are passed in.
  * Sticky by design (spec addendum 1): in multi-combat, another NPC's hit does not steal a live target.
  *
- * <p>There is deliberately no "lost the target" method. {@code getInteracting()} drops to null between
- * attacks (97 of 127 interacting changes in docs/probe/raw.log were to no NPC), so null is not evidence
+ * <p>There is deliberately no "lost the target" method. {@code getInteracting()} leaves the NPC between
+ * attacks (97 of 127 interacting changes in docs/probe/raw.log were to "no NPC": null or a non-NPC
+ * actor, which the probe did not distinguish), so losing the NPC is not evidence
  * that the fight ended. A target ends only by {@link #gone} (death or despawn) or by the linger running
  * out, and callers must not turn a null into {@link #NONE} and hand it to a method here.
  *
@@ -33,6 +34,25 @@ final class TargetTracker
 	/** An NPC hit the player. Adopted only when there is no live target. */
 	void hitBy(int npcIndex, long nowMs, long lingerMs)
 	{
+		involved(npcIndex, nowMs, lingerMs);
+	}
+
+	/**
+	 * One of the player's hits landed on this NPC. Not an engagement: a hit already in flight can land
+	 * after the player switched targets (docs/probe/raw.log lines 265-267), so it refreshes the target
+	 * or fills an empty slot, and never overrides a live one. Use {@link #playerAttacks} for engagement.
+	 */
+	void playerHit(int npcIndex, long nowMs, long lingerMs)
+	{
+		involved(npcIndex, nowMs, lingerMs);
+	}
+
+	private void involved(int npcIndex, long nowMs, long lingerMs)
+	{
+		if (npcIndex == NONE)
+		{
+			return;
+		}
 		if (npcIndex == target)
 		{
 			lastActiveMs = nowMs;
@@ -47,7 +67,9 @@ final class TargetTracker
 
 	/**
 	 * Combat with this NPC is still going on (either side is interacting with the other). That is
-	 * evidence of a fight now, so it also brings back a target whose linger lapsed unnoticed.
+	 * evidence of a fight now, so it also brings back a target whose linger has lapsed, however long
+	 * ago. Callers must therefore pass only the index of an NPC object they hold and have not seen
+	 * despawn or die, or a reused index could revive a stale target.
 	 */
 	void stillFighting(int npcIndex, long nowMs)
 	{
