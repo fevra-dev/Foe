@@ -2,29 +2,35 @@
 
 ## START HERE
 
-**State (2026-10-02):** design approved, plan written, no Java yet.
+**State (2026-10-03):** PRs #1 and #2 merged (Task 1 done). Task 2 done and reviewed, in PR #3. Weakness design decided. **Resume at Task 3.**
 
 - Spec: `docs/superpowers/specs/2026-10-02-foe-design.md` (read the addendum at the end).
-- Plan: `docs/superpowers/plans/2026-10-02-foe-v1.md`. Tasks 0–11; Task 0 is done.
-- PR #1 (`plan/foe-v1` → `main`) holds the plan and the spec addendum. `build` passes. **`CI` fails**, for the two harness reasons under "Fix first" — neither is the plan's fault.
-- Execution mode chosen by the operator: **subagent-driven**, one task per spawn.
-  - Implementer: `~/.claude/agents/implementer.md` (Sonnet 5.5, effort xhigh).
-  - Review: `~/.claude/agents/reviewer.md` (Opus 5.5, effort high), after every task.
-  - Both files were created mid-session and **weren't detected without a restart**, which is why this handoff exists. In a fresh session, check that `implementer` and `reviewer` appear in the agent list before spawning.
+- Plan: `docs/superpowers/plans/2026-10-02-foe-v1.md`. Tasks 0–11. Tasks 0–1 are done.
+- **Branches are stacked:** `main` ← PR #1 `plan/foe-v1` (CI green: `lint-gate` and `build` SUCCESS on `4c0c60b`) ← `feat/skeleton-probe` (pushed, no PR yet) ← `feat/target-tracker` (Task 2).
+- Execution mode: **subagent-driven**, one task per spawn. `implementer` writes the task, then `reviewer` reviews it. Both agents load in a fresh session `[measured 2026-10-03]`.
+- **Pushing is blocked for the agent** by `block-dangerous-git.sh`. That hook also matches the words inside heredocs, so write files with Edit/Write instead. The operator pushes with `! git push origin <branch>`. Name the branch, because the checkout moves between branches.
+
+**Probe results** (`docs/probe/varp-5536.md`):
+- varp 5536 is the **elemental rune's item ID** (554 fire, 555 water, 557 earth), and -1 means no weakness. **There is no percent.**
+- It's set by **spell casts only**, not ranged or melee.
+- It resets on logout and survives region loads.
+- It's int-typed, so `getVarpLongValue` throws.
+- The player's `getInteracting()` flips to null between ticks, which backs the sticky tracker.
+- `client.log` rolls at 10 MB, so read probe output from `./gradlew run` stdout.
 
 **Next actions, in order:**
 
-1. **Fix first (PR #1's `CI`):**
-   - Run `~/.claude/scripts/macdaddy.sh --baseline` to seed `.githooks/gate-baseline`. Its dry-run reports `+ would write: .githooks/gate-baseline` `[measured]`. It also prints a **false** refusal for `.githooks/pre-push` ("ESCAPES THE REPO"). The symlink resolves to `Foe/.githooks/lint-gate.sh` `[measured: realpath]`. Ignore it; that's a macdaddy re-run bug (see Harness defects).
-   - `.github/workflows/ci.yml` installs uv and trivy but **not gitleaks** (`grep -c gitleaks` → 0; control `trivy` → 5 `[measured]`). Add a SHA-pinned gitleaks install step (ADR-0018: pin by commit, top-level `permissions:` already present).
-2. **Task 1** (skeleton + probe): spawn `implementer` with the Task 1 text verbatim, **Steps 1–3 only**. Branch `feat/skeleton-probe` off `plan/foe-v1`. Create `docs/probe/varp-5536.md` with the Step 5 template unfilled. Commit message: `Add plugin skeleton and varp 5536 probe`. Tell it to:
-   - Verify the API names against the *resolved* `net.runelite:client` jar (`latest.release` may differ from master `d8e7d1e`).
-   - Null-guard `client.getLocalPlayer()` in the probe.
-   - Add `*.log` to `.gitignore`.
-   - Report the resolved client version.
-   Then spawn `reviewer`.
-3. **Operator runs the probe in game** (plan Task 1 Steps 4–5), then fills in `docs/probe/varp-5536.md`.
-4. Tasks 2–7, each implemented and then reviewed. Task 8 is a deliberate re-plan point after the probe.
+1. **PR #3** (`feat/target-tracker` → `main`) has green CI. The operator merges it with `--merge`. PR #1 was merged as `e83eb8b`, and PR #2 as `9b5d069`. Start Task 3 on a new branch off the updated `main`.
+2. **Task 2** is done: 17 tests, the reviewer approved, and 12 mutations were caught. The review's must-fix (an in-flight hit stealing a new target) was fixed with `playerHit` in `1652f2c`. Its wiring findings are now amendments at the top of plan Task 7.
+3. **Tasks 3–7,** each implemented and then reviewed. Implementer flags for Task 7:
+   - `lingerSeconds = 0` blinks on null-interacting ticks.
+   - Use a monotonic `now()`: `System.nanoTime()/1e6`, not `currentTimeMillis`.
+   - The plan's `onHitsplatApplied` picks the first NPC interacting with the player, which may not be the hitter.
+4. **Task 8 re-plan.** Write a spec addendum first. **Operator decision (2026-10-03):** show the weakness **element only**, in two cases:
+   - when it was set on the current target, matched to the NPC targeted **on the tick of the change**;
+   - from a **session-only, in-memory cache keyed by NPC id** (not name), so later fights with that type show it even when ranged or meleed.
+   - Nothing is written to disk, so this fits the spec's "no file I/O". On-disk persistence waits for v2.
+   - **There is no percent.** varp 5537 was probed and holds 0.
 
 ## Decisions already made (don't re-litigate)
 
