@@ -2,7 +2,7 @@
 
 ## START HERE
 
-**State (2026-10-03):** PR #1 merged. Task 1 done and in PR #2. Task 2 committed and under review. Weakness design decided.
+**State (2026-10-03):** PRs #1 and #2 merged (Task 1 done). Task 2 done and reviewed, in PR #3. Weakness design decided. **Resume at Task 3.**
 
 - Spec: `docs/superpowers/specs/2026-10-02-foe-design.md` (read the addendum at the end).
 - Plan: `docs/superpowers/plans/2026-10-02-foe-v1.md`. Tasks 0–11. Tasks 0–1 are done.
@@ -20,8 +20,8 @@
 
 **Next actions, in order:**
 
-1. **PR #2** (`feat/skeleton-probe` → `main`) has green CI on `07f098e`. The operator merges it with `--merge`, not squash. PR #1 was merged as `e83eb8b`.
-2. **Task 2** is committed on `feat/target-tracker` (`7a1fa28`, 14 tests, mutation caught). It is being reviewed by `reviewer`. After PR #2 merges, merge `main` into it, then open its PR.
+1. **PR #3** (`feat/target-tracker` → `main`) has green CI. The operator merges it with `--merge`. PR #1 was merged as `e83eb8b`, and PR #2 as `9b5d069`. Start Task 3 on a new branch off the updated `main`.
+2. **Task 2** is done: 17 tests, the reviewer approved, and 12 mutations were caught. The review's must-fix (an in-flight hit stealing a new target) was fixed with `playerHit` in `1652f2c`. Its wiring findings are now amendments at the top of plan Task 7.
 3. **Tasks 3–7,** each implemented and then reviewed. Implementer flags for Task 7:
    - `lingerSeconds = 0` blinks on null-interacting ticks.
    - Use a monotonic `now()`: `System.nanoTime()/1e6`, not `currentTimeMillis`.
