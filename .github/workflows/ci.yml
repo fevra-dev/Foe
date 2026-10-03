@@ -1,0 +1,61 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # NO branches: filter here, deliberately. It filters on the BASE branch, so a
+  # stacked PR (base = another feature branch) ran NO CI at all and reported
+  # mergeable=MERGEABLE, state=CLEAN with an empty check list -- a passing-looking
+  # PR that was never checked. Measured 2026-09-05 on PR #92, which was merged on
+  # that signal. Silent-pass Q10 at the CI layer, and ADR-0019 verbatim: a check
+  # that could not run must never report success. Verified against GitHub docs:
+  # with no filter the workflow runs for any base, and fork PRs still receive no
+  # secrets beyond a read-only GITHUB_TOKEN, so this widens coverage, not trust.
+
+# ADR-0018 rule 2/3: a TOP-LEVEL permissions block, least privilege by default.
+# A job-level block alone is insufficient — it leaves every other job at the
+# repository default. Widen per-job only where a job demonstrably needs it.
+permissions:
+  contents: read
+
+jobs:
+  # Job name doubles as the check-run context that `repo-protect.sh` requires before
+  # merge. Keep it 'lint-gate' portfolio-wide so that detection is unambiguous.
+  lint-gate:
+    runs-on: ubuntu-latest
+    # No STRICT here on purpose: the gate derives it from CI=true, which Actions always sets
+    # (ADR-0019 r3). Requiring it would mean a workflow that forgets the line silently gets
+    # the permissive path back — a fail-open reachable by omission, which is the failure the
+    # rule exists to close. A global STRICT=0 is refused under CI; waive a single stage in
+    # .githooks/gate-baseline instead.
+    steps:
+      # ADR-0018 rule 1: SHA-pinned, tag preserved in the trailing comment.
+      # Re-resolve after any bump with `actions-pin.py --fix .`, and audit the
+      # comments against the network with `actions-pin.py --verify .`.
+      #
+      # v7, not the portfolio's incumbent v4, and deliberately so: v7 blocks checking
+      # out a fork PR under `pull_request_target`/`workflow_run` (PR 2454) — the exact
+      # vector ADR-0018 rule 4 requires a waiver for — and v6 moved the token out of
+      # .git/config into a separate file (PR 2286). Requires a node24-capable runner,
+      # which GitHub-hosted ubuntu-latest is. Existing v4 refs migrate forward-only.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+
+      # uv runs the stdlib harness checkers (actions-pin, redact). Without it those
+      # stages are UNCHECKED, which STRICT correctly fails on.
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9  # v9.0.0
+
+      # trivy is always applicable — every repo has dependencies and can leak a secret.
+      - uses: aquasecurity/setup-trivy@81e514348e19b6112ce2a7e3ecbafe19c1e1f567  # v0.3.1
+
+      # setup-trivy installs the binary only; trivy fetches its vulnerability database lazily,
+      # on first scan. The gate checks for that database BEFORE scanning (ADR-0019 r11: a scan
+      # with no data verified nothing), so on a fresh runner it correctly reported UNCHECKED and
+      # failed under STRICT. Fetching explicitly is also what ADR-0017 means by forbidding
+      # --skip-db-update in CI: the database is a required input, so acquiring it is a step
+      # rather than a side effect of the first scan. A failure here is a real signal — it means
+      # the scan that follows would have been blind.
+      - name: Fetch the trivy vulnerability database
+        run: trivy image --download-db-only
+
+      - name: Run the gate
+        run: bash .githooks/lint-gate.sh

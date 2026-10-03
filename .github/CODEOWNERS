@@ -1,0 +1,9 @@
+# CODEOWNERS — routes review on security-relevant paths.
+# Solo repo: this self-assigns, which is the point — it makes the review step visible
+# in the PR UI rather than implicit, and survives the repo gaining collaborators.
+
+*                       @fevra-dev
+/adr/                   @fevra-dev
+/.github/workflows/     @fevra-dev
+/.github/actions/       @fevra-dev
+/.githooks/             @fevra-dev
