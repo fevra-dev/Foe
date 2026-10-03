@@ -4,12 +4,11 @@ package com.foe;
  * Estimated HP from the health bar. The game sends only a fraction (ratio/scale), so this returns
  * the midpoint of the possible range. Ported from RuneLite OpponentInfoOverlay (d8e7d1e, :175-198;
  * the same logic is at :172-198 of the 1.13.1 sources jar this build resolves).
- *
- * <p>ponytail: int arithmetic, as upstream. {@code maxHp * ratio} overflows past Integer.MAX_VALUE, i.e. at
- * maxHp above 17,895,697 for scale 120 (2147483647 / 120). Widen to long if a max HP ever gets near that.
  */
 final class HpEstimate
 {
+	// ponytail: int arithmetic, as upstream. maxHp * ratio overflows once maxHp > Integer.MAX_VALUE / scale
+	// (17,895,697 at scale 120; 8,421,504 at 255). Widen to long if a max HP ever gets near that.
 	static final int UNKNOWN = -1;
 
 	private HpEstimate()
@@ -18,7 +17,8 @@ final class HpEstimate
 
 	static int estimate(int ratio, int scale, int maxHp)
 	{
-		if (ratio < 0 || scale <= 0 || maxHp <= 0)
+		// ratio > scale is inconsistent data; upstream would return more than maxHp for it (72 for 31/30/70).
+		if (ratio < 0 || scale <= 0 || maxHp <= 0 || ratio > scale)
 		{
 			return UNKNOWN;
 		}
@@ -26,10 +26,6 @@ final class HpEstimate
 		{
 			return 0;
 		}
-		// Not in the upstream formula, which returns more than maxHp here (72 for ratio 31, scale 30, maxHp 70).
-		// A ratio above the scale cannot come from a sane server; reading it as "full" keeps the result
-		// within maxHp.
-		ratio = Math.min(ratio, scale);
 		int min = 1;
 		int max;
 		if (scale > 1)

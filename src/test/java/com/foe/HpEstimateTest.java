@@ -39,6 +39,10 @@ public class HpEstimateTest
 		assertEquals(HpEstimate.UNKNOWN, HpEstimate.estimate(-1, 30, 70));
 		assertEquals(HpEstimate.UNKNOWN, HpEstimate.estimate(15, 0, 70));
 		assertEquals(HpEstimate.UNKNOWN, HpEstimate.estimate(15, 30, 0));
+		// The API's real "no info" value is -1 for scale (Actor.getHealthScale javadoc), not 0.
+		assertEquals(HpEstimate.UNKNOWN, HpEstimate.estimate(15, -1, 70));
+		assertEquals(HpEstimate.UNKNOWN, HpEstimate.estimate(-1, -1, 70));
+		assertEquals(HpEstimate.UNKNOWN, HpEstimate.estimate(15, 30, -1));
 	}
 
 	@Test
@@ -63,15 +67,15 @@ public class HpEstimateTest
 	}
 
 	@Test
-	public void ratioAboveScaleReadsAsFull()
+	public void ratioAboveScaleIsUnknown()
 	{
-		// Bad server data. Unclamped, (40,30,70) gives min=2758/29=95, max=min(96,70)=70 -> (95+70+1)/2=83 > maxHp.
-		assertEquals(70, HpEstimate.estimate(31, 30, 70));
-		assertEquals(70, HpEstimate.estimate(40, 30, 70));
-		assertEquals(70, HpEstimate.estimate(255, 30, 70));
-		assertEquals(1, HpEstimate.estimate(100, 30, 1));
-		// scale 1: read as ratio == scale, i.e. exactly what (1, 1, 70) gives
-		assertEquals(HpEstimate.estimate(1, 1, 70), HpEstimate.estimate(5, 1, 70));
+		// Inconsistent data. Upstream computes (40,30,70) as min=2758/29=95, max=70 -> 83 > maxHp. Any number here
+		// would be invented (spec: never show an invented value), so it is UNKNOWN like every other bad input.
+		assertEquals(HpEstimate.UNKNOWN, HpEstimate.estimate(31, 30, 70));
+		assertEquals(HpEstimate.UNKNOWN, HpEstimate.estimate(40, 30, 70));
+		assertEquals(HpEstimate.UNKNOWN, HpEstimate.estimate(255, 30, 70));
+		assertEquals(HpEstimate.UNKNOWN, HpEstimate.estimate(100, 30, 1));
+		assertEquals(HpEstimate.UNKNOWN, HpEstimate.estimate(5, 1, 70));
 	}
 
 	@Test
@@ -82,7 +86,7 @@ public class HpEstimateTest
 			for (int maxHp : new int[]{1, 2, 29, 30, 31, 70, 1000, 30_000})
 			{
 				int previous = 0;
-				for (int ratio = 0; ratio <= scale + 3; ratio++)
+				for (int ratio = 0; ratio <= scale; ratio++)
 				{
 					int hp = HpEstimate.estimate(ratio, scale, maxHp);
 					String at = "ratio " + ratio + ", scale " + scale + ", maxHp " + maxHp;
