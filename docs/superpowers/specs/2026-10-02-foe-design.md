@@ -115,3 +115,22 @@ any network call.
 
 `~/Apps/Runelite/Party` is not a git repository yet, so this spec is uncommitted. Initialising it
 (`/macdaddy` seeds the gate and ADRs) is a plan step and needs operator sign-off.
+
+## Addendum — 2026-10-02, from the planning threat-model pass (plan Task 0)
+
+Appended rather than edited in place, so the original decisions above stay readable.
+
+1. **Target selection is sticky (amends rule 2).** In multi-combat several NPCs hit you each tick, so
+   "the most recent NPC that hit you" would flicker. A hit from another NPC is adopted only when
+   there is no live target. Attacking an NPC yourself always wins.
+2. **Only combat NPCs count.** `getInteracting()` is also set by Talk-to, so an NPC is a candidate
+   only if its composition's combat level is above 0.
+3. **NPC names are markup.** Names can carry `<col=…>` tags, so they pass through
+   `Text.removeTags` (`net.runelite.client.util.Text`, exists `[measured]`) before they are drawn.
+4. **Varp 5536 is "last NPC", so it may be stale.** It can still hold the previous monster's
+   weakness when a new target is engaged. The probe (plan Task 1) must establish when it updates,
+   and the decoder must not show a value that predates the current target.
+5. **The encoding cannot be read from the game's own scripts.** No client script in
+   `Joshua-F/osrs-dumps` (`fc15240`, 2026-09-30) reads `last_npc_elemental_weakness`: the target
+   name appears in 0 of 9,915 scripts, against a control (`%option_run`) appearing in 2
+   `[measured]`. The value is server-set and only an in-game probe can decode it.

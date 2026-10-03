@@ -38,7 +38,14 @@ jobs:
       # vector ADR-0018 rule 4 requires a waiver for — and v6 moved the token out of
       # .git/config into a separate file (PR 2286). Requires a node24-capable runner,
       # which GitHub-hosted ubuntu-latest is. Existing v4 refs migrate forward-only.
+      #
+      # fetch-depth: 0 is load-bearing, not a default-by-accident. The gitleaks stage scans the
+      # range this ref adds to its base, and at the default depth 1 there is no history: every
+      # rev-parse in that stage fails, it correctly reports UNCHECKED, and STRICT fails the run.
+      # Measured 2026-09-14 (in ~/Apps/WORKFLOW, whose ci.yml this mirrors).
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+        with:
+          fetch-depth: 0
 
       # uv runs the stdlib harness checkers (actions-pin, redact). Without it those
       # stages are UNCHECKED, which STRICT correctly fails on.
@@ -57,5 +64,35 @@ jobs:
       - name: Fetch the trivy vulnerability database
         run: trivy image --download-db-only
 
+      # gitleaks is NOT present on ubuntu-latest. Without this step `command -v gitleaks` fails,
+      # the stage reports UNCHECKED, and STRICT turns that into a failure. Measured on this
+      # repo's PR #1: "❌ [gitleaks] applies here but could not run: gitleaks not installed [STRICT]".
+      #
+      # Installed from a PINNED release and verified against the release's own checksums file,
+      # rather than from a floating tag or a third-party action: a mutable reference to a binary
+      # that executes in CI is the same exposure ADR-0018 pins actions to SHAs to avoid.
+      # `--ignore-missing` is required because the checksums file covers every platform asset and
+      # only one is downloaded here; the line for that one asset is still verified.
+      - name: Install gitleaks
+        env:
+          GITLEAKS_VERSION: 8.30.1
+        run: |
+          set -euo pipefail
+          workdir="$(mktemp -d)"
+          cd "$workdir"
+          base="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}"
+          curl -fsSL -O "${base}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -fsSL -O "${base}/gitleaks_${GITLEAKS_VERSION}_checksums.txt"
+          sha256sum --ignore-missing -c "gitleaks_${GITLEAKS_VERSION}_checksums.txt"
+          tar xzf "gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" gitleaks
+          sudo install -m 0755 gitleaks /usr/local/bin/gitleaks
+          gitleaks version
+
       - name: Run the gate
+        env:
+          # The gitleaks stage derives its scan range from these. GITHUB_BASE_REF is set by
+          # Actions on a pull_request; github.event.before is only reachable through the
+          # context, so it is passed explicitly. The stage verifies BOTH resolve before use and
+          # reports UNCHECKED rather than scanning an empty range if they do not.
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
         run: bash .githooks/lint-gate.sh
