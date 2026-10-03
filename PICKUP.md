@@ -2,7 +2,7 @@
 
 ## START HERE
 
-**State (2026-10-03):** PRs #1 and #2 merged (Task 1 done). Task 2 done and reviewed, in PR #3. Weakness design decided. **Resume at Task 3.**
+**State (2026-10-03):** Tasks 1–4 done and merged (PRs #1–#5; `main` at `fac476a`). Task 5 started on `feat/config`. **Resume at Task 5.**
 
 - Spec: `docs/superpowers/specs/2026-10-02-foe-design.md` (read the addendum at the end).
 - Plan: `docs/superpowers/plans/2026-10-02-foe-v1.md`. Tasks 0–11. Tasks 0–1 are done.
@@ -20,9 +20,14 @@
 
 **Next actions, in order:**
 
-1. **PR #3** (`feat/target-tracker` → `main`) has green CI. The operator merges it with `--merge`. PR #1 was merged as `e83eb8b`, and PR #2 as `9b5d069`. Start Task 3 on a new branch off the updated `main`.
+1. **Routine per task:**
+   - Branch off `main`.
+   - `implementer` builds the task, then `reviewer` checks it, and I fix whatever the review finds.
+   - The operator pushes. I open the PR and wait for CI, and the operator merges with `--merge`.
+   - The auto-mode classifier blocks merges by the agent.
+   - Done so far: Task 3 `HpEstimate` (PR #4; ratio > scale → UNKNOWN) and Task 4 snapshot types (PR #5; `Weakness` element-only, `hpStale`, NBSP-safe names).
 2. **Task 2** is done: 17 tests, the reviewer approved, and 12 mutations were caught. The review's must-fix (an in-flight hit stealing a new target) was fixed with `playerHit` in `1652f2c`. Its wiring findings are now amendments at the top of plan Task 7.
-3. **Tasks 3–7,** each implemented and then reviewed. Implementer flags for Task 7:
+3. **Tasks 5–7,** each implemented and then reviewed. **Task 6 first reads the note at its top**, which needs an operator decision on how stale HP looks. **Task 7 has amendments 1–9 at its top.** Implementer flags for Task 7:
    - `lingerSeconds = 0` blinks on null-interacting ticks.
    - Use a monotonic `now()`: `System.nanoTime()/1e6`, not `currentTimeMillis`.
    - The plan's `onHitsplatApplied` picks the first NPC interacting with the player, which may not be the hitter.
