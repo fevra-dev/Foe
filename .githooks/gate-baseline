@@ -1,0 +1,23 @@
+# gate-baseline — every stage this gate defines, and whether this repo runs it (ADR-0019).
+#
+# Complete by construction: a stage missing from this file is an error, because a
+# silent omission is exactly how a control gets dropped without anyone deciding to.
+#
+#   required: <stage>            the stage must actually run
+#   exempt:   <stage> <reason>   it genuinely does not apply — VERIFIED, not trusted
+#
+# Regenerate:  macdaddy.sh --baseline --refresh
+
+required: trivy
+required: gitleaks
+exempt:   trivy-register  no .trivyignore.yaml — no ADR-0017 risk register here
+exempt:   oxlint       no .oxlintrc.json or no JavaScript/TypeScript in this repo
+exempt:   biome        no biome.json or no JavaScript/TypeScript in this repo
+exempt:   ruff         not a Python project — no pyproject.toml/ruff.toml/.ruff.toml
+exempt:   bandit       not a Python project — no pyproject.toml
+exempt:   semgrep      no .semgrep/ rules authored in this repo
+required: actions-pin
+exempt:   seed-drift  no machine/templates/adr/ — this repo seeds no ADRs to other repos
+exempt:   dep-cruiser  no .dependency-cruiser config — no module-graph rules here
+exempt:   sigma        no detections/, .sigma/, sigma/ or rules/sigma/ rules
+exempt:   redact       no .audit/ reports to scrub — ADR-0011 applies once there are
