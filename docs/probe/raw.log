@@ -1,0 +1,616 @@
+2026-10-03 10:43:14 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=0 gamestate LOGGING_IN | varp5536 int=0x0 long=0x0
+2026-10-03 10:43:20 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=0 gamestate LOADING | varp5536 int=0x0 long=0x0
+2026-10-03 10:43:23 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=0 gamestate LOGGED_IN | varp5536 int=0x0 long=0x0
+2026-10-03 10:43:23 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=0 varp5536 changed: dec=0 hex32=0 hex64=0 bin32=0 varbit=-1 | target no NPC
+2026-10-03 10:43:23 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=0 varp5536 changed: dec=-1 hex32=ffffffff hex64=ffffffffffffffff bin32=11111111111111111111111111111111 varbit=-1 | target no NPC
+2026-10-03 10:43:23 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=0 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:43:24 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=0 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=17 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:43:25 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=2 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:43:27 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=6 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=9 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:43:29 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=10 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=1 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:43:32 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=14 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=2 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:43:34 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=18 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:43:35 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=20 player now targets Blue dragon (id 265, idx 21996) | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:43:37 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=22 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=5 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:43:37 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=23 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=5 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:43:39 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=26 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=12 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:43:40 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=27 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=9 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:43:41 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=30 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:43:42 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=31 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:43:44 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=34 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=4 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:43:44 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=35 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=5 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:43:47 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=39 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:43:49 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=43 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:43:52 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=47 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:43:54 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=51 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=14 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:43:56 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=55 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=1 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:43:59 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=59 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=2 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:01 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=63 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=1 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:04 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=67 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=13 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:06 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=71 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:08 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=75 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:11 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=79 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=9 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:13 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=83 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=10 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:16 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=87 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=6 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:18 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=91 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:20 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=95 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=9 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:22 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=98 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=12 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:23 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=99 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:25 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=102 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=9 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:25 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=103 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=3 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:27 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=106 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:28 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=107 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=6 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:29 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=110 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=17 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:30 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=111 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=11 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:32 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=114 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:32 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=115 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:34 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=118 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=13 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:35 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=119 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:37 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=123 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=6 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:38 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=124 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:42 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=131 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=4 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:44 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=135 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=7 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:47 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=139 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=3 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:49 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=143 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=8 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:52 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=147 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=13 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:53 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=149 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:54 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=151 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=14 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:55 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=152 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:55 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=153 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:56 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=154 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:56 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=155 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:56 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=155 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=3 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:57 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=156 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:44:58 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=157 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:00 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=161 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:02 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=165 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=13 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:05 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=169 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=16 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:07 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=172 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:07 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=173 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=2 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:08 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=174 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:08 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=175 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:10 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=177 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=15 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:12 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=181 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=2 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:14 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=185 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=3 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:20 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=194 player now targets Blue dragon (id 265, idx 21996) | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:20 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=194 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:22 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=197 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=6 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:22 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=198 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=5 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:24 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=201 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=4 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:25 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=202 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=15 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:26 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=205 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=14 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:27 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=206 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:29 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=209 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=8 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:29 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=210 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=17 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:31 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=213 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:32 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=214 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=14 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:34 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=217 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:36 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=221 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=14 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:38 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=225 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:39 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=226 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:41 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=229 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=1 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:41 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=230 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=4 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:43 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=233 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=13 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:44 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=234 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=4 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:46 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=237 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=14 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:46 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=238 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:48 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=241 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=11 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:49 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=242 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=2 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:50 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=245 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=14 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:51 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=246 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:53 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=249 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=1 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:53 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=250 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:55 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=253 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=8 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:56 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=254 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:56 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=254 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=14 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:45:58 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=258 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=1 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:01 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=262 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=6 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:03 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=266 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=14 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:05 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=270 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=1 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:08 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=274 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=6 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:11 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=280 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=16 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:14 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=284 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=13 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:16 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=288 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=7 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:19 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=292 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:22 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=298 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=1 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:25 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=302 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:27 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=306 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=5 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:29 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=310 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:32 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=314 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=10 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:34 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=318 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:34 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=318 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=1 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:36 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=321 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:37 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=322 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:37 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=322 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=8 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:39 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=326 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=17 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:41 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=329 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:41 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=330 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:41 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=330 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:44 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=334 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=1 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:46 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=338 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=15 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:49 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=342 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:51 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=346 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=9 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:55 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=353 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=15 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:46:58 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=357 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=2 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:47:00 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=361 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=11 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:47:02 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=365 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=10 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:47:05 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=369 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=3 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:47:07 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=373 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=10 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:47:16 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=387 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:47:18 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=391 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=2 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:47:20 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=395 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=13 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:47:23 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=399 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=1 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:47:25 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=403 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:47:26 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=405 varp5536 changed: dec=555 hex32=22b hex64=22b bin32=1000101011 varbit=-1 | target no NPC
+2026-10-03 10:47:26 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=405 player now targets Blue dragon (id 265, idx 21996) | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:27 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=406 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:28 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=407 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=13 | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:29 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=409 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=1 | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:30 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=411 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:31 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=412 player now targets Blue dragon (id 265, idx 21996) | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:32 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=415 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=13 | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:32 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=415 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=8 | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:35 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=419 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:35 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=419 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=9 | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:37 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=423 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:37 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=423 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=12 | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:40 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=427 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=10 | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:40 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=427 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:42 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=431 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=11 | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:44 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=434 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=17 | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:44 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=435 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=1 | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:47 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=439 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=8 | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:47 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=440 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:49 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=443 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=3 | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:50 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=444 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=4 | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:52 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=447 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=6 | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:52 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=448 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=12 | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:54 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=451 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=12 | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:55 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=452 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=10 | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:56 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=455 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=10 | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:58 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=457 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=8 | varp5536 int=0x22b long=0x0
+2026-10-03 10:47:59 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=459 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=1 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:01 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=463 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=11 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:04 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=467 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:04 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=468 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=4 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:06 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=471 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=1 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:07 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=472 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=7 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:08 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=475 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:09 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=476 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=7 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:11 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=479 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=3 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:12 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=480 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=9 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:13 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=483 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=4 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:14 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=484 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:16 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=487 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:16 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=488 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=15 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:18 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=491 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=8 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:19 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=492 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:19 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=492 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=4 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:21 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=496 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:23 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=500 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=6 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:25 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=503 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:27 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=506 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:28 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=508 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:30 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=511 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:31 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=512 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:32 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=515 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=15 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:35 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=519 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=15 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:37 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=523 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:40 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=528 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=7 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:41 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=530 player now targets Blue dragon (id 265, idx 21996) | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:43 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=532 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=7 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:43 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=533 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=7 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:45 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=536 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=7 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:46 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=537 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:47 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=540 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=10 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:48 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=541 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=1 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:50 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=544 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:50 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=545 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=1 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:52 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=548 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=16 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:53 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=549 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=4 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:55 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=552 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=8 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:55 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=553 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=4 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:57 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=556 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:58 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=557 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=6 | varp5536 int=0x22b long=0x0
+2026-10-03 10:48:59 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=560 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:00 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=561 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=9 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:02 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=564 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:02 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=565 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=11 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:04 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=568 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:05 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=569 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=5 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:07 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=573 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:08 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=575 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=16 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:10 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=577 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=8 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:11 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=579 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=2 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:12 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=581 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=5 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:14 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=585 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=11 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:17 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=589 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=12 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:17 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=590 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=5 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:19 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=593 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=8 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:20 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=594 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=15 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:22 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=597 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:22 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=598 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=19 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:24 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=601 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:25 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=602 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:26 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=605 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=10 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:27 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=606 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:29 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=609 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:29 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=610 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=5 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:31 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=613 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=7 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:32 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=614 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:32 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=614 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:34 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=618 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=4 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:37 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=622 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=4 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:50 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=645 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=20 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:54 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=651 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=1 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:56 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=655 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:49:59 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=659 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=1 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:01 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=663 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=17 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:03 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=666 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:04 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=667 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:05 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=669 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:05 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=670 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:06 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=671 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=2 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:08 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=675 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=2 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:09 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=676 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:10 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=677 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:11 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=679 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=9 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:13 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=683 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=9 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:16 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=687 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:18 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=691 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=16 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:20 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=695 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:23 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=699 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=8 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:25 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=703 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=1 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:26 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=704 player now targets Baby blue dragon (id 241, idx 22009) | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:28 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=707 player now targets Baby blue dragon (id 242, idx 22005) | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:28 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=707 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:29 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=709 hitsplat on Baby blue dragon (id 241, idx 22009) mine=true amount=13 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:29 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=710 player now targets Baby blue dragon (id 241, idx 22009) | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:30 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=711 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=5 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:31 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=713 hitsplat on Baby blue dragon (id 241, idx 22009) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:32 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=715 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:32 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=715 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=12 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:33 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=716 hitsplat on Baby blue dragon (id 241, idx 22009) mine=true amount=10 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:34 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=718 player now targets Baby blue dragon (id 241, idx 22009) | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:35 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=719 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=1 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:36 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=721 hitsplat on Baby blue dragon (id 241, idx 22009) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:37 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=723 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:38 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=725 hitsplat on Baby blue dragon (id 241, idx 22009) mine=true amount=9 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:40 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=727 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=6 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:41 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=729 hitsplat on Baby blue dragon (id 241, idx 22009) mine=true amount=13 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:42 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=731 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:42 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=731 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=4 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:43 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=733 player now targets Baby blue dragon (id 241, idx 22009) | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:44 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=735 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=6 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:46 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=737 hitsplat on Baby blue dragon (id 241, idx 22009) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:47 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=739 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=16 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:48 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=741 hitsplat on Baby blue dragon (id 241, idx 22009) mine=true amount=4 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:49 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=743 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=2 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:50 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=745 hitsplat on Baby blue dragon (id 241, idx 22009) mine=true amount=3 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:51 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=746 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:52 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=747 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=12 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:54 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=751 hitsplat on Baby blue dragon (id 241, idx 22008) mine=false amount=5 | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:56 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=755 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:50:57 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=756 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:03 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=766 hitsplat on Lesser demon (id 2006, idx 22028) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:05 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=769 hitsplat on Lesser demon (id 2006, idx 22028) mine=false amount=10 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:05 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=770 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:07 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=772 player now targets Lesser demon (id 2007, idx 22023) | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:07 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=772 hitsplat on Lesser demon (id 2006, idx 22028) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:08 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=775 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:08 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=775 hitsplat on Lesser demon (id 2007, idx 22023) mine=true amount=13 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:08 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=775 hitsplat on Lesser demon (id 2006, idx 22028) mine=false amount=10 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:10 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=778 hitsplat on Lesser demon (id 2006, idx 22028) mine=false amount=4 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:11 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=779 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=16 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:11 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=779 hitsplat on Lesser demon (id 2007, idx 22023) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:12 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=781 hitsplat on Lesser demon (id 2006, idx 22028) mine=false amount=9 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:13 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=782 hitsplat on Lesser demon (id 2007, idx 22023) mine=true amount=9 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:13 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=783 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=11 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:14 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=784 hitsplat on Lesser demon (id 2006, idx 22028) mine=false amount=3 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:15 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=786 hitsplat on Lesser demon (id 2007, idx 22023) mine=true amount=12 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:16 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=787 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:16 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=787 hitsplat on Lesser demon (id 2006, idx 22028) mine=false amount=1 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:17 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=789 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:17 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=790 player now targets Lesser demon (id 2007, idx 22023) | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:17 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=790 hitsplat on Lesser demon (id 2007, idx 22023) mine=true amount=2 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:17 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=790 hitsplat on Lesser demon (id 2006, idx 22028) mine=false amount=3 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:18 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=791 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=13 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:19 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=793 hitsplat on Lesser demon (id 2006, idx 22028) mine=false amount=7 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:20 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=795 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=2 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:20 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=795 hitsplat on Lesser demon (id 2007, idx 22023) mine=true amount=2 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:21 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=796 hitsplat on Lesser demon (id 2006, idx 22028) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:22 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=798 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:23 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=799 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=7 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:23 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=799 hitsplat on Lesser demon (id 2007, idx 22023) mine=true amount=6 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:23 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=799 hitsplat on Lesser demon (id 2006, idx 22028) mine=false amount=10 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:25 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=802 hitsplat on Lesser demon (id 2006, idx 22028) mine=false amount=9 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:25 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=803 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:28 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=807 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=2 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:30 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=811 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=12 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:32 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=815 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:35 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=819 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=5 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:37 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=823 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=9 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:40 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=827 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=3 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:42 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=831 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:44 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=835 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=16 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:47 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=839 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=6 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:49 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=843 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:52 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=847 player now targets Blue dragon (id 265, idx 21996) | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:52 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=847 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=20 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:53 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=850 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=3 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:54 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=851 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:56 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=854 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:56 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=855 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:58 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=858 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=4 | varp5536 int=0x22b long=0x0
+2026-10-03 10:51:59 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=859 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:01 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=862 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:01 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=863 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=14 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:03 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=866 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=3 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:04 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=867 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=13 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:05 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=870 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=13 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:06 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=871 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=4 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:08 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=874 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:10 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=878 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:10 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=878 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=14 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:13 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=882 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:13 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=882 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=2 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:15 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=886 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=9 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:15 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=886 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:17 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=890 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:17 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=890 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:20 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=894 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:20 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=894 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=4 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:22 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=898 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:22 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=898 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:25 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=902 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:27 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=906 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=7 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:29 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=910 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=3 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:32 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=914 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:32 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=914 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=2 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:34 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=918 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:34 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=918 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:37 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=922 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:37 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=923 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=16 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:39 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=926 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:40 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=928 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:41 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=930 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=2 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:43 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=932 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=3 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:44 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=934 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:45 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=936 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=12 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:46 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=938 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:49 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=942 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:50 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=944 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=10 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:51 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=946 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:52 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=948 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=19 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:53 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=950 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=11 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:55 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=952 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=15 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:56 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=954 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=13 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:57 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=956 hitsplat on Baby blue dragon (id 243, idx 22014) mine=false amount=6 | varp5536 int=0x22b long=0x0
+2026-10-03 10:52:58 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=958 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:01 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=962 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=6 | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:03 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=966 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:05 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=970 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=1 | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:08 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=974 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=12 | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:08 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=974 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=16 | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:10 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=978 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=1 | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:10 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=978 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:13 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=982 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=1 | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:13 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=982 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=5 | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:15 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=986 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=2 | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:15 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=986 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=19 | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:17 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=990 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=8 | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:17 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=990 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=2 | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:20 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=994 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=8 | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:20 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=994 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:22 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=998 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:22 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=998 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=9 | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:25 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1002 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:27 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1006 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=4 | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:29 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1010 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=2 | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:30 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1011 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:43 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1033 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:45 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1036 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:50 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1044 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:51 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1046 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:52 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1048 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:54 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1051 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:57 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1056 player now targets Blue dragon (id 265, idx 21996) | varp5536 int=0x22b long=0x0
+2026-10-03 10:53:59 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1059 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=5 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:01 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1062 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:01 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1063 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:03 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1066 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=15 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:04 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1067 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:05 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1070 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=19 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:06 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1071 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=14 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:08 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1074 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:08 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1075 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=8 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:10 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1078 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:11 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1079 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=1 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:13 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1082 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=13 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:13 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1083 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=14 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:15 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1086 hitsplat on Baby blue dragon (id 241, idx 22009) mine=false amount=4 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:16 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1087 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=10 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:18 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1091 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=9 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:20 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1095 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=9 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:23 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1099 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=1 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:23 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1100 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:25 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1103 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=1 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:26 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1104 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:28 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1107 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=9 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:28 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1108 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:30 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1111 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=13 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:31 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1112 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=2 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:32 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1115 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=11 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:33 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1116 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=2 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:35 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1119 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=3 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:35 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1120 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:35 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1120 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:38 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1124 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=1 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:40 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1128 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=13 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:43 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1132 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:43 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1132 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:45 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1135 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:45 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1136 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=1 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:46 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1137 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:47 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1140 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:47 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1140 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:49 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1143 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:50 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1144 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=13 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:52 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1148 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:52 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1148 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=2 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:55 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1152 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=0 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:57 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1156 hitsplat on Baby blue dragon (id 242, idx 22005) mine=false amount=13 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:58 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1158 hitsplat on Lesser demon (id 2006, idx 22028) mine=false amount=6 | varp5536 int=0x22b long=0x0
+2026-10-03 10:54:59 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1160 player now targets no NPC | varp5536 int=0x22b long=0x0
+2026-10-03 10:55:00 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1161 hitsplat on Lesser demon (id 2006, idx 22028) mine=false amount=10 | varp5536 int=0x22b long=0x0
+2026-10-03 10:55:00 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1161 hitsplat on Lesser demon (id 2006, idx 22028) mine=false amount=2 | varp5536 int=0x22b long=0x0
+2026-10-03 10:55:02 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1164 hitsplat on Lesser demon (id 2006, idx 22028) mine=false amount=6 | varp5536 int=0x22b long=0x0
+2026-10-03 10:55:11 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1177 gamestate LOADING | varp5536 int=0x22b long=0x0
+2026-10-03 10:55:11 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1177 gamestate LOGGED_IN | varp5536 int=0x22b long=0x0
+2026-10-03 10:55:11 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1178 varp5536 changed: dec=-1 hex32=ffffffff hex64=ffffffffffffffff bin32=11111111111111111111111111111111 varbit=-1 | target no NPC
+2026-10-03 10:55:11 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1178 player now targets Chaos dwarf (id 291, idx 21976) | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:55:11 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1179 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:55:12 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1180 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:55:13 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1182 hitsplat on Chaos dwarf (id 291, idx 21976) mine=true amount=2 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:55:26 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1203 varp5536 changed: dec=557 hex32=22d hex64=22d bin32=1000101101 varbit=-1 | target no NPC
+2026-10-03 10:55:26 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1203 player now targets Hill Giant (id 2103, idx 21968) | varp5536 int=0x22d long=0x0
+2026-10-03 10:55:26 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1204 player now targets no NPC | varp5536 int=0x22d long=0x0
+2026-10-03 10:55:28 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1207 hitsplat on Hill Giant (id 2103, idx 21968) mine=true amount=1 | varp5536 int=0x22d long=0x0
+2026-10-03 10:55:29 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1208 player now targets no NPC | varp5536 int=0x22d long=0x0
+2026-10-03 10:55:34 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1216 player now targets Poison Scorpion (id 3025, idx 21979) | varp5536 int=0x22d long=0x0
+2026-10-03 10:55:34 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1217 player now targets no NPC | varp5536 int=0x22d long=0x0
+2026-10-03 10:55:36 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1219 player now targets no NPC | varp5536 int=0x22d long=0x0
+2026-10-03 10:56:23 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1298 gamestate LOADING | varp5536 int=0x22d long=0x0
+2026-10-03 10:56:24 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1298 gamestate LOGGED_IN | varp5536 int=0x22d long=0x0
+2026-10-03 10:57:01 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1361 varp5536 changed: dec=-1 hex32=ffffffff hex64=ffffffffffffffff bin32=11111111111111111111111111111111 varbit=-1 | target no NPC
+2026-10-03 10:57:01 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1361 player now targets Black Knight (id 11952, idx 21925) | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:57:02 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1362 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:57:04 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1365 hitsplat on Black Knight (id 11952, idx 21925) mine=true amount=1 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:57:05 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1367 player now targets Black Knight (id 11952, idx 21925) | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:57:09 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1373 hitsplat on Black Knight (id 11952, idx 21925) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:57:11 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1377 hitsplat on Black Knight (id 11952, idx 21925) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:57:13 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1380 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:57:13 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1381 player now targets Black Knight (id 11952, idx 21925) | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:57:15 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1383 hitsplat on Black Knight (id 11952, idx 21925) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:57:17 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1387 hitsplat on Black Knight (id 11952, idx 21925) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:57:19 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1391 hitsplat on Black Knight (id 11952, idx 21925) mine=true amount=9 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:57:22 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1396 hitsplat on Black Knight (id 11952, idx 21925) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:57:24 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1399 hitsplat on Black Knight (id 11952, idx 21925) mine=true amount=10 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:57:26 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1403 hitsplat on Black Knight (id 11952, idx 21925) mine=true amount=3 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:57:29 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1407 hitsplat on Black Knight (id 11952, idx 21925) mine=true amount=1 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:57:31 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1411 hitsplat on Black Knight (id 11952, idx 21925) mine=true amount=1 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:57:34 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1415 hitsplat on Black Knight (id 11952, idx 21925) mine=true amount=13 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:57:36 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1419 hitsplat on Black Knight (id 11952, idx 21925) mine=true amount=4 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:57:37 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1420 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:57:40 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1426 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:57:41 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1427 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:58:22 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1496 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:58:35 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1517 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:59:17 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1587 gamestate LOADING | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:59:17 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1587 gamestate LOGGED_IN | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:59:28 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1605 hitsplat on Lesser demon (id 2005, idx 22026) mine=false amount=10 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:59:29 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1608 hitsplat on Lesser demon (id 2005, idx 22026) mine=false amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:59:31 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1611 hitsplat on Lesser demon (id 2005, idx 22026) mine=false amount=5 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:59:33 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1614 hitsplat on Lesser demon (id 2005, idx 22026) mine=false amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:59:35 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1617 hitsplat on Lesser demon (id 2005, idx 22026) mine=false amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:59:35 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1618 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:59:37 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1620 hitsplat on Lesser demon (id 2005, idx 22026) mine=false amount=11 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:59:38 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1623 hitsplat on Lesser demon (id 2005, idx 22026) mine=false amount=1 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:59:46 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1634 gamestate LOADING | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:59:46 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1634 gamestate LOGGED_IN | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:59:55 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1650 player now targets Blue dragon (id 265, idx 21996) | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:59:57 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1653 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 10:59:59 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1657 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:00:02 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1661 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=14 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:00:04 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1665 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=1 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:00:07 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1669 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=14 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:00:09 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1673 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=10 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:00:12 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1677 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:00:14 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1681 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:00:16 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1685 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=13 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:00:19 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1689 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:00:21 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1693 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=14 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:00:23 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1697 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=5 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:00:26 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1701 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=1 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:00:28 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1705 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=13 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:00:31 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1709 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:00:33 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1713 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=11 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:00:35 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1717 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=0 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:00:38 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1721 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=3 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:00:40 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1725 hitsplat on Blue dragon (id 265, idx 21996) mine=true amount=9 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:00:41 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1726 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:00:46 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1734 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:00:47 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1737 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:00:49 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1739 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:00:51 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1743 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:00:52 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1745 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:00:53 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1747 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:01:11 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1776 hitsplat on Lesser demon (id 2006, idx 22028) mine=false amount=9 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:01:13 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1779 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:01:13 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1779 hitsplat on Lesser demon (id 2006, idx 22028) mine=false amount=9 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:01:14 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1782 hitsplat on Lesser demon (id 2006, idx 22028) mine=false amount=2 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:01:16 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1785 hitsplat on Lesser demon (id 2006, idx 22028) mine=false amount=8 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:01:26 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1801 player now targets Poison Scorpion (id 3025, idx 21979) | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:01:27 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1802 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:01:29 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1806 player now targets Poison Scorpion (id 3025, idx 21979) | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:01:31 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1809 hitsplat on Poison Scorpion (id 3025, idx 21979) mine=true amount=6 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:01:31 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1810 varp5536 changed: dec=554 hex32=22a hex64=22a bin32=1000101010 varbit=-1 | target Poison Scorpion (id 3025, idx 21979)
+2026-10-03 11:01:32 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1811 player now targets no NPC | varp5536 int=0x22a long=0x0
+2026-10-03 11:01:33 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1813 hitsplat on Poison Scorpion (id 3025, idx 21979) mine=true amount=1 | varp5536 int=0x22a long=0x0
+2026-10-03 11:01:34 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1815 player now targets Poison Scorpion (id 3025, idx 21979) | varp5536 int=0x22a long=0x0
+2026-10-03 11:01:36 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1818 hitsplat on Poison Scorpion (id 3025, idx 21979) mine=true amount=8 | varp5536 int=0x22a long=0x0
+2026-10-03 11:01:38 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1822 hitsplat on Poison Scorpion (id 3025, idx 21979) mine=true amount=8 | varp5536 int=0x22a long=0x0
+2026-10-03 11:01:39 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1823 player now targets no NPC | varp5536 int=0x22a long=0x0
+2026-10-03 11:01:49 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1839 player now targets no NPC | varp5536 int=0x22a long=0x0
+2026-10-03 11:01:50 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1840 gamestate LOADING | varp5536 int=0x22a long=0x0
+2026-10-03 11:01:50 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1840 gamestate LOGGED_IN | varp5536 int=0x22a long=0x0
+2026-10-03 11:01:59 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1856 player now targets Poison Scorpion (id 3025, idx 21975) | varp5536 int=0x22a long=0x0
+2026-10-03 11:01:59 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1857 player now targets no NPC | varp5536 int=0x22a long=0x0
+2026-10-03 11:02:01 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1859 player now targets no NPC | varp5536 int=0x22a long=0x0
+2026-10-03 11:02:01 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1859 hitsplat on Poison Scorpion (id 3025, idx 21975) mine=true amount=2 | varp5536 int=0x22a long=0x0
+2026-10-03 11:02:02 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1862 player now targets Poison Scorpion (id 3025, idx 21975) | varp5536 int=0x22a long=0x0
+2026-10-03 11:02:04 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1864 hitsplat on Poison Scorpion (id 3025, idx 21975) mine=true amount=7 | varp5536 int=0x22a long=0x0
+2026-10-03 11:02:06 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1868 hitsplat on Poison Scorpion (id 3025, idx 21975) mine=true amount=8 | varp5536 int=0x22a long=0x0
+2026-10-03 11:02:09 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1872 hitsplat on Poison Scorpion (id 3025, idx 21975) mine=true amount=4 | varp5536 int=0x22a long=0x0
+2026-10-03 11:02:11 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1876 hitsplat on Poison Scorpion (id 3025, idx 21975) mine=true amount=2 | varp5536 int=0x22a long=0x0
+2026-10-03 11:02:12 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1877 player now targets no NPC | varp5536 int=0x22a long=0x0
+2026-10-03 11:02:12 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1878 player now targets no NPC | varp5536 int=0x22a long=0x0
+2026-10-03 11:02:22 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1894 player now targets Hill Giant (id 2103, idx 21968) | varp5536 int=0x22a long=0x0
+2026-10-03 11:02:27 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1902 hitsplat on Hill Giant (id 2103, idx 21968) mine=true amount=7 | varp5536 int=0x22a long=0x0
+2026-10-03 11:02:28 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1905 hitsplat on Hill Giant (id 2103, idx 21968) mine=true amount=6 | varp5536 int=0x22a long=0x0
+2026-10-03 11:02:31 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1909 hitsplat on Hill Giant (id 2103, idx 21968) mine=true amount=14 | varp5536 int=0x22a long=0x0
+2026-10-03 11:02:33 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1913 hitsplat on Hill Giant (id 2103, idx 21968) mine=true amount=8 | varp5536 int=0x22a long=0x0
+2026-10-03 11:02:34 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1914 player now targets no NPC | varp5536 int=0x22a long=0x0
+2026-10-03 11:02:49 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1940 player now targets no NPC | varp5536 int=0x22a long=0x0
+2026-10-03 11:02:51 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1942 player now targets no NPC | varp5536 int=0x22a long=0x0
+2026-10-03 11:03:18 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1987 gamestate LOGIN_SCREEN | varp5536 int=0x22a long=0x0
+2026-10-03 11:03:38 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1987 gamestate LOGGING_IN | varp5536 int=0x22a long=0x0
+2026-10-03 11:03:44 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1987 gamestate LOADING | varp5536 int=0x0 long=0x0
+2026-10-03 11:03:45 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1987 gamestate LOGGED_IN | varp5536 int=0x0 long=0x0
+2026-10-03 11:03:45 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1987 varp5536 changed: dec=0 hex32=0 hex64=0 bin32=0 varbit=-1 | target no NPC
+2026-10-03 11:03:45 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1987 varp5536 changed: dec=0 hex32=0 hex64=0 bin32=0 varbit=-1 | target no NPC
+2026-10-03 11:03:45 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1987 varp5536 changed: dec=-1 hex32=ffffffff hex64=ffffffffffffffff bin32=11111111111111111111111111111111 varbit=-1 | target no NPC
+2026-10-03 11:03:46 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1987 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:03:53 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=1999 player now targets Hill Giant (id 2103, idx 21968) | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:03:54 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=2001 hitsplat on Hill Giant (id 2103, idx 21968) mine=true amount=8 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:03:57 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=2005 hitsplat on Hill Giant (id 2103, idx 21968) mine=true amount=5 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:03:59 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=2009 hitsplat on Hill Giant (id 2103, idx 21968) mine=true amount=1 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:04:01 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=2013 hitsplat on Hill Giant (id 2103, idx 21968) mine=true amount=10 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:04:04 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=2017 hitsplat on Hill Giant (id 2103, idx 21968) mine=true amount=11 | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:04:04 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=2018 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:04:09 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=2025 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:04:09 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=2026 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:04:14 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=2034 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:04:15 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=2036 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:04:17 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=2039 player now targets no NPC | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:04:21 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=2046 player now targets Poison Scorpion (id 3025, idx 21975) | varp5536 int=0xffffffff long=0x0
+2026-10-03 11:04:22 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=2048 varp5536 changed: dec=554 hex32=22a hex64=22a bin32=1000101010 varbit=-1 | target Poison Scorpion (id 3025, idx 21975)
+2026-10-03 11:04:23 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=2049 player now targets no NPC | varp5536 int=0x22a long=0x0
+2026-10-03 11:04:24 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=2051 player now targets Poison Scorpion (id 3025, idx 21975) | varp5536 int=0x22a long=0x0
+2026-10-03 11:04:25 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=2052 hitsplat on Poison Scorpion (id 3025, idx 21975) mine=true amount=1 | varp5536 int=0x22a long=0x0
+2026-10-03 11:04:27 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=2056 hitsplat on Poison Scorpion (id 3025, idx 21975) mine=true amount=2 | varp5536 int=0x22a long=0x0
+2026-10-03 11:04:30 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=2060 hitsplat on Poison Scorpion (id 3025, idx 21975) mine=true amount=4 | varp5536 int=0x22a long=0x0
+2026-10-03 11:04:32 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=2064 hitsplat on Poison Scorpion (id 3025, idx 21975) mine=true amount=14 | varp5536 int=0x22a long=0x0
+2026-10-03 11:04:34 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=2068 hitsplat on Poison Scorpion (id 3025, idx 21975) mine=true amount=3 | varp5536 int=0x22a long=0x0
+2026-10-03 11:04:35 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=2069 player now targets no NPC | varp5536 int=0x22a long=0x0
+2026-10-03 11:04:53 EDT [Client] INFO  com.foe.FoePlugin - [foe-probe] tick=2099 player now targets no NPC | varp5536 int=0x22a long=0x0
