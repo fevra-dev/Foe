@@ -72,7 +72,7 @@ public class SnapshotFactoryTest
 		assertNull(SnapshotFactory.build("   ", 53, ICE_GIANT, 30, 30, false, null, null));
 		assertNull(SnapshotFactory.build("null", 53, ICE_GIANT, 30, 30, false, null, null));
 		assertNull(SnapshotFactory.build("<col=ff0000></col>", 53, ICE_GIANT, 30, 30, false, null, null));
-		// the "null" check runs on the stripped, trimmed name, as RuneLite's LootManager does
+		// the "null" check runs on the stripped, trimmed name (LootManager also strips tags before it, but does not trim)
 		assertNull(SnapshotFactory.build("<col=ff0000>null</col>", 53, ICE_GIANT, 30, 30, false, null, null));
 		assertNull(SnapshotFactory.build(" null ", 53, ICE_GIANT, 30, 30, false, null, null));
 		// only the exact name "null" is rejected, not a name that merely starts with it
@@ -161,5 +161,15 @@ public class SnapshotFactoryTest
 		assertTrue(stale.isHpStale());
 		assertEquals(35, live.getHp());
 		assertEquals(live.getHp(), stale.getHp());
+	}
+
+	@Test
+	public void nonBreakingSpacesCountAsSpaces()
+	{
+		// String.trim() stops at U+0020; RuneLite's Text.standardize/sanitize also treat U+00A0 as a space.
+		assertNull(SnapshotFactory.build(" ", 53, ICE_GIANT, 30, 30, false, null, null));
+		assertNull(SnapshotFactory.build("<col=ff0000> </col>", 53, ICE_GIANT, 30, 30, false, null, null));
+		assertNull(SnapshotFactory.build(" null ", 53, ICE_GIANT, 30, 30, false, null, null));
+		assertEquals("Ice giant", SnapshotFactory.build("Ice giant ", 53, ICE_GIANT, 30, 30, false, null, null).getName());
 	}
 }

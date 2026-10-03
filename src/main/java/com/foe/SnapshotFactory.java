@@ -26,9 +26,10 @@ final class SnapshotFactory
 		{
 			return null;
 		}
-		// Names can carry markup (<col=..>, <img=..>); strip it, then trim, then test for empty / "null" on the
-		// result. "null" is the name of an unnamed definition: RuneLite's LootManager guards on it the same way.
-		String name = Text.removeTags(rawName).trim();
+		// Names can carry markup (<col=..>, <img=..>); strip it, normalise U+00A0 to a space (trim() stops at
+		// U+0020; RuneLite's Text.standardize does the same replacement), trim, then test for empty / "null".
+		// "null" is the name of an unnamed definition: RuneLite's LootManager rejects it after stripping tags.
+		String name = Text.removeTags(rawName).replace(' ', ' ').trim();
 		if (name.isEmpty() || name.equals("null"))
 		{
 			return null;
