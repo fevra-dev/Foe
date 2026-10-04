@@ -1,6 +1,8 @@
 package com.foe;
 
 import javax.inject.Inject;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Actor;
 import net.runelite.api.Client;
@@ -27,6 +29,10 @@ public class FoePlugin extends Plugin
 
 	@Inject
 	private Client client;
+
+	/** The one snapshot FoeOverlay draws. Written by the plugin on the client thread (Task 7), read on the render thread. */
+	@Getter(AccessLevel.PACKAGE)
+	private volatile TargetSnapshot snapshot;
 
 	// PROBE (Task 1) — removed in Task 7. Logs varp 5536 so its encoding can be decoded.
 	//
