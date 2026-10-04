@@ -2,7 +2,7 @@
 
 ## START HERE
 
-**State (2026-10-03):** Tasks 1–4 done and merged (PRs #1–#5; `main` at `fac476a`). Task 5 started on `feat/config`. **Resume at Task 5.**
+**State (2026-10-03):** Tasks 1–6 done and merged (PRs #1–#7; `main` at `c4fc0fc`). Branch `feat/wiring` was created for Task 7. **Resume at Task 7.**
 
 - Spec: `docs/superpowers/specs/2026-10-02-foe-design.md` (read the addendum at the end).
 - Plan: `docs/superpowers/plans/2026-10-02-foe-v1.md`. Tasks 0–11. Tasks 0–1 are done.
@@ -25,9 +25,17 @@
    - `implementer` builds the task, then `reviewer` checks it, and I fix whatever the review finds.
    - The operator pushes. I open the PR and wait for CI, and the operator merges with `--merge`.
    - The auto-mode classifier blocks merges by the agent.
-   - Done so far: Task 3 `HpEstimate` (PR #4; ratio > scale → UNKNOWN) and Task 4 snapshot types (PR #5; `Weakness` element-only, `hpStale`, NBSP-safe names).
+   - Done: Task 3 `HpEstimate` (PR #4), Task 4 snapshot types (PR #5), Task 5 `FoeConfig` (PR #6), and Task 6 `FoeOverlay` (PR #7). Task 6 added the Stale HP style setting and Number-and-percent (spec addendum 2). 86 tests.
 2. **Task 2** is done: 17 tests, the reviewer approved, and 12 mutations were caught. The review's must-fix (an in-flight hit stealing a new target) was fixed with `playerHit` in `1652f2c`. Its wiring findings are now amendments at the top of plan Task 7.
-3. **Tasks 5–7,** each implemented and then reviewed. **Task 6 first reads the note at its top**, which needs an operator decision on how stale HP looks. **Task 7 has amendments 1–9 at its top.** Implementer flags for Task 7:
+3. **Task 7 (wiring) is next.** Its code in the plan predates nearly everything, so **amendments 1–10 at the top of Task 7 override it**, together with spec addendum 2. The highlights:
+   - `playerHit` for your own hits;
+   - one `now` per handler, from a monotonic clock;
+   - a per-target last-known HP that sets `hpStale`;
+   - the new `SnapshotFactory.build` signature;
+   - linger clamped to 0..60;
+   - keep `@Getter(AccessLevel.PACKAGE) volatile TargetSnapshot snapshot`, which `FoeOverlay` reads.
+   
+   Task 8 (weakness decoder, element-only, with the session cache by NPC id) is re-planned from `docs/probe/varp-5536.md`.
    - `lingerSeconds = 0` blinks on null-interacting ticks.
    - Use a monotonic `now()`: `System.nanoTime()/1e6`, not `currentTimeMillis`.
    - The plan's `onHitsplatApplied` picks the first NPC interacting with the player, which may not be the hitter.
