@@ -22,6 +22,7 @@ import net.runelite.api.events.NpcDespawned;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.game.NPCManager;
+import net.runelite.client.game.NpcUtil;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
@@ -29,7 +30,9 @@ import net.runelite.client.ui.overlay.OverlayManager;
 /**
  * Wiring only: reads facts off RuneLite's events and NPC objects, hands them to {@link TargetFeed} and
  * {@link HpMemory} (which hold every decision and are unit tested), and builds one {@link TargetSnapshot} per
- * GameTick. Everything here runs on the client thread, and FoeOverlay reads the snapshot from the render thread.
+ * GameTick. Event handlers run on the client thread; startUp/shutDown run on the Swing thread (PluginManager), which
+ * is harmless because the overlay is removed first and startUp resets everything before re-registering. FoeOverlay
+ * reads the volatile snapshot when it renders.
  *
  * <p>Known limits (the first is a decision, the rest are the client's):
  * <ul>
@@ -57,6 +60,8 @@ public class FoePlugin extends Plugin
 	private OverlayManager overlayManager;
 	@Inject
 	private FoeOverlay overlay;
+	@Inject
+	private NpcUtil npcUtil;
 
 	private final TargetFeed<NPC> feed = new TargetFeed<>(NPC::getIndex);
 	private final HpMemory hpMemory = new HpMemory();
@@ -204,7 +209,7 @@ public class FoePlugin extends Plugin
 	private boolean fighting(NPC npc)
 	{
 		Player me = client.getLocalPlayer();
-		return me != null && (me.getInteracting() == npc || npc.getInteracting() == me);
+		return me != null && !dying(npc) && (me.getInteracting() == npc || npc.getInteracting() == me);
 	}
 
 	/** The combat NPCs that are interacting with the player: the candidates for "who hit me". */
@@ -227,10 +232,20 @@ public class FoePlugin extends Plugin
 	}
 
 	/** Spec addendum 2: Talk-to also sets getInteracting(), so only NPCs with a combat level above 0 count. */
-	private static boolean isCombatNpc(NPC npc)
+	private boolean isCombatNpc(NPC npc)
 	{
 		NPCComposition c = npc.getTransformedComposition();
-		return c != null && c.getCombatLevel() > 0;
+		return c != null && c.getCombatLevel() > 0 && !dying(npc);
+	}
+
+	/**
+	 * Spec rule 3: a dead NPC clears at once and stays cleared. ActorDeath clears it, but a late hit on it, or its
+	 * last swing landing on you, would re-adopt it until it despawns. RuneLite's NpcUtil also knows death
+	 * animations and the separate death-form NPCs (e.g. drakes, gargoyles) that ActorDeath may not cover.
+	 */
+	boolean dying(NPC npc)
+	{
+		return npcUtil.isDying(npc);
 	}
 
 	private long lingerMs()

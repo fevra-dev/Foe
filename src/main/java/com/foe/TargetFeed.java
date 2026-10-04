@@ -100,13 +100,15 @@ final class TargetFeed<T>
 	 */
 	boolean gone(T npc)
 	{
-		tracker.gone(indexOf.applyAsInt(npc));
-		if (held == npc)
+		// Only the held object ends the fight: an index is unique only within one world view, so another NPC
+		// sharing the index (Task 7 review finding 2) must not clear the tracker.
+		if (held != npc)
 		{
-			held = null;
-			return true;
+			return false;
 		}
-		return false;
+		tracker.gone(indexOf.applyAsInt(npc));
+		held = null;
+		return true;
 	}
 
 	/**

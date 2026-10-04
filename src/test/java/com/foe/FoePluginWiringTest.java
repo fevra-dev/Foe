@@ -165,6 +165,12 @@ public class FoePluginWiringTest
 			{
 				return clock;
 			}
+
+			@Override
+			boolean dying(NPC npc)
+			{
+				return dyingNpcs.contains(npc);
+			}
 		};
 		set("client", fake(Client.class, clientValues));
 		set("config", new FoeConfig()
@@ -440,6 +446,37 @@ public class FoePluginWiringTest
 	}
 
 	// ---- death, despawn, logout ----
+
+	/** Stands in for NpcUtil.isDying: an NPC that died stays dying until it despawns. */
+	private final java.util.Set<NPC> dyingNpcs = new java.util.HashSet<>();
+
+	// Task 7 review finding 1: a late hit on, or from, a dead NPC re-adopted it until despawn (spec rule 3).
+	@Test
+	public void aDyingNpcIsNotReadoptedByALateHitOrItsLastSwing()
+	{
+		Npc giant = iceGiant(7).bar(15, 30);
+		engage(giant);
+		assertNotNull(tick());
+		plugin.onActorDeath(new ActorDeath(giant.npc));
+		dyingNpcs.add(giant.npc);
+		hit(giant.npc, HitsplatID.DAMAGE_ME);
+		assertNull("late hit on a dying NPC", tick());
+		giant.attacksYou();
+		hit(me, HitsplatID.DAMAGE_ME);
+		assertNull("its last swing landing on you", tick());
+	}
+
+	// Task 7 review finding 2: another NPC with the same index despawning must not blank a live fight.
+	@Test
+	public void theDespawnOfAnotherNpcWithTheSameIndexLeavesThePanel()
+	{
+		Npc giant = iceGiant(7).bar(15, 30);
+		engage(giant);
+		assertNotNull(tick());
+		Npc twin = iceGiant(7);
+		plugin.onNpcDespawned(new NpcDespawned(twin.npc));
+		assertNotNull(tick());
+	}
 
 	@Test
 	public void deathClearsThePanelAtOnceAndAFollowingTickDoesNotBringItBack()
