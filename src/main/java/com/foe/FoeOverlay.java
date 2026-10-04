@@ -169,7 +169,14 @@ class FoeOverlay extends Overlay
 			return 0;
 		}
 		int fill = Math.round(BAR_W * (float) s.getHpRatio() / s.getHpScale());
-		return s.getHpRatio() > 0 ? Math.max(1, fill) : fill;
+		// Rounding must not claim empty or full when the bar is neither (a 1/255 or 254/255 bar on 80px).
+		return partial(s) ? Math.max(1, Math.min(BAR_W - 1, fill)) : fill;
+	}
+
+	/** Alive and not at full health, by the bar itself. */
+	private static boolean partial(TargetSnapshot s)
+	{
+		return s.getHpRatio() > 0 && s.getHpRatio() < s.getHpScale();
 	}
 
 	/**
@@ -250,7 +257,8 @@ class FoeOverlay extends Overlay
 			return "";
 		}
 		String number = "~" + s.getHp() + "/" + s.getMaxHp();
-		String percent = Math.round(100f * s.getHp() / s.getMaxHp()) + "%";
+		int pct = Math.round(100f * s.getHp() / s.getMaxHp());
+		String percent = (partial(s) ? Math.max(1, Math.min(99, pct)) : pct) + "%";
 		String text;
 		switch (c.hpDisplay())
 		{

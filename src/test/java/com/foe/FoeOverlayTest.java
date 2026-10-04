@@ -488,6 +488,34 @@ public class FoeOverlayTest
 	private static final int FILL = 0xFF000000 | FoeOverlay.BAR_FG.getRGB();
 	private static final int TRACK = (FoeOverlay.BAR_BG.getAlpha() << 24) | (FoeOverlay.BAR_BG.getRGB() & 0xFFFFFF);
 
+	// Task 6 review finding 1: the divider before the bar (spec mockup) was untested; the plan put it after.
+	@Test
+	public void dividerSitsBeforeTheBarNotBetweenBarAndText()
+	{
+		Painted p = paint(halfBar(false), flat());
+		assertTrue("divider before the bar", alpha(p.argb(p.barX - FoeOverlay.GAP / 2, p.barMidY)) > 0);
+		assertEquals("nothing between bar and text", 0,
+			alpha(p.argb(p.barX + FoeOverlay.BAR_W + FoeOverlay.BAR_TEXT_GAP / 2, p.barMidY)));
+	}
+
+	// Task 6 review finding 3: at large scales a living monster read "0%" and a damaged one drew a full bar at "100%".
+	@Test
+	public void percentAndFillNeverClaimEmptyOrFullUnlessTheBarIs()
+	{
+		Cfg c = new Cfg();
+		c.hpDisplay = FoeConfig.HpDisplay.PERCENT;
+		int[] big = {40, 40, 40, 2000, 1, 1};
+		TargetSnapshot nearlyDead = snap(big, 1, 255, false, null);
+		TargetSnapshot nearlyFull = snap(big, 254, 255, false, null);
+		assertEquals("1%", FoeOverlay.hpText(nearlyDead, c));
+		assertEquals("99%", FoeOverlay.hpText(nearlyFull, c));
+		assertEquals(1, FoeOverlay.barFill(nearlyDead));
+		assertEquals(FoeOverlay.BAR_W - 1, FoeOverlay.barFill(nearlyFull));
+		// the ends themselves are unchanged
+		assertEquals("100%", FoeOverlay.hpText(snap(big, 255, 255, false, null), c));
+		assertEquals(FoeOverlay.BAR_W, FoeOverlay.barFill(snap(big, 255, 255, false, null)));
+	}
+
 	private static Cfg flat()
 	{
 		Cfg c = new Cfg();

@@ -78,7 +78,7 @@ public interface FoeConfig extends Config
 
 	@ConfigItem(keyName = "staleHpStyle", name = "Stale HP style", position = 6,
 		description = "How HP looks when the health bar has gone and the last known value is shown. "
-			+ "Faded: bar and text at half opacity. Hollow: bar outline only. Marker: a ? after the number.")
+			+ "Faded: bar and text at half opacity. Hollow: bar outline only. Marker: a ? after the HP text (or the bar).")
 	default StaleHpStyle staleHpStyle()
 	{
 		return StaleHpStyle.FADED;
