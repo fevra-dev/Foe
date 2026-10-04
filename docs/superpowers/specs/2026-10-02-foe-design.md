@@ -156,3 +156,29 @@ Appended rather than edited in place, so the original decisions above stay reada
    This takes the settings to eight, plus the conditional portrait setting.
 5. **Settings are clamped in code.** `@Range` is enforced only by the settings spinner (client
    1.13.1), so the overlay and plugin clamp opacity (0–100) and linger (0–60 s) themselves.
+
+## Addendum 3 — 2026-10-04, after the first in-game run of the wired plugin (operator decisions)
+
+The settings were redesigned "less, but better": two new capabilities, two settings removed, and
+eight settings in total.
+
+| Setting | Options (default first) | Replaces |
+|---|---|---|
+| Layout | **One line**, Stacked (bar under the name) | new |
+| HP text | **Current/max** (`50/100`), Current (`50`), Percent, None | HP display |
+| HP text position | **Beside bar**, Inside bar (centred on the bar) | new |
+| Detail | **Full**, Compact (hides the levels) | unchanged |
+| Stale HP style | **Faded**, Hollow, Marker | unchanged |
+| Show weakness | **on** | unchanged |
+| Linger after combat | **10 s** | unchanged |
+| Background opacity | **61%** | unchanged |
+
+- **Removed: "Number and percent"** (two readings of one value) and **"Show combat level"**. The level
+  is always shown next to the name, and Compact does not hide it.
+- **"Hide irrelevant levels" is now always on.** Levels of 1 or less are never drawn.
+- **No `~` before the HP number.** This matches RuneLite's Opponent Info; the bar already conveys
+  that the value is approximate.
+- **No "Lvl" label.** A number after a monster's name already reads as its level in OSRS.
+- **Max HP before the first hit.** A monster has no health bar until it takes damage (seen on a
+  Kalphite Soldier). When max HP is known and there is no bar yet, Foe shows a full bar drawn in the
+  stale style, with the max HP as its text, until the first live reading.
