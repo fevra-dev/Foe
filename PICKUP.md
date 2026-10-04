@@ -2,7 +2,7 @@
 
 ## START HERE
 
-**State (2026-10-03):** Tasks 1–6 done and merged (PRs #1–#7; `main` at `c4fc0fc`). Branch `feat/wiring` was created for Task 7. **Resume at Task 7.**
+**State (2026-10-04):** Tasks 1–6 merged (PRs #1–#7). Task 7 is implemented and smoke-tested on `feat/wiring`, awaiting review. Settings redesign decided (spec Addendum 3). **Resume at 3(a).**
 
 - Spec: `docs/superpowers/specs/2026-10-02-foe-design.md` (read the addendum at the end).
 - Plan: `docs/superpowers/plans/2026-10-02-foe-v1.md`. Tasks 0–11. Tasks 0–1 are done.
@@ -27,7 +27,14 @@
    - The auto-mode classifier blocks merges by the agent.
    - Done: Task 3 `HpEstimate` (PR #4), Task 4 snapshot types (PR #5), Task 5 `FoeConfig` (PR #6), and Task 6 `FoeOverlay` (PR #7). Task 6 added the Stale HP style setting and Number-and-percent (spec addendum 2). 86 tests.
 2. **Task 2** is done: 17 tests, the reviewer approved, and 12 mutations were caught. The review's must-fix (an in-flight hit stealing a new target) was fixed with `playerHit` in `1652f2c`. Its wiring findings are now amendments at the top of plan Task 7.
-3. **Task 7 (wiring) is next.** Its code in the plan predates nearly everything, so **amendments 1–10 at the top of Task 7 override it**, together with spec addendum 2. The highlights:
+3. **Task 7 is implemented** (`f304089`, plus `49fb3bb`, 180 tests). The smoke run in game passed: the panel shows, monster hits on you carry `isMine`, and stale HP holds. **Next session:**
+   - (a) spawn `reviewer` on `feat/wiring`, fix its findings, then the operator pushes and I open the PR;
+   - (b) implement **spec Addendum 3** (settings redesign plus max HP before the first hit) as its own task: implementer, then reviewer;
+   - (c) Task 8 (weakness).
+   
+   The operator agreed to every Addendum 3 decision on 2026-10-04.
+   
+   *Superseded:* **Task 7 (wiring) is next.** Its code in the plan predates nearly everything, so **amendments 1–10 at the top of Task 7 override it**, together with spec addendum 2. The highlights:
    - `playerHit` for your own hits;
    - one `now` per handler, from a monotonic clock;
    - a per-target last-known HP that sets `hpStale`;
