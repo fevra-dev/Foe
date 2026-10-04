@@ -134,3 +134,25 @@ Appended rather than edited in place, so the original decisions above stay reada
    `Joshua-F/osrs-dumps` (`fc15240`, 2026-09-30) reads `last_npc_elemental_weakness`: the target
    name appears in 0 of 9,915 scripts, against a control (`%option_run`) appearing in 2
    `[measured]`. The value is server-set and only an in-game probe can decode it.
+
+## Addendum 2 — 2026-10-03, from the in-game probe and operator decisions
+
+1. **Weakness is element only.** varp 5536 holds the elemental rune's item ID (554 fire, 555 water,
+   556 air, 557 earth), and -1 means none. The client never receives the percent: varp 5537 was probed
+   and holds 0. It is set only by a spell that lands, and it resets on logout
+   (`docs/probe/varp-5536.md`).
+2. **Where the weakness comes from.** It is shown when it was set on the current target, matched to
+   the NPC targeted on the tick of the change. It also comes from a session-only, in-memory cache keyed
+   by NPC id, so later fights with that type show it even when ranged or meleed. Nothing is written to
+   disk. Persistence waits for v2.
+3. **HP display gains "Number and percent"**: bar + `~52/70 (74%)`. The setting now has four
+   options: Number, Percent, Number and percent, Bar only.
+4. **New setting: Stale HP style.** It controls how HP is drawn when the live bar is missing and the
+   last known value is shown:
+   - **Faded** (default): bar fill and HP text at half opacity.
+   - **Hollow:** bar outline only.
+   - **Marker:** a `?` after the HP text.
+
+   This takes the settings to eight, plus the conditional portrait setting.
+5. **Settings are clamped in code.** `@Range` is enforced only by the settings spinner (client
+   1.13.1), so the overlay and plugin clamp opacity (0–100) and linger (0–60 s) themselves.
