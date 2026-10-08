@@ -26,6 +26,7 @@ import net.runelite.api.events.VarbitChanged;
 import net.runelite.api.gameval.VarPlayerID;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.NPCManager;
 import net.runelite.client.game.NpcUtil;
 import net.runelite.client.plugins.Plugin;
@@ -36,8 +37,9 @@ import net.runelite.client.ui.overlay.OverlayManager;
  * Wiring only: reads facts off RuneLite's events and NPC objects, hands them to {@link TargetFeed},
  * {@link HpMemory} and {@link WeaknessLearner} (which hold every decision and are unit tested), and builds one
  * {@link TargetSnapshot} per GameTick. Event handlers run on the client thread; startUp/shutDown run on the Swing
- * thread (PluginManager), which is harmless because the overlay is removed first and startUp resets everything
- * before re-registering. FoeOverlay reads the volatile snapshot when it renders.
+ * thread (PluginManager). EventBus.post is not synchronized, so a client-thread handler already running can overlap
+ * shutDown: the overlay is removed first, and startUp clears the learned weaknesses and resets everything else again,
+ * so nothing from a stopped run survives a restart. FoeOverlay reads the volatile snapshot when it renders.
  *
  * <p>Known limits (the first is a decision, the rest are the client's):
  * <ul>
@@ -48,8 +50,10 @@ import net.runelite.client.ui.overlay.OverlayManager;
  * <li>The remembered HP of a target is not time-limited; it is always drawn as stale (see {@link HpMemory}).
  * <li>A weakness is learned only from a confirmed spell impact (see {@link WeaknessLearner}), so it is missing, never
  *     false, for a type whose spell left the varp unchanged, or whose impact could not be tied to one NPC. One
- *     coincidence is not caught: a spell cast at a monster you have since left, landing on the very tick another
- *     player's spell lands on the monster you fight now, is credited to the monster you fight now.
+ *     coincidence is not caught: our write on a tick where the only fought NPC with a spell graphic got it from
+ *     another player, while our own spell's target is not one we are fighting, is credited to that NPC. The trace has
+ *     our write on the tick we engage the cast target, which makes that combination unlikely; the next confirmed
+ *     cast corrects it.
  * </ul>
  */
 @PluginDescriptor(
@@ -71,6 +75,8 @@ public class FoePlugin extends Plugin
 	private FoeOverlay overlay;
 	@Inject
 	private NpcUtil npcUtil;
+	@Inject
+	private ConfigManager configManager;
 
 	private final TargetFeed<NPC> feed = new TargetFeed<>(NPC::getIndex);
 	private final HpMemory hpMemory = new HpMemory();
@@ -90,6 +96,15 @@ public class FoePlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
+		// A stored MARKER (removed in Task 8) makes every config read log a stack trace, and the overlay reads it every
+		// frame (Task 8 review F2). Unset it once so the default applies quietly.
+		if ("MARKER".equals(configManager.getConfiguration(FoeConfig.GROUP, "staleHpStyle")))
+		{
+			configManager.unsetConfiguration(FoeConfig.GROUP, "staleHpStyle");
+		}
+		// Also cleared here, not only in stop(): stop() runs on the Swing thread and a client-thread credit already
+		// in flight can land after its clear (Task 8 review F4). A learned entry must not survive a plugin restart.
+		weakness.clear();
 		forgetEverything();
 		overlayManager.add(overlay);
 	}
@@ -211,9 +226,13 @@ public class FoePlugin extends Plugin
 	{
 		// Skipping an NPC with no spot-anim left costs one iterator call and covers a removal being reported too
 		// [assumed: not measured; all 65 events in docs/probe/raw-task8.txt had one].
-		if (e.getActor() instanceof NPC && hasSpotAnim((NPC) e.getActor()))
+		if (e.getActor() instanceof NPC)
 		{
-			weakness.impact((NPC) e.getActor());
+			int[] ids = spotAnimIds((NPC) e.getActor());
+			if (ids.length > 0)
+			{
+				weakness.impact((NPC) e.getActor(), ids); // ids let an AoE be told from an unrelated spell
+			}
 		}
 	}
 
@@ -259,10 +278,19 @@ public class FoePlugin extends Plugin
 		return c.getId();
 	}
 
-	private static boolean hasSpotAnim(NPC npc)
+	private static int[] spotAnimIds(NPC npc)
 	{
 		IterableHashTable<ActorSpotAnim> anims = npc.getSpotAnims();
-		return anims != null && anims.iterator().hasNext();
+		if (anims == null)
+		{
+			return new int[0];
+		}
+		List<Integer> ids = new ArrayList<>();
+		for (ActorSpotAnim a : anims)
+		{
+			ids.add(a.getId());
+		}
+		return ids.stream().mapToInt(Integer::intValue).toArray();
 	}
 
 	/** Package-private so a test can stand in for NPCManager, which is a concrete class that needs a live client. */

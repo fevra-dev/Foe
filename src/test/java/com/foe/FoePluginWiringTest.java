@@ -257,7 +257,8 @@ public class FoePluginWiringTest
 	private static IterableHashTable<ActorSpotAnim> spotAnims(boolean any)
 	{
 		List<ActorSpotAnim> list = any
-			? Collections.singletonList(fake(ActorSpotAnim.class, new HashMap<String, Object>()))
+			? Collections.singletonList(fake(ActorSpotAnim.class, new HashMap<String, Object>(
+				Collections.singletonMap("getId", 180)))) // Snare impact, as in docs/probe/raw-task8.txt
 			: Collections.<ActorSpotAnim>emptyList();
 		return new IterableHashTable<ActorSpotAnim>()
 		{
@@ -1060,6 +1061,20 @@ public class FoePluginWiringTest
 		graphic(giant.npc);
 		tick();
 		dyingNpcs.remove(giant.npc);
+		engage(hillGiant(2));
+		assertNull(tick().getWeakness());
+	}
+
+	// Task 8 review F5: the "combat NPC" gate on a credit had no test. A level-0 NPC interacting with you (a pet or
+	// follower) that is the only one with a spell graphic must not teach its type anything.
+	@Test
+	public void aNonCombatNpcIsNotCreditedEvenAsTheOnlyCandidate()
+	{
+		Npc pet = new Npc(5, "Pet", 0, ICE_GIANT).type(2103).attacksYou();
+		tick();
+		varp(557);
+		graphic(pet.npc);
+		tick();
 		engage(hillGiant(2));
 		assertNull(tick().getWeakness());
 	}

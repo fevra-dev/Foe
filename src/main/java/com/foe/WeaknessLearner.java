@@ -1,6 +1,9 @@
 package com.foe;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,7 +39,8 @@ import java.util.function.Predicate;
  * </ul>
  *
  * <p>The cache is a ConcurrentHashMap because the plugin clears it from the thread that stops the plugin while the
- * client thread may still be reading; the per-tick buffers belong to the client thread alone.
+ * client thread may still be reading. The per-tick buffers are touched by the client thread and, on stop/start, by the
+ * Swing thread; an overlap there can at worst drop or misplace one tick's buffer, and startUp clears the cache again.
  *
  * @param <T> the NPC type; compared by identity, never by equals
  */
@@ -57,6 +61,9 @@ final class WeaknessLearner<T>
 		NO_CANDIDATE,
 		/** Two or more did (an AoE): the varp does not say whose weakness it holds. */
 		SEVERAL_CANDIDATES,
+		/** One did, but an NPC the player is not fighting got the same spell graphic this tick: an AoE whose varp
+		 * may hold the bystander's weakness (never probed), so it is dropped. */
+		AOE_BYSTANDER,
 		/** The one candidate may not be credited (dying, not a combat NPC, no composition). */
 		NOT_CREDITABLE
 	}
@@ -67,6 +74,8 @@ final class WeaknessLearner<T>
 	private int value;
 	private boolean conflicting;
 	private final List<T> impacts = new ArrayList<>();
+	/** Spot-anim ids seen on each impacted NPC this tick; an NPC impacted without ids has an empty set. */
+	private final Map<T, Set<Integer>> anims = new IdentityHashMap<>();
 
 	/** Varp 5536 changed to {@code newValue}. */
 	void varpChanged(int newValue)
@@ -80,16 +89,19 @@ final class WeaknessLearner<T>
 	}
 
 	/** This NPC got a new spot-anim (GraphicChanged). Counted once per tick, whatever the number of events. */
-	void impact(T npc)
+	void impact(T npc, int... spotAnimIds)
 	{
-		for (T seen : impacts)
+		Set<Integer> ids = anims.get(npc);
+		if (ids == null)
 		{
-			if (seen == npc)
-			{
-				return;
-			}
+			ids = new HashSet<>();
+			anims.put(npc, ids);
+			impacts.add(npc);
 		}
-		impacts.add(npc);
+		for (int id : spotAnimIds)
+		{
+			ids.add(id);
+		}
 	}
 
 	/**
@@ -134,6 +146,14 @@ final class WeaknessLearner<T>
 			{
 				return Outcome.NO_CANDIDATE;
 			}
+			Set<Integer> soleIds = anims.get(sole);
+			for (T npc : impacts)
+			{
+				if (npc != sole && !involved.test(npc) && !java.util.Collections.disjoint(soleIds, anims.get(npc)))
+				{
+					return Outcome.AOE_BYSTANDER;
+				}
+			}
 			Integer key = creditKey.apply(sole);
 			if (key == null)
 			{
@@ -161,6 +181,7 @@ final class WeaknessLearner<T>
 		changed = false;
 		conflicting = false;
 		impacts.clear();
+		anims.clear();
 	}
 
 	/** Forget everything, including what was learned: the plugin stopped. */

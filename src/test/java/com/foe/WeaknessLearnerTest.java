@@ -190,6 +190,28 @@ public class WeaknessLearnerTest
 		assertNull("the bystander is not credited", learner.weaknessFor(SCORPION));
 	}
 
+	// Task 8 review F1: an AoE that hits the one fought NPC and an unfought one. The varp may hold either's
+	// weakness (never probed), so the same spell graphic on a bystander drops the credit.
+	@Test
+	public void theSameSpellGraphicOnABystanderMakesItAnAoeAndDropsTheCredit()
+	{
+		learner.varpChanged(554);
+		learner.impact(bystander(SCORPION), 363);
+		learner.impact(fought(HILL_GIANT), 363);
+		assertEquals(Outcome.AOE_BYSTANDER, tick());
+		assertNull(learner.weaknessFor(HILL_GIANT));
+	}
+
+	@Test
+	public void anotherPlayersDifferentSpellOnABystanderStillLetsTheCreditThrough()
+	{
+		learner.varpChanged(557);
+		learner.impact(bystander(SCORPION), 369);
+		learner.impact(fought(HILL_GIANT), 180);
+		assertEquals(Outcome.CREDITED, tick());
+		assertElement(Weakness.Element.EARTH, HILL_GIANT);
+	}
+
 	@Test
 	public void theSameNpcImpactedTwiceInOneTickIsOneCandidate()
 	{

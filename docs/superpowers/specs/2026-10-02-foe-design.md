@@ -239,9 +239,14 @@ arrived on the same tick as a spell-impact spot-anim (`GraphicChanged`) on the N
   event could say. A confirmed credit from one would still be the right NPC.
 - **An area spell** that hits two NPCs the player is fighting is dropped, even when both are the same type and the
   credit would have been safe.
-- **One coincidence is not caught.** A spell cast at a monster you have since left, landing on the very tick another
-  player's spell lands on the monster you fight now, is credited to the monster you fight now. The next confirmed
-  cast on that type corrects it.
+- **An area spell that also hits an unfought NPC** is dropped when that NPC got the same spell graphic in the same
+  tick (Task 8 review F1): which target the varp then holds was never probed, so the credit is not guessed.
+- **One coincidence is not caught.** Our write lands on a tick where the only fought NPC with a spell graphic got it
+  from another player. The trace has our write on the tick we engage the cast target, which makes this unlikely, and
+  the next confirmed cast on that type corrects it.
+- **Correction (Task 8 review F3):** the trace shows the write on the tick the cast target is first engaged, with
+  the damage hitsplat 3–4 ticks later. Earlier text saying "at impact, not at cast" overstated what the trace shows;
+  the graphic and the write share a tick, and that tick is the cast/engage tick.
 - **`GraphicChanged` on a spot-anim ending** `[assumed]`: whether the client also posts it then is not known, so an
   NPC with no spot-anim left is not counted as an impact. All 65 events in the trace carried one.
 - `NPC.getId()` is the id of the untransformed composition `[assumed]`; the trace logged both and they were equal for
