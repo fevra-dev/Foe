@@ -12,13 +12,14 @@ class TargetSnapshot
 	int hp;
 	/** 0 when unknown: the overlay then shows the bar only (spec). */
 	int maxHp;
-	/** Raw health ratio as given to the factory; -1 when the client has none. */
+	/** Health ratio as given to the factory; -1 when the client has none. Equals the scale for an unhit monster. */
 	int hpRatio;
-	/** Raw health scale as given to the factory; 0 when the client has none. */
+	/** Health scale as given to the factory; 0 when the client has none. */
 	int hpScale;
 	/**
-	 * True when hp, ratio and scale are the last known values because the live bar is missing (spec: "last known
-	 * value, dimmed"). The overlay dims the HP segment. The memory itself lives in the plugin, not here.
+	 * True when hp, ratio and scale are not a live bar: the last known values because the bar is missing (spec: "last
+	 * known value, dimmed"), or the full bar at max HP shown before the first hit (addendum 3). The overlay draws
+	 * the HP in the stale style. The memory itself lives in the plugin, not here.
 	 */
 	boolean hpStale;
 	int attack;

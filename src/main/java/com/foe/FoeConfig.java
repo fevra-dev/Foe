@@ -6,56 +6,152 @@ import net.runelite.client.config.ConfigItem;
 import net.runelite.client.config.Range;
 import net.runelite.client.config.Units;
 
+/**
+ * Eight settings (spec addendum 3), defaults first in every enum so the settings panel lists the default first.
+ *
+ * <p>Storage is by {@code Enum.name()} under {@code keyName} (ConfigPanel.createComboBox writes
+ * {@code ((Enum) selected).name()}), so the {@code toString} labels below only change what the combo box shows,
+ * never what is stored. A stored value that no longer parses makes {@code ConfigInvocationHandler} log a warning and
+ * return the interface default, which is why a retired key is retired for good: {@code hpDisplay} (an enum with
+ * other constants), {@code showCombatLevel} and {@code hideIrrelevantLevels} are gone and none of the three names
+ * may come back with a different meaning. Their old profile entries are simply never read.
+ */
 @ConfigGroup(FoeConfig.GROUP)
 public interface FoeConfig extends Config
 {
 	String GROUP = "foe";
 
-	enum Detail
+	enum Layout
 	{
-		COMPACT, FULL
+		ONE_LINE("One line"), STACKED("Stacked");
+
+		private final String label;
+
+		Layout(String label)
+		{
+			this.label = label;
+		}
+
+		@Override
+		public String toString()
+		{
+			return label;
+		}
 	}
 
-	enum HpDisplay
+	enum HpText
 	{
-		NUMBER, PERCENT, NUMBER_AND_PERCENT, BAR_ONLY
+		CURRENT_MAX("Current/max"), CURRENT("Current"), PERCENT("Percent"), NONE("None");
+
+		private final String label;
+
+		HpText(String label)
+		{
+			this.label = label;
+		}
+
+		@Override
+		public String toString()
+		{
+			return label;
+		}
+	}
+
+	enum HpTextPosition
+	{
+		BESIDE("Beside bar"), INSIDE("Inside bar");
+
+		private final String label;
+
+		HpTextPosition(String label)
+		{
+			this.label = label;
+		}
+
+		@Override
+		public String toString()
+		{
+			return label;
+		}
+	}
+
+	enum Detail
+	{
+		FULL("Full"), COMPACT("Compact");
+
+		private final String label;
+
+		Detail(String label)
+		{
+			this.label = label;
+		}
+
+		@Override
+		public String toString()
+		{
+			return label;
+		}
 	}
 
 	/** How HP is drawn when it is the last known value because the live bar is missing (spec addendum 2). */
 	enum StaleHpStyle
 	{
-		FADED, HOLLOW, MARKER
+		FADED("Faded"), HOLLOW("Hollow"), MARKER("Marker");
+
+		private final String label;
+
+		StaleHpStyle(String label)
+		{
+			this.label = label;
+		}
+
+		@Override
+		public String toString()
+		{
+			return label;
+		}
 	}
 
-	@ConfigItem(keyName = "detail", name = "Detail", position = 0,
-		description = "Compact: name, HP and weakness. Full: also combat levels.")
+	@ConfigItem(keyName = "layout", name = "Layout", position = 0,
+		description = "One line: everything on one strip. Stacked: the bar goes under the name.")
+	default Layout layout()
+	{
+		return Layout.ONE_LINE;
+	}
+
+	@ConfigItem(keyName = "hpText", name = "HP text", position = 1,
+		description = "The number shown with the HP bar: current and max, current only, a percentage, or none. "
+			+ "Nothing is shown when the monster's max HP is not known.")
+	default HpText hpText()
+	{
+		return HpText.CURRENT_MAX;
+	}
+
+	@ConfigItem(keyName = "hpTextPosition", name = "HP text position", position = 2,
+		description = "Beside the bar, or centred on it. The bar widens when the text would not fit inside it.")
+	default HpTextPosition hpTextPosition()
+	{
+		return HpTextPosition.BESIDE;
+	}
+
+	@ConfigItem(keyName = "detail", name = "Detail", position = 3,
+		description = "Full: also shows the monster's Attack, Strength, Defence, Ranged and Magic levels. "
+			+ "Compact: name, HP and weakness only. The combat level next to the name is always shown.")
 	default Detail detail()
 	{
 		return Detail.FULL;
 	}
 
-	@ConfigItem(keyName = "hpDisplay", name = "HP display", position = 1,
-		description = "Text beside the HP bar: estimated HP, percentage, both, or none.")
-	default HpDisplay hpDisplay()
+	@ConfigItem(keyName = "staleHpStyle", name = "Stale HP style", position = 4,
+		description = "How HP looks when the health bar has gone and the last known value is shown, or when the "
+			+ "monster has not been hit yet and its max HP is shown as a full bar. "
+			+ "Faded: bar and text at half opacity. Hollow: bar outline only. Marker: a ? after the HP text (or the bar).")
+	default StaleHpStyle staleHpStyle()
 	{
-		return HpDisplay.NUMBER;
+		return StaleHpStyle.FADED;
 	}
 
-	@ConfigItem(keyName = "hideIrrelevantLevels", name = "Hide irrelevant levels", position = 2,
-		description = "Hide levels of 1 or less: a monster that never uses Ranged or Magic doesn't show them.")
-	default boolean hideIrrelevantLevels()
-	{
-		return true;
-	}
-
-	@ConfigItem(keyName = "showCombatLevel", name = "Show combat level", position = 3,
-		description = "Show the combat level next to the name.")
-	default boolean showCombatLevel()
-	{
-		return true;
-	}
-
-	@ConfigItem(keyName = "showWeakness", name = "Show weakness", position = 4,
+	@ConfigItem(keyName = "showWeakness", name = "Show weakness", position = 5,
 		description = "Show the elemental weakness, when the game reports one.")
 	default boolean showWeakness()
 	{
@@ -68,20 +164,12 @@ public interface FoeConfig extends Config
 	// Whoever reads this value must clamp it themselves.
 	@Range(min = 0, max = 60)
 	@Units(Units.SECONDS)
-	@ConfigItem(keyName = "lingerSeconds", name = "Linger after combat", position = 5,
+	@ConfigItem(keyName = "lingerSeconds", name = "Linger after combat", position = 6,
 		description = "How long the panel stays after the last sign of combat. It always clears when the "
 			+ "monster dies. Very short values can flicker between hits.")
 	default int lingerSeconds()
 	{
 		return 10;
-	}
-
-	@ConfigItem(keyName = "staleHpStyle", name = "Stale HP style", position = 6,
-		description = "How HP looks when the health bar has gone and the last known value is shown. "
-			+ "Faded: bar and text at half opacity. Hollow: bar outline only. Marker: a ? after the HP text (or the bar).")
-	default StaleHpStyle staleHpStyle()
-	{
-		return StaleHpStyle.FADED;
 	}
 
 	// 61% is RuneLite's standard overlay background: ComponentConstants.STANDARD_BACKGROUND_COLOR has

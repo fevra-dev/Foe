@@ -598,10 +598,54 @@ public class FoePluginWiringTest
 		engage(b);
 		TargetSnapshot s = tick();
 		assertEquals("Ice giant 2", s.getName());
-		assertEquals(-1, s.getHpRatio());
+		// b has never had a bar, so it gets the full bar at its max HP (addendum 3), not a's remembered 15/30
+		assertEquals("a's 15/30 must not carry over", s.getHpScale(), s.getHpRatio());
+		assertEquals(70, s.getHp());
+		assertTrue(s.isHpStale());
+	}
+
+	@Test
+	public void aTargetThatHasNeverHadABarShowsAFullStaleBarWithItsMaxHpUntilTheFirstHit()
+	{
+		Npc giant = iceGiant(7); // the game draws no bar until it takes damage
+		engage(giant);
+		TargetSnapshot s = tick();
+		assertEquals(70, s.getMaxHp());
+		assertEquals(70, s.getHp());
+		assertEquals(s.getHpScale(), s.getHpRatio());
+		assertTrue(s.getHpScale() > 0);
+		assertTrue(s.isHpStale());
+
+		giant.bar(22, 30); // first hit: the live bar replaces it
+		TargetSnapshot live = tick();
+		assertEquals(22, live.getHpRatio());
+		assertEquals(HpEstimate.estimate(22, 30, 70), live.getHp());
+		assertFalse(live.isHpStale());
+	}
+
+	@Test
+	public void aBarSeenAndThenLostIsStaleAtItsLastValueNotAFullBar()
+	{
+		Npc giant = iceGiant(7).bar(15, 30);
+		engage(giant);
+		tick();
+		giant.bar(-1, -1);
+		TargetSnapshot s = tick();
+		assertEquals(15, s.getHpRatio());
+		assertEquals(30, s.getHpScale());
+		assertEquals(HpEstimate.estimate(15, 30, 70), s.getHp());
+		assertTrue(s.isHpStale());
+	}
+
+	@Test
+	public void noBarAndNoKnownMaxHpIsStillNoBar()
+	{
+		engage(new Npc(9, "Unknown", 53, new int[] {40, 40, 40, 0, 1, 1}));
+		TargetSnapshot s = tick();
+		assertEquals(0, s.getMaxHp());
 		assertEquals(0, s.getHpScale());
-		assertFalse(s.isHpStale());
 		assertEquals(HpEstimate.UNKNOWN, s.getHp());
+		assertFalse(s.isHpStale());
 	}
 
 	// ---- max HP ----
