@@ -44,8 +44,8 @@ class FoeOverlay extends Overlay
 	static final int INSIDE_PAD = 4;
 	/** Space between the first line and the bar line in the stacked layout. */
 	static final int ROW_GAP = 2;
-	/** Width of the outline round HP text drawn on the bar, in pixels. */
-	private static final int OUTLINE = 1;
+	/** Offset of the drop shadow of HP text drawn on the bar, in pixels, down and to the right (as RuneLite's TextComponent). */
+	private static final int SHADOW = 1;
 	static final Color BAR_FG = new Color(82, 161, 82);
 	static final Color BAR_BG = new Color(255, 255, 255, 60);
 	private static final Color DIVIDER = new Color(255, 255, 255, 70);
@@ -184,7 +184,7 @@ class FoeOverlay extends Overlay
 		Color color = fade ? faded(Color.WHITE) : Color.WHITE;
 		if (f.hp.inside)
 		{
-			drawOutlined(g, text, bar.x + (bar.width - fm.stringWidth(text)) / 2,
+			drawShadowed(g, text, bar.x + (bar.width - fm.stringWidth(text)) / 2,
 				bar.y + (bar.height + fm.getAscent() - fm.getDescent()) / 2, color);
 		}
 		else
@@ -195,26 +195,18 @@ class FoeOverlay extends Overlay
 	}
 
 	/**
-	 * White text with a solid black outline on all eight sides. HP text centred on the bar straddles a green fill
-	 * and a pale translucent track (and, at 0% background opacity, whatever the game is showing), so there is no one
-	 * background to pick a text colour for. The outline gives every glyph pixel a black neighbour instead, whatever
-	 * is behind it; RuneLite's own overlay text does the same job with a black drop shadow. The outline is not
-	 * faded with the stale style: its job is legibility, and half-alpha copies drawn eight times would compound into
-	 * an uneven smear anyway. Only the white fades, so a stale number reads dimmer and stays legible.
+	 * The text in {@code color} over a solid black copy of itself one pixel down and to the right: exactly what
+	 * RuneLite's own TextComponent does when it is not outlining (renderText, client 1.13.1: black at x+1, y+1, then
+	 * the text at x, y). HP text centred on the bar straddles a green fill and a pale translucent track (and, at 0%
+	 * background opacity, whatever the game is showing), so there is no one background to pick a text colour for; the
+	 * shadow gives the lower right of every glyph a black neighbour whatever is behind it. This replaces an 8-way
+	 * outline, which looked rough once antialiased in the real client. The shadow is not faded with the stale style:
+	 * its job is legibility. Only the text fades, so a stale number reads dimmer and stays legible.
 	 */
-	private static void drawOutlined(Graphics2D g, String text, int x, int y, Color color)
+	private static void drawShadowed(Graphics2D g, String text, int x, int y, Color color)
 	{
 		g.setColor(Color.BLACK);
-		for (int dx = -OUTLINE; dx <= OUTLINE; dx++)
-		{
-			for (int dy = -OUTLINE; dy <= OUTLINE; dy++)
-			{
-				if (dx != 0 || dy != 0)
-				{
-					g.drawString(text, x + dx, y + dy);
-				}
-			}
-		}
+		g.drawString(text, x + SHADOW, y + SHADOW);
 		g.setColor(color);
 		g.drawString(text, x, y);
 	}
@@ -224,7 +216,14 @@ class FoeOverlay extends Overlay
 		int fill = barFill(s, bar.width);
 		g.setColor(BAR_BG);
 		g.fillRect(bar.x, bar.y, bar.width, bar.height);
-		if (hollow)
+		if (s.isHpUnhit())
+		{
+			// Never seen with a bar: there is no level to fill and no old reading to dim, so the bar is empty and
+			// outlined all the way round. It is the same in every stale style, which is about readings that existed.
+			g.setColor(BAR_FG);
+			g.drawRect(bar.x, bar.y, bar.width - 1, bar.height - 1);
+		}
+		else if (hollow)
 		{
 			// Last known level, outline only: it must not read as a live bar.
 			if (fill > 0)
@@ -255,7 +254,8 @@ class FoeOverlay extends Overlay
 	 *
 	 * <p>Text inside the bar widens the bar to fit ({@link #INSIDE_PAD} clear on each side) instead of falling back
 	 * to beside or being clipped, so the setting is honoured and no digit is lost; the bar is also made tall enough
-	 * for the font. Only inside text does either, so the widths do not depend on the HP text when it is beside.
+	 * for the font and its shadow. Only inside text does either, so the widths do not depend on the HP text when it
+	 * is beside.
 	 */
 	static Frame frame(List<Cell> cells, FoeConfig.Layout layout, FontMetrics fm)
 	{
@@ -309,29 +309,34 @@ class FoeOverlay extends Overlay
 		return new Frame(width, hpTop + hpH + PAD, line, x, lineH, hp, bar, hpTop, hpH);
 	}
 
-	/** The standard height, or tall enough that the font's glyphs and their outline sit inside the bar. */
+	/**
+	 * The standard height, or tall enough that the font's glyphs and their shadow sit inside the bar. The shadow only
+	 * needs one row below, but the text is centred, so the same row is kept above and the text stays where it was
+	 * when it had an outline.
+	 */
 	private static int barHeight(Cell hp, FontMetrics fm)
 	{
-		return hp.inside ? Math.max(BAR_H, fm.getAscent() + 2 * OUTLINE) : BAR_H;
+		return hp.inside ? Math.max(BAR_H, fm.getAscent() + 2 * SHADOW) : BAR_H;
 	}
 
 	/**
 	 * Whether there is a bar to draw. This one predicate decides the reserved width, the fill and whether HP text
 	 * is shown, so they cannot disagree on bad data. It is not "hp is known": HP is also unknown when only max HP
 	 * is, which is the spec's bar-only case. ratio above scale is inconsistent data, so it gets no bar and no text.
+	 * An unhit target (max HP known, no bar seen yet) has a bar with nothing in it.
 	 */
 	static boolean hasBar(TargetSnapshot s)
 	{
-		return s.getHpScale() > 0 && s.getHpRatio() >= 0 && s.getHpRatio() <= s.getHpScale();
+		return s.isHpUnhit() || (s.getHpScale() > 0 && s.getHpRatio() >= 0 && s.getHpRatio() <= s.getHpScale());
 	}
 
 	/**
-	 * Filled pixels of a bar {@code barWidth} wide: 0 with no bar, at least 1 while the monster is alive, never more
-	 * than {@code barWidth}, and never all of it unless the bar is full.
+	 * Filled pixels of a bar {@code barWidth} wide: 0 with no bar and for an unhit target (an empty bar), at least 1
+	 * while the monster is alive, never more than {@code barWidth}, and never all of it unless the bar is full.
 	 */
 	static int barFill(TargetSnapshot s, int barWidth)
 	{
-		if (!hasBar(s))
+		if (!hasBar(s) || s.isHpUnhit())
 		{
 			return 0;
 		}
@@ -366,11 +371,6 @@ class FoeOverlay extends Overlay
 		if (hasBar(s))
 		{
 			String hp = hpText(s, c);
-			if (hp.isEmpty() && s.isHpStale() && c.staleHpStyle() == FoeConfig.StaleHpStyle.MARKER)
-			{
-				// HP text None has no text to append "?" to, and a stale bar must not read as live.
-				hp = "?";
-			}
 			out.add(new Cell(hp, true, !hp.isEmpty() && c.hpTextPosition() == FoeConfig.HpTextPosition.INSIDE));
 		}
 		if (c.detail() == FoeConfig.Detail.FULL)
@@ -395,31 +395,35 @@ class FoeOverlay extends Overlay
 
 	/**
 	 * HP text per the HP text setting, or "" when there is nothing to say: None, max HP unknown, or no bar. No "~":
-	 * the bar already says the value is approximate. A stale value under the MARKER style gets a trailing "?".
+	 * the bar already says the value is approximate. An unhit target says only its max HP, whichever of the three
+	 * text settings is on: "35", never "35/35" or "100%", which would claim a current HP that nobody has seen.
 	 */
 	static String hpText(TargetSnapshot s, FoeConfig c)
 	{
-		if (!hasBar(s) || s.getMaxHp() <= 0 || s.getHp() < 0)
+		if (!hasBar(s))
 		{
 			return "";
 		}
-		String text;
+		if (s.isHpUnhit())
+		{
+			return c.hpText() == FoeConfig.HpText.NONE ? "" : String.valueOf(s.getMaxHp());
+		}
+		if (s.getMaxHp() <= 0 || s.getHp() < 0)
+		{
+			return "";
+		}
 		switch (c.hpText())
 		{
 			case CURRENT_MAX:
-				text = s.getHp() + "/" + s.getMaxHp();
-				break;
+				return s.getHp() + "/" + s.getMaxHp();
 			case CURRENT:
-				text = String.valueOf(s.getHp());
-				break;
+				return String.valueOf(s.getHp());
 			case PERCENT:
 				int pct = Math.round(100f * s.getHp() / s.getMaxHp());
-				text = (partial(s) ? Math.max(1, Math.min(99, pct)) : pct) + "%";
-				break;
+				return (partial(s) ? Math.max(1, Math.min(99, pct)) : pct) + "%";
 			default:
 				return "";
 		}
-		return s.isHpStale() && c.staleHpStyle() == FoeConfig.StaleHpStyle.MARKER ? text + "?" : text;
 	}
 
 	private static String levels(TargetSnapshot s)

@@ -75,7 +75,7 @@ public class FoeConfigTest
 		FoeConfig d = new FoeConfig()
 		{
 		};
-		assertEquals(FoeConfig.Layout.ONE_LINE, d.layout());
+		assertEquals("Stacked since 2026-10-08 (spec addendum 4)", FoeConfig.Layout.STACKED, d.layout());
 		assertEquals(FoeConfig.HpText.CURRENT_MAX, d.hpText());
 		assertEquals(FoeConfig.HpTextPosition.BESIDE, d.hpTextPosition());
 		assertEquals(FoeConfig.Detail.FULL, d.detail());
@@ -104,6 +104,41 @@ public class FoeConfigTest
 			}
 			assertTrue(e.getSimpleName() + " default is its first constant, so the panel lists it first", isDefault);
 		}
+	}
+
+	// Operator decision 2026-10-08: the Marker style (a "?") is gone. A profile that stored MARKER holds a name that no
+	// longer parses: Enum.valueOf throws IllegalArgumentException (ConfigManager.stringToObject, client 1.13.1), which
+	// ConfigInvocationHandler catches, logs, and answers with the interface default (Faded). Retired for good, like the
+	// retired keys above: the constant name must not come back meaning something else.
+	@Test
+	public void theStaleStylesAreFadedAndHollowAndMarkerIsRetired()
+	{
+		List<String> names = new ArrayList<>();
+		for (FoeConfig.StaleHpStyle style : FoeConfig.StaleHpStyle.values())
+		{
+			names.add(style.name());
+		}
+		assertEquals(Arrays.asList("FADED", "HOLLOW"), names);
+		try
+		{
+			FoeConfig.StaleHpStyle.valueOf("MARKER");
+			throw new AssertionError("a stored MARKER must not parse");
+		}
+		catch (IllegalArgumentException expected)
+		{
+			// that is what makes the profile fall back to the default
+		}
+		assertEquals(FoeConfig.StaleHpStyle.FADED, new FoeConfig()
+		{
+		}.staleHpStyle());
+	}
+
+	@Test
+	public void theSettingsPanelListsStackedFirstBecauseItIsTheDefault()
+	{
+		assertEquals(FoeConfig.Layout.STACKED, FoeConfig.Layout.values()[0]);
+		assertEquals(FoeConfig.Layout.ONE_LINE, FoeConfig.Layout.values()[1]);
+		assertEquals("Stacked", FoeConfig.Layout.STACKED.toString());
 	}
 
 	@Test

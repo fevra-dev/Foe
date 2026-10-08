@@ -15,8 +15,8 @@ import lombok.Value;
  * the two rules agree on every reading the client is documented to send.
  *
  * <p>Memory is kept per NPC object, compared by identity, so a reused NPC index starts empty. It is kept across
- * target switches: switching A -> B -> A must not forget A, or SnapshotFactory's "never had a bar" rule would
- * draw a damaged A at full HP (settings-redesign review F1). An entry lives until the NPC dies or despawns
+ * target switches: switching A -> B -> A must not forget A, or SnapshotFactory's "never seen a bar" rule would
+ * call a damaged A unhit and show only its max HP (settings-redesign review F1). An entry lives until the NPC dies or despawns
  * ({@link #forget}), or the plugin forgets everything on logout, hop or stop ({@link #clear}); despawn bounds the
  * map to NPCs still in the scene. Only the current target is read each tick, so a remembered value is the last
  * one seen while it was the target, and it is always reported as stale.

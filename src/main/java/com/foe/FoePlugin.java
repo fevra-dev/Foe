@@ -7,8 +7,10 @@ import javax.inject.Inject;
 import lombok.AccessLevel;
 import lombok.Getter;
 import net.runelite.api.Actor;
+import net.runelite.api.ActorSpotAnim;
 import net.runelite.api.Client;
 import net.runelite.api.Hitsplat;
+import net.runelite.api.IterableHashTable;
 import net.runelite.api.NPC;
 import net.runelite.api.NPCComposition;
 import net.runelite.api.Player;
@@ -16,9 +18,12 @@ import net.runelite.api.WorldView;
 import net.runelite.api.events.ActorDeath;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
+import net.runelite.api.events.GraphicChanged;
 import net.runelite.api.events.HitsplatApplied;
 import net.runelite.api.events.InteractingChanged;
 import net.runelite.api.events.NpcDespawned;
+import net.runelite.api.events.VarbitChanged;
+import net.runelite.api.gameval.VarPlayerID;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.game.NPCManager;
@@ -28,11 +33,11 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
 
 /**
- * Wiring only: reads facts off RuneLite's events and NPC objects, hands them to {@link TargetFeed} and
- * {@link HpMemory} (which hold every decision and are unit tested), and builds one {@link TargetSnapshot} per
- * GameTick. Event handlers run on the client thread; startUp/shutDown run on the Swing thread (PluginManager), which
- * is harmless because the overlay is removed first and startUp resets everything before re-registering. FoeOverlay
- * reads the volatile snapshot when it renders.
+ * Wiring only: reads facts off RuneLite's events and NPC objects, hands them to {@link TargetFeed},
+ * {@link HpMemory} and {@link WeaknessLearner} (which hold every decision and are unit tested), and builds one
+ * {@link TargetSnapshot} per GameTick. Event handlers run on the client thread; startUp/shutDown run on the Swing
+ * thread (PluginManager), which is harmless because the overlay is removed first and startUp resets everything
+ * before re-registering. FoeOverlay reads the volatile snapshot when it renders.
  *
  * <p>Known limits (the first is a decision, the rest are the client's):
  * <ul>
@@ -41,6 +46,10 @@ import net.runelite.client.ui.overlay.OverlayManager;
  * <li>Only NPCs in the local player's own world view are considered as hitters, so an NPC on another world view (a
  *     boat) that hits you is not adopted by that path.
  * <li>The remembered HP of a target is not time-limited; it is always drawn as stale (see {@link HpMemory}).
+ * <li>A weakness is learned only from a confirmed spell impact (see {@link WeaknessLearner}), so it is missing, never
+ *     false, for a type whose spell left the varp unchanged, or whose impact could not be tied to one NPC. One
+ *     coincidence is not caught: a spell cast at a monster you have since left, landing on the very tick another
+ *     player's spell lands on the monster you fight now, is credited to the monster you fight now.
  * </ul>
  */
 @PluginDescriptor(
@@ -65,6 +74,8 @@ public class FoePlugin extends Plugin
 
 	private final TargetFeed<NPC> feed = new TargetFeed<>(NPC::getIndex);
 	private final HpMemory hpMemory = new HpMemory();
+	/** What each monster type is weak to, learned in this session. Survives logout; cleared by {@link #stop}. */
+	private final WeaknessLearner<NPC> weakness = new WeaknessLearner<>();
 
 	/** The one snapshot FoeOverlay draws. Written on the client thread, read on the render thread. */
 	@Getter(AccessLevel.PACKAGE)
@@ -87,7 +98,18 @@ public class FoePlugin extends Plugin
 	protected void shutDown()
 	{
 		overlayManager.remove(overlay);
+		stop();
+	}
+
+	/**
+	 * Everything shutDown does except removing the overlay, so a test can reach it without a live OverlayManager. This
+	 * is the one place the learned weaknesses are forgotten: logout and hop keep them, because a type's weakness does
+	 * not change between sessions.
+	 */
+	void stop()
+	{
 		forgetEverything();
+		weakness.clear();
 	}
 
 	@Subscribe
@@ -163,11 +185,84 @@ public class FoePlugin extends Plugin
 		}
 	}
 
+	/**
+	 * Varp 5536 holds the weakness of the last NPC a spell was cast at. It is only buffered here; {@link #onGameTick}
+	 * decides whether it can be credited.
+	 */
+	@Subscribe
+	public void onVarbitChanged(VarbitChanged e)
+	{
+		// A varp event has varbitId -1 (VarbitChanged javadoc); one that only carries this varp's id is not a write to it.
+		if (e.getVarpId() != VarPlayerID.LAST_NPC_ELEMENTAL_WEAKNESS || e.getVarbitId() != -1)
+		{
+			return;
+		}
+		// The logout reset (0, 0, -1) arrives with no local player (docs/probe/raw-task8.txt, tick 745): not a spell.
+		if (client.getLocalPlayer() == null)
+		{
+			return;
+		}
+		weakness.varpChanged(e.getValue());
+	}
+
+	/** A spot-anim on an NPC: a spell impact if the learner finds it is the one the player is fighting. */
+	@Subscribe
+	public void onGraphicChanged(GraphicChanged e)
+	{
+		// Skipping an NPC with no spot-anim left costs one iterator call and covers a removal being reported too
+		// [assumed: not measured; all 65 events in docs/probe/raw-task8.txt had one].
+		if (e.getActor() instanceof NPC && hasSpotAnim((NPC) e.getActor()))
+		{
+			weakness.impact((NPC) e.getActor());
+		}
+	}
+
 	@Subscribe
 	public void onGameTick(GameTick e)
 	{
 		NPC npc = feed.tick(now(), lingerMs(), this::fighting);
+		learnWeakness(npc);
 		snapshot = npc == null ? null : snapshotOf(npc);
+	}
+
+	/**
+	 * Credits this tick's varp change, if it can be tied to exactly one NPC the player is fighting. Judged at the
+	 * tick, not at the events: the trace has the change before the player's target update on the same tick.
+	 * "Fighting" is wider than {@link #fighting} on purpose: any NPC that is the live target, that the player is
+	 * interacting with, or that is interacting with the player counts, dying and non-combat ones too. A candidate
+	 * that cannot be credited then makes the change dropped rather than leaving some other NPC the sole candidate.
+	 */
+	private void learnWeakness(NPC shown)
+	{
+		Player me = client.getLocalPlayer();
+		weakness.tick(
+			npc -> npc == shown || (me != null && (me.getInteracting() == npc || npc.getInteracting() == me)),
+			this::weaknessCreditKey);
+	}
+
+	/** The key to credit this NPC's type under, or null when it may not be credited: dying, not a combat NPC. */
+	private Integer weaknessCreditKey(NPC npc)
+	{
+		NPCComposition c = npc.getTransformedComposition();
+		return c != null && isCombatNpc(npc) ? weaknessKey(c) : null;
+	}
+
+	/**
+	 * Weaknesses are kept per transformed composition id. That is the composition the stats, name and combat level on
+	 * the panel come from, so the weakness shown always belongs to the form on screen. NPC.getId() is the id of the
+	 * untransformed composition [assumed: the trace logged id and tid, and they were equal for every NPC in it].
+	 * There is deliberately no fallback to NPC.getId() for a null composition: such an NPC is neither credited nor
+	 * shown, so the fallback could never be reached.
+	 */
+	private static int weaknessKey(NPCComposition c)
+	{
+		return c.getId();
+	}
+
+	private static boolean hasSpotAnim(NPC npc)
+	{
+		IterableHashTable<ActorSpotAnim> anims = npc.getSpotAnims();
+		return anims != null && anims.iterator().hasNext();
 	}
 
 	/** Package-private so a test can stand in for NPCManager, which is a concrete class that needs a live client. */
@@ -186,7 +281,7 @@ public class FoePlugin extends Plugin
 		HpMemory.Reading hp = hpMemory.read(npc, npc.getHealthRatio(), npc.getHealthScale());
 		return SnapshotFactory.build(npc.getName(), c.getCombatLevel(), c.getStats(),
 			hp.getRatio(), hp.getScale(), hp.isStale(), fallbackMaxHp(npc.getId()),
-			null); // weakness: Task 8
+			weakness.weaknessFor(weaknessKey(c)));
 	}
 
 	private void forget(NPC npc)
@@ -198,10 +293,12 @@ public class FoePlugin extends Plugin
 		}
 	}
 
+	/** Logout, hop or stop: forget the fight. The learned weaknesses stay (see {@link #stop}); only this tick's buffer goes. */
 	private void forgetEverything()
 	{
 		feed.reset();
 		hpMemory.clear();
+		weakness.discardTick();
 		snapshot = null;
 	}
 

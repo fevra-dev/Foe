@@ -11,13 +11,16 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import net.runelite.client.ui.overlay.components.ComponentConstants;
 import org.junit.Test;
 
@@ -34,10 +37,14 @@ public class FoeOverlayTest
 	private static final int[] DISTINCT = {11, 22, 33, 70, 44, 55};
 	private static final Weakness FIRE = new Weakness(Weakness.Element.FIRE);
 
-	/** FoeConfig with the interface's own defaults, each one overridable. */
+	/**
+	 * FoeConfig with the interface's own defaults, each one overridable, except the layout: the geometry assertions
+	 * in this class are written against the one-line strip, so that is spelled out here. The real default (Stacked)
+	 * is pinned in FoeConfigTest, and the stacked layout is tested through {@link #stacked()}.
+	 */
 	private static final class Cfg implements FoeConfig
 	{
-		Layout layout = FoeConfig.super.layout();
+		Layout layout = Layout.ONE_LINE;
 		HpText hpText = FoeConfig.super.hpText();
 		HpTextPosition hpTextPosition = FoeConfig.super.hpTextPosition();
 		Detail detail = FoeConfig.super.detail();
@@ -95,12 +102,12 @@ public class FoeOverlayTest
 
 	/**
 	 * A snapshot exactly as the old factory built it, for the tests of the overlay's own predicates on inputs the
-	 * factory now rewrites: (-1, 0) with a known max HP is the full bar of addendum 3, never "no bar".
+	 * factory now flags: (-1, 0) with a known max HP is the unhit state of addendum 4, never a plain "no bar".
 	 */
 	private static TargetSnapshot raw(int[] stats, int ratio, int scale, boolean stale)
 	{
 		return new TargetSnapshot("Ice giant", 53, HpEstimate.estimate(ratio, scale, stats[3]), stats[3], ratio, scale,
-			stale, stats[0], stats[2], stats[1], stats[4], stats[5], null);
+			stale, false, stats[0], stats[2], stats[1], stats[4], stats[5], null);
 	}
 
 	/** The spec's worked example: ratio 22 of 30 on 70 max HP is 52 HP, 74%. */
@@ -266,7 +273,7 @@ public class FoeOverlayTest
 	{
 		// The factory never builds this (it returns UNKNOWN hp for ratio > scale), but the overlay must not
 		// depend on that: a number beside a missing bar is exactly the disagreement plan Task 7 item 8 forbids.
-		TargetSnapshot s = new TargetSnapshot("Ice giant", 53, 52, 70, 31, 30, false, 40, 40, 40, 1, 1, null);
+		TargetSnapshot s = new TargetSnapshot("Ice giant", 53, 52, 70, 31, 30, false, false, 40, 40, 40, 1, 1, null);
 		assertEquals("", FoeOverlay.hpText(s, new Cfg()));
 		for (FoeOverlay.Cell cell : FoeOverlay.cells(s, new Cfg()))
 		{
@@ -275,20 +282,6 @@ public class FoeOverlayTest
 	}
 
 	// ---- stale HP (requirement 3) ----
-
-	@Test
-	public void markerAppendsAQuestionMarkToStaleTextOnly()
-	{
-		Cfg c = new Cfg();
-		c.staleHpStyle = FoeConfig.StaleHpStyle.MARKER;
-		c.hpText = FoeConfig.HpText.CURRENT_MAX;
-		assertEquals("52/70?", FoeOverlay.hpText(stale(), c));
-		c.hpText = FoeConfig.HpText.CURRENT;
-		assertEquals("52?", FoeOverlay.hpText(stale(), c));
-		c.hpText = FoeConfig.HpText.PERCENT;
-		assertEquals("74%?", FoeOverlay.hpText(stale(), c));
-		assertEquals("live HP carries no marker", "74%", FoeOverlay.hpText(live(), c));
-	}
 
 	@Test
 	public void fadedAndHollowLeaveTheHpTextUntouched()
@@ -301,16 +294,21 @@ public class FoeOverlayTest
 	}
 
 	@Test
-	public void markerStillMarksAStaleBarWhenThereIsNoText()
+	public void staleHpTextWithNoTextSettingStaysBareAndNothingIsAppendedToTheText()
 	{
-		// HP text None has no text to append "?" to, and a stale bar must not read as live.
-		Cfg c = new Cfg();
-		c.staleHpStyle = FoeConfig.StaleHpStyle.MARKER;
-		c.hpText = FoeConfig.HpText.NONE;
-		FoeOverlay.Cell hpCell = FoeOverlay.cells(stale(), c).get(1);
-		assertTrue(hpCell.hp);
-		assertEquals("?", hpCell.text);
-		assertEquals("a live HP cell with no text stays bare", "", FoeOverlay.cells(live(), c).get(1).text);
+		// The Marker style (a "?") is gone: with HP text None a stale bar has no text, and with text it has the
+		// bare number, in every style that is left.
+		for (FoeConfig.StaleHpStyle style : FoeConfig.StaleHpStyle.values())
+		{
+			Cfg c = new Cfg();
+			c.staleHpStyle = style;
+			c.hpText = FoeConfig.HpText.NONE;
+			FoeOverlay.Cell hpCell = FoeOverlay.cells(stale(), c).get(1);
+			assertTrue(hpCell.hp);
+			assertEquals(style.name(), "", hpCell.text);
+			c.hpText = FoeConfig.HpText.CURRENT_MAX;
+			assertEquals(style.name(), "52/70", FoeOverlay.cells(stale(), c).get(1).text);
+		}
 	}
 
 	// ---- the segments (name, HP, levels, weakness) ----
@@ -604,15 +602,6 @@ public class FoeOverlayTest
 	}
 
 	@Test
-	public void markerStaleBarKeepsTheOpaqueFill()
-	{
-		Cfg c = flat();
-		c.staleHpStyle = FoeConfig.StaleHpStyle.MARKER;
-		Painted p = paint(halfBar(true), c);
-		assertEquals(FILL, p.argb(p.barX + 10, p.barMidY));
-	}
-
-	@Test
 	public void staleStyleDoesNothingToALiveBar()
 	{
 		for (FoeConfig.StaleHpStyle style : FoeConfig.StaleHpStyle.values())
@@ -649,12 +638,10 @@ public class FoeOverlayTest
 	}
 
 	@Test
-	public void hollowAndMarkerLeaveTheHpTextOpaque()
+	public void hollowLeavesTheHpTextOpaque()
 	{
 		Cfg c = flat();
 		c.staleHpStyle = FoeConfig.StaleHpStyle.HOLLOW;
-		assertEquals(255, hpTextMaxAlpha(stale(), c));
-		c.staleHpStyle = FoeConfig.StaleHpStyle.MARKER;
 		assertEquals(255, hpTextMaxAlpha(stale(), c));
 	}
 
@@ -800,9 +787,7 @@ public class FoeOverlayTest
 		assertTrue(FoeOverlay.cells(live(), c).get(1).inside);
 		c.hpText = FoeConfig.HpText.NONE;
 		assertFalse("no text, nothing to centre", FoeOverlay.cells(live(), c).get(1).inside);
-		c.staleHpStyle = FoeConfig.StaleHpStyle.MARKER;
-		assertTrue("the lone ? of a stale bar is text too", FoeOverlay.cells(stale(), c).get(1).inside);
-		assertEquals("?", FoeOverlay.cells(stale(), c).get(1).text);
+		assertFalse("and none for a stale bar either", FoeOverlay.cells(stale(), c).get(1).inside);
 		for (FoeOverlay.Cell cell : FoeOverlay.cells(live(), c))
 		{
 			if (!cell.hp)
@@ -898,38 +883,47 @@ public class FoeOverlayTest
 		assertTrue("margins " + leftMargin + " / " + rightMargin, Math.abs(leftMargin - rightMargin) <= 2);
 	}
 
-	// The point of the outline: a white number that straddles a green fill and a pale track has no single
-	// background to contrast with, so every glyph pixel must be surrounded by outline, whatever is behind it.
+	// A white number that straddles a green fill and a pale track has no single background to contrast with, so it
+	// gets RuneLite's own legibility device: TextComponent.renderText (client 1.13.1) draws the text in black at
+	// (x+1, y+1) and then in its colour at (x, y). Asserted exactly: the black pixels are the glyph pixels moved one
+	// down and one right, minus the glyph pixels themselves, and there is no black on any other side (the previous
+	// 8-way outline looked rough once antialiased in the real client).
 	@Test
-	public void insideTextIsLegibleOverBothTheFillAndTheTrack()
+	public void insideTextHasADropShadowOnePixelDownAndRightAndNoOutline()
 	{
 		Painted p = paint(halfBar(false), inside()); // 15/30: the fill ends at the middle of the text
 		Rectangle bar = barBounds(p.img);
-		int glyphs = 0;
-		boolean overFill = false, overTrack = false;
-		for (int y = bar.y; y < bar.y + bar.height; y++)
+		Set<Point> glyphs = new HashSet<>();
+		Set<Point> black = new HashSet<>();
+		for (int y = bar.y - 2; y < bar.y + bar.height + 2; y++)
 		{
-			for (int x = bar.x; x < bar.x + bar.width; x++)
+			for (int x = bar.x - 2; x < bar.x + bar.width + 2; x++)
 			{
-				if (p.argb(x, y) != WHITE)
+				if (p.argb(x, y) == WHITE)
 				{
-					continue;
+					glyphs.add(new Point(x, y));
 				}
-				glyphs++;
-				for (int dy = -1; dy <= 1; dy++)
+				else if (p.argb(x, y) == BLACK)
 				{
-					for (int dx = -1; dx <= 1; dx++)
-					{
-						int n = p.argb(x + dx, y + dy);
-						assertTrue("glyph pixel (" + x + "," + y + ") touches background " + Integer.toHexString(n),
-							n == WHITE || n == BLACK);
-					}
+					black.add(new Point(x, y));
 				}
 			}
 		}
-		assertTrue("the text is drawn", glyphs > 20);
+		assertTrue("the text is drawn", glyphs.size() > 20);
+		Set<Point> expected = new HashSet<>();
+		for (Point g : glyphs)
+		{
+			Point shadow = new Point(g.x + 1, g.y + 1);
+			if (!glyphs.contains(shadow))
+			{
+				expected.add(shadow);
+			}
+		}
+		assertEquals("black pixels = the glyphs shifted (+1,+1), nothing else", expected, black);
+
 		// the glyphs really do sit over both backgrounds: some fill and some track remain visible around them
 		int mid = bar.x + bar.width / 2;
+		boolean overFill = false, overTrack = false;
 		for (int y = bar.y; y < bar.y + bar.height; y++)
 		{
 			overFill |= p.argb(mid - 20, y) == FILL || p.argb(mid - 18, y) == FILL;
@@ -937,7 +931,19 @@ public class FoeOverlayTest
 		}
 		assertTrue("fill visible left of the text", overFill);
 		assertTrue("track visible right of the text", overTrack);
-		assertTrue("a black outline ring exists around the glyphs", count(p.img, bar, BLACK) > glyphs);
+	}
+
+	@Test
+	public void theShadowIsBlackAndSolidOnBothALiveAndAFadedBar()
+	{
+		for (boolean stale : new boolean[] {false, true})
+		{
+			Cfg c = inside();
+			c.staleHpStyle = FoeConfig.StaleHpStyle.FADED;
+			Painted p = paint(halfBar(stale), c);
+			Rectangle bar = barBounds(p.img);
+			assertTrue("a shadow is drawn (stale=" + stale + ")", count(p.img, bar, BLACK) > 0);
+		}
 	}
 
 	@Test
@@ -947,12 +953,15 @@ public class FoeOverlayTest
 		Rectangle bar = barBounds(p.img);
 		for (int y = 0; y < p.img.getHeight(); y++)
 		{
-			for (int x = bar.x; x < bar.x + bar.width; x++)
+			// one column past the bar: the shadow of the last glyph column lands there if the text overhangs
+			for (int x = bar.x; x < bar.x + bar.width + 1; x++)
 			{
-				if (p.argb(x, y) == WHITE)
+				int argb = p.argb(x, y);
+				if (argb == WHITE || argb == BLACK)
 				{
-					assertTrue("white glyph pixel at y=" + y + " outside bar rows " + bar.y + ".." + (bar.y + bar.height - 1),
+					assertTrue("glyph or shadow pixel at y=" + y + " outside bar rows " + bar.y + ".." + (bar.y + bar.height - 1),
 						y >= bar.y && y < bar.y + bar.height);
+					assertTrue("glyph or shadow pixel at x=" + x + " outside the bar", x < bar.x + bar.width);
 				}
 			}
 		}
@@ -963,8 +972,8 @@ public class FoeOverlayTest
 	{
 		FontMetrics fm = fm();
 		FoeOverlay.Frame f = frame(live(), inside());
-		// glyphs plus the 1px outline above and below (settings-redesign review F3: >= ascent alone let a fixed
-		// BAR_H survive, since the test font's ascent equals BAR_H)
+		// glyphs plus their 1px shadow, and the same pixel above to keep the text centred (settings-redesign review F3:
+		// >= ascent alone let a fixed BAR_H survive, since the test font's ascent equals BAR_H)
 		assertTrue(f.bar.height >= fm.getAscent() + 2);
 		assertTrue(f.bar.height >= FoeOverlay.BAR_H);
 		assertEquals("beside keeps the standard bar height", FoeOverlay.BAR_H, frame(live(), flat()).bar.height);
@@ -980,20 +989,19 @@ public class FoeOverlayTest
 		Rectangle bar = frame(halfBar(true), c).bar;
 		assertTrue("live text has pure white pixels", count(live.img, bar, WHITE) > 0);
 		assertEquals("faded text has none", 0, count(dim.img, bar, WHITE));
-		assertTrue("but the outline is still there, so it stays legible", count(dim.img, bar, BLACK) > 0);
+		assertTrue("but the shadow is still there, solid, so it stays legible", count(dim.img, bar, BLACK) > 0);
 	}
 
 	@Test
-	public void insideMarkerOnAStaleBarWithNoTextDrawsTheLoneQuestionMarkOnTheBar()
+	public void insideWithNoTextDrawsNothingOnTheBarLiveOrStale()
 	{
 		Cfg c = inside();
 		c.hpText = FoeConfig.HpText.NONE;
-		c.staleHpStyle = FoeConfig.StaleHpStyle.MARKER;
-		Painted p = paint(halfBar(true), c);
-		Rectangle bar = barBounds(p.img);
-		assertTrue("a ? is drawn on the bar", count(p.img, bar, WHITE) > 0);
-		assertEquals("and nothing is drawn on a live bar with no text", 0,
-			count(paint(halfBar(false), c).img, bar, WHITE));
+		Rectangle bar = barBounds(paint(halfBar(false), c).img);
+		assertEquals(0, count(paint(halfBar(false), c).img, bar, WHITE));
+		assertEquals(0, count(paint(halfBar(false), c).img, bar, BLACK));
+		assertEquals(0, count(paint(halfBar(true), c).img, bar, WHITE));
+		assertEquals(0, count(paint(halfBar(true), c).img, bar, BLACK));
 	}
 
 	// ---- stacked ----
@@ -1126,7 +1134,7 @@ public class FoeOverlayTest
 		assertEquals(FoeOverlay.BAR_W, bar.width);
 	}
 
-	// ---- max HP before the first hit (the factory's full bar, as the overlay draws it) ----
+	// ---- before the first hit (addendum 4): an empty outlined bar with the max HP only ----
 
 	/** HpMemory's answer for a target that has never had a bar, with max HP known from the stats. */
 	private static TargetSnapshot unhit()
@@ -1135,55 +1143,108 @@ public class FoeOverlayTest
 	}
 
 	@Test
-	public void anUnhitMonsterShowsItsMaxHpAsTheTextPerTheHpTextSetting()
+	public void anUnhitMonsterHasABarButNothingInIt()
 	{
-		Cfg c = new Cfg();
-		c.hpText = FoeConfig.HpText.CURRENT_MAX;
-		assertEquals("70/70", FoeOverlay.hpText(unhit(), c));
-		c.hpText = FoeConfig.HpText.CURRENT;
-		assertEquals("70", FoeOverlay.hpText(unhit(), c));
-		c.hpText = FoeConfig.HpText.PERCENT;
-		assertEquals("100%", FoeOverlay.hpText(unhit(), c));
-		c.hpText = FoeConfig.HpText.NONE;
-		assertEquals("", FoeOverlay.hpText(unhit(), c));
-		c.hpText = FoeConfig.HpText.CURRENT_MAX;
-		c.staleHpStyle = FoeConfig.StaleHpStyle.MARKER;
-		assertEquals("70/70?", FoeOverlay.hpText(unhit(), c));
+		TargetSnapshot s = unhit();
+		assertTrue(s.isHpUnhit());
+		assertTrue("the bar is drawn", FoeOverlay.hasBar(s));
+		assertEquals("and has no fill", 0, FoeOverlay.barFill(s, FoeOverlay.BAR_W));
+		assertEquals("not even a sliver of one", 0, FoeOverlay.barFill(s, 1));
 	}
 
 	@Test
-	public void anUnhitMonsterDrawsAFullFadedBar()
+	public void anUnhitMonsterShowsOnlyItsMaxHpWhateverTheHpTextSetting()
 	{
-		Cfg c = flat();
-		c.staleHpStyle = FoeConfig.StaleHpStyle.FADED;
-		Painted p = paint(unhit(), c);
-		for (int off : new int[] {2, 40, FoeOverlay.BAR_W - 3})
+		for (FoeConfig.StaleHpStyle style : FoeConfig.StaleHpStyle.values())
 		{
-			int a = alpha(p.argb(p.barX + off, p.barMidY));
-			assertTrue("fill is translucent across the whole bar at +" + off + ", alpha " + a, a < 255 && a > FoeOverlay.BAR_BG.getAlpha());
+			Cfg c = new Cfg();
+			c.staleHpStyle = style;
+			for (FoeConfig.HpText t : new FoeConfig.HpText[] {FoeConfig.HpText.CURRENT_MAX, FoeConfig.HpText.CURRENT,
+				FoeConfig.HpText.PERCENT})
+			{
+				c.hpText = t;
+				assertEquals(t + "/" + style + ": no 70/70 and no 100%, which would be invented current HP", "70",
+					FoeOverlay.hpText(unhit(), c));
+				FoeOverlay.Cell hpCell = FoeOverlay.cells(unhit(), c).get(1);
+				assertTrue(hpCell.hp);
+				assertEquals("70", hpCell.text);
+			}
+			c.hpText = FoeConfig.HpText.NONE;
+			assertEquals("None means just the outlined bar", "", FoeOverlay.hpText(unhit(), c));
+			assertTrue(FoeOverlay.cells(unhit(), c).get(1).hp);
 		}
 	}
 
 	@Test
-	public void anUnhitMonsterDrawsAFullHollowBar()
+	public void anUnhitMonsterDrawsAnEmptyOutlinedBarInEveryStaleStyle()
 	{
-		Cfg c = flat();
-		c.staleHpStyle = FoeConfig.StaleHpStyle.HOLLOW;
-		Painted p = paint(unhit(), c);
-		assertEquals(FILL, p.argb(p.barX, p.barMidY));
-		assertEquals("the outline reaches the right end: the bar is full", FILL,
-			p.argb(p.barX + FoeOverlay.BAR_W - 1, p.barMidY));
-		assertEquals(TRACK, p.argb(p.barX + 40, p.barMidY));
+		for (FoeConfig.StaleHpStyle style : FoeConfig.StaleHpStyle.values())
+		{
+			Cfg c = flat();
+			c.staleHpStyle = style;
+			Painted p = paint(unhit(), c);
+			Rectangle bar = barBounds(p.img);
+			assertEquals(style + ": the bar is the standard size", FoeOverlay.BAR_W, bar.width);
+			assertEquals(style + ": left edge", FILL, p.argb(bar.x, p.barMidY));
+			assertEquals(style + ": right edge", FILL, p.argb(bar.x + bar.width - 1, p.barMidY));
+			assertEquals(style + ": top edge", FILL, p.argb(bar.x + 40, bar.y));
+			assertEquals(style + ": bottom edge", FILL, p.argb(bar.x + 40, bar.y + bar.height - 1));
+			for (int off : new int[] {2, 20, 40, 60, FoeOverlay.BAR_W - 3})
+			{
+				assertEquals(style + ": empty inside at +" + off, TRACK, p.argb(bar.x + off, p.barMidY));
+			}
+			assertEquals(style + ": the outline is all there is of the green",
+				2 * (bar.width + bar.height) - 4, count(p.img, bar, FILL));
+		}
 	}
 
 	@Test
-	public void anUnhitMonsterWithAMarkerStyleDrawsAnOpaqueFullBarAndAQuestionMark()
+	public void anUnhitMonsterIsDrawnInFullNotInTheStaleStyle()
 	{
 		Cfg c = flat();
-		c.staleHpStyle = FoeConfig.StaleHpStyle.MARKER;
+		c.staleHpStyle = FoeConfig.StaleHpStyle.FADED;
+		assertEquals("max HP is a fact, not a dimmed old reading", 255, hpTextMaxAlpha(unhit(), c));
+	}
+
+	@Test
+	public void anUnhitMonsterWithTheTextInsideCentresItsMaxHpOnTheEmptyBar()
+	{
+		Cfg c = inside();
+		FoeOverlay.Cell cell = FoeOverlay.cells(unhit(), c).get(1);
+		assertTrue(cell.inside);
+		assertEquals("70", cell.text);
 		Painted p = paint(unhit(), c);
-		assertEquals(FILL, p.argb(p.barX + FoeOverlay.BAR_W - 3, p.barMidY));
-		assertEquals("70/70?", FoeOverlay.cells(unhit(), c).get(1).text);
+		Rectangle bar = barBounds(p.img);
+		assertTrue("the number is on the bar", count(p.img, bar, WHITE) > 0);
+		assertEquals("and still nothing is filled", 2 * (bar.width + bar.height) - 4, count(p.img, bar, FILL));
+	}
+
+	@Test
+	public void anUnhitMonsterWithNoHpTextIsJustTheOutlinedBar()
+	{
+		Cfg c = inside();
+		c.hpText = FoeConfig.HpText.NONE;
+		FoeOverlay.Cell cell = FoeOverlay.cells(unhit(), c).get(1);
+		assertTrue(cell.hp);
+		assertEquals("", cell.text);
+		assertFalse("no text, nothing to centre", cell.inside);
+		Painted p = paint(unhit(), c);
+		Rectangle bar = barBounds(p.img);
+		assertNotNull(bar);
+		assertEquals(0, count(p.img, bar, WHITE));
+		assertEquals(0, count(p.img, bar, BLACK));
+	}
+
+	@Test
+	public void anUnhitMonsterGetsItsBarInTheStackedLayoutToo()
+	{
+		Painted p = paint(unhit(), stacked());
+		Rectangle bar = barBounds(p.img);
+		assertNotNull(bar);
+		assertEquals(FoeOverlay.PAD, bar.x);
+		assertEquals(FILL, p.argb(bar.x, bar.y + bar.height / 2));
+		assertEquals(TRACK, p.argb(bar.x + 3, bar.y + bar.height / 2));
+		assertEquals("70", frame(unhit(), stacked()).hp.text);
 	}
 
 	@Test
