@@ -2,55 +2,32 @@
 
 ## START HERE
 
-**State (2026-10-04):** Tasks 1–6 merged (PRs #1–#7). Task 7 is implemented and smoke-tested on `feat/wiring`, awaiting review. Settings redesign decided (spec Addendum 3). **Resume at 3(a).**
+**State (2026-10-08):** Tasks 1–8 plus the settings redesign are done and merged (PRs #1–#10; `main` at `ac956d4`). Foe works in game: target panel, HP, levels, and weakness (a Lesser demon showed Water). There are 287 tests. **Resume at "Next actions" below.**
 
-- Spec: `docs/superpowers/specs/2026-10-02-foe-design.md` (read the addendum at the end).
-- Plan: `docs/superpowers/plans/2026-10-02-foe-v1.md`. Tasks 0–11. Tasks 0–1 are done.
-- **Branches are stacked:** `main` ← PR #1 `plan/foe-v1` (CI green: `lint-gate` and `build` SUCCESS on `4c0c60b`) ← `feat/skeleton-probe` (pushed, no PR yet) ← `feat/target-tracker` (Task 2).
-- Execution mode: **subagent-driven**, one task per spawn. `implementer` writes the task, then `reviewer` reviews it. Both agents load in a fresh session `[measured 2026-10-03]`.
-- **Pushing is blocked for the agent** by `block-dangerous-git.sh`. That hook also matches the words inside heredocs, so write files with Edit/Write instead. The operator pushes with `! git push origin <branch>`. Name the branch, because the checkout moves between branches.
-
-**Probe results** (`docs/probe/varp-5536.md`):
-- varp 5536 is the **elemental rune's item ID** (554 fire, 555 water, 557 earth), and -1 means no weakness. **There is no percent.**
-- It's set by **spell casts only**, not ranged or melee.
-- It resets on logout and survives region loads.
-- It's int-typed, so `getVarpLongValue` throws.
-- The player's `getInteracting()` flips to null between ticks, which backs the sticky tracker.
-- `client.log` rolls at 10 MB, so read probe output from `./gradlew run` stdout.
+- **Spec:** `docs/superpowers/specs/2026-10-02-foe-design.md`. Read addenda 1–4 at the end; each later one overrides the earlier ones.
+- **Plan:** `docs/superpowers/plans/2026-10-02-foe-v1.md`. Task 8's addendum and its "Revision — 2026-10-08" record the weakness design.
+- **Probes:** `docs/probe/varp-5536.md`, `raw.log` and `raw-task8.txt`. They show varp 5536 holds a rune item ID (554 fire, 555 water, 556 air, 557 earth, -1 none), with no percent. It's written on the tick a spell is cast at an NPC, and the impact spot-anim lands the same tick.
+- **Routine per task:**
+  - Branch off `main`.
+  - `implementer` (Sonnet) builds the task, then `reviewer` (Opus) checks it. I re-read the code and fix review findings myself, test-first, and prove each fix with a mutant.
+  - The operator pushes (`! git push -u origin <branch>`). I open the PR and wait for CI. The operator merges with `--merge` (the auto-mode classifier blocks the agent from merging).
+- **Traps already hit:**
+  - RuneLite rejects any `@Subscribe` method not named exactly `on<EventName>`, and the plugin won't start. `FoePluginWiringTest` now checks this by reflection.
+  - `block-dangerous-git.sh` matches "git push" even inside heredocs.
+  - Up-to-date Gradle tasks run no tests, so use `cleanTest`.
+  - `client.log` rolls at 10 MB, so read probe output from `./gradlew run` stdout.
+- **In-game smoke test:** `./gradlew run`. Foe's settings are in the RuneLite side panel.
 
 **Next actions, in order:**
 
-1. **Routine per task:**
-   - Branch off `main`.
-   - `implementer` builds the task, then `reviewer` checks it, and I fix whatever the review finds.
-   - The operator pushes. I open the PR and wait for CI, and the operator merges with `--merge`.
-   - The auto-mode classifier blocks merges by the agent.
-   - Done: Task 3 `HpEstimate` (PR #4), Task 4 snapshot types (PR #5), Task 5 `FoeConfig` (PR #6), and Task 6 `FoeOverlay` (PR #7). Task 6 added the Stale HP style setting and Number-and-percent (spec addendum 2). 86 tests.
-2. **Task 2** is done: 17 tests, the reviewer approved, and 12 mutations were caught. The review's must-fix (an in-flight hit stealing a new target) was fixed with `playerHit` in `1652f2c`. Its wiring findings are now amendments at the top of plan Task 7.
-3. **Task 7 is implemented** (`f304089`, plus `49fb3bb`, 180 tests). The smoke run in game passed: the panel shows, monster hits on you carry `isMine`, and stale HP holds. **Next session:**
-   - (a) spawn `reviewer` on `feat/wiring`, fix its findings, then the operator pushes and I open the PR;
-   - (b) implement **spec Addendum 3** (settings redesign plus max HP before the first hit) as its own task: implementer, then reviewer;
-   - (c) Task 8 (weakness).
-   
-   The operator agreed to every Addendum 3 decision on 2026-10-04.
-   
-   *Superseded:* **Task 7 (wiring) is next.** Its code in the plan predates nearly everything, so **amendments 1–10 at the top of Task 7 override it**, together with spec addendum 2. The highlights:
-   - `playerHit` for your own hits;
-   - one `now` per handler, from a monotonic clock;
-   - a per-target last-known HP that sets `hpStale`;
-   - the new `SnapshotFactory.build` signature;
-   - linger clamped to 0..60;
-   - keep `@Getter(AccessLevel.PACKAGE) volatile TargetSnapshot snapshot`, which `FoeOverlay` reads.
-   
-   Task 8 (weakness decoder, element-only, with the session cache by NPC id) is re-planned from `docs/probe/varp-5536.md`.
-   - `lingerSeconds = 0` blinks on null-interacting ticks.
-   - Use a monotonic `now()`: `System.nanoTime()/1e6`, not `currentTimeMillis`.
-   - The plan's `onHitsplatApplied` picks the first NPC interacting with the player, which may not be the hitter.
-4. **Task 8 re-plan.** Write a spec addendum first. **Operator decision (2026-10-03):** show the weakness **element only**, in two cases:
-   - when it was set on the current target, matched to the NPC targeted **on the tick of the change**;
-   - from a **session-only, in-memory cache keyed by NPC id** (not name), so later fights with that type show it even when ranged or meleed.
-   - Nothing is written to disk, so this fits the spec's "no file I/O". On-disk persistence waits for v2.
-   - **There is no percent.** varp 5537 was probed and holds 0.
+1. **Operator decisions pending (2026-10-08):**
+   - (a) **Exact HP from hitsplats:** track max HP minus all hitsplats on the NPC, and use it when it falls inside the bar's [min, max] range, else the midpoint. Prompted by Foe showing 63/85 where another plugin showed 64.
+   - (b) **Persist learned weaknesses across sessions** in RuneLite's ConfigManager, so each type is taught once, ever. The alternative, a bundled wiki weakness table, stays v2.
+2. **Task 9: in-game acceptance.** Run through every setting value with screenshots. Most of it was already exercised on 2026-10-08.
+3. **Task 10: portrait spike.** Optional and time-boxed. The portrait setting is added only if it works.
+4. **Task 11:** a fresh-context review, then the release PR and the Plugin Hub.
+
+**v2 ideas (not v1):** a multi-target "Foe list" for multi-combat, a bundled wiki weakness table with percentages, and the `first-peasant-view` HUD reusing `HpEstimate`/`HpMemory`.
 
 ## Decisions already made (don't re-litigate)
 
