@@ -15,5 +15,12 @@ class Weakness
 		AIR, WATER, EARTH, FIRE
 	}
 
+	/**
+	 * The game's explicit answer "this monster has no weakness" (varp 5536 = -1), as opposed to {@code null}, which
+	 * means "not known". It has no element, so it can never be drawn: nothing may put it on a snapshot, and
+	 * {@link WeaknessLearner#weaknessFor} turns it into null.
+	 */
+	static final Weakness NONE = new Weakness(null);
+
 	Element element;
 }

@@ -7,18 +7,23 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 import net.runelite.api.Actor;
+import net.runelite.api.ActorSpotAnim;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.Hitsplat;
 import net.runelite.api.HitsplatID;
 import net.runelite.api.IndexedObjectSet;
+import net.runelite.api.IterableHashTable;
 import net.runelite.api.NPC;
 import net.runelite.api.NPCComposition;
 import net.runelite.api.Player;
@@ -26,9 +31,12 @@ import net.runelite.api.WorldView;
 import net.runelite.api.events.ActorDeath;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
+import net.runelite.api.events.GraphicChanged;
 import net.runelite.api.events.HitsplatApplied;
 import net.runelite.api.events.InteractingChanged;
 import net.runelite.api.events.NpcDespawned;
+import net.runelite.api.events.VarbitChanged;
+import net.runelite.client.eventbus.Subscribe;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -54,6 +62,7 @@ public class FoePluginWiringTest
 	private Integer npcManagerHealth;
 	private final List<NPC> world = new ArrayList<>();
 	private final Map<String, Object> meValues = new HashMap<>();
+	private final Map<String, Object> clientValues = new HashMap<>();
 	private Player me;
 	private FoePlugin plugin;
 
@@ -84,15 +93,17 @@ public class FoePluginWiringTest
 	private final class Npc
 	{
 		final Map<String, Object> v = new HashMap<>();
+		final Map<String, Object> comp = new HashMap<>();
 		final NPC npc;
 
 		Npc(int index, String name, int combatLevel, int[] stats)
 		{
-			Map<String, Object> comp = new HashMap<>();
 			comp.put("getCombatLevel", combatLevel);
 			comp.put("getStats", stats);
+			comp.put("getId", 2000 + index); // the transformed composition id, deliberately not NPC.getId()
 			v.put("getIndex", index);
 			v.put("getId", 1000 + index);
+			v.put("getSpotAnims", spotAnims(true)); // as at the moment a GraphicChanged is posted (probe: 65 of 65)
 			v.put("getName", name);
 			v.put("getInteracting", null);
 			v.put("getHealthRatio", -1);
@@ -112,6 +123,20 @@ public class FoePluginWiringTest
 		Npc attacksYou()
 		{
 			v.put("getInteracting", me);
+			return this;
+		}
+
+		/** The NPC's type, as the client's transformed composition reports it. */
+		Npc type(int compositionId)
+		{
+			comp.put("getId", compositionId);
+			return this;
+		}
+
+		/** NPC.getId(), which is not the type this plugin keys by. */
+		Npc npcId(int id)
+		{
+			v.put("getId", id);
 			return this;
 		}
 	}
@@ -149,7 +174,7 @@ public class FoePluginWiringTest
 		meValues.put("getWorldView", fake(WorldView.class, viewValues));
 		me = fake(Player.class, meValues);
 
-		Map<String, Object> clientValues = new HashMap<>();
+		clientValues.clear();
 		clientValues.put("getLocalPlayer", me);
 
 		plugin = new FoePlugin()
@@ -228,6 +253,51 @@ public class FoePluginWiringTest
 		plugin.onHitsplatApplied(e);
 	}
 
+	/** The spot-anim table of an NPC that has {@code any} spot-anims. Iteration is all the plugin asks of it. */
+	private static IterableHashTable<ActorSpotAnim> spotAnims(boolean any)
+	{
+		List<ActorSpotAnim> list = any
+			? Collections.singletonList(fake(ActorSpotAnim.class, new HashMap<String, Object>(
+				Collections.singletonMap("getId", 180)))) // Snare impact, as in docs/probe/raw-task8.txt
+			: Collections.<ActorSpotAnim>emptyList();
+		return new IterableHashTable<ActorSpotAnim>()
+		{
+			@Override
+			public ActorSpotAnim get(long hash)
+			{
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public void put(ActorSpotAnim node, long hash)
+			{
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public Iterator<ActorSpotAnim> iterator()
+			{
+				return list.iterator();
+			}
+		};
+	}
+
+	/** Varp 5536 changes to {@code value}. The literal is the probe's, so it checks the plugin's constant. */
+	private void varp(int value)
+	{
+		VarbitChanged e = new VarbitChanged();
+		e.setVarpId(5536);
+		e.setValue(value);
+		plugin.onVarbitChanged(e);
+	}
+
+	private void graphic(Actor on)
+	{
+		GraphicChanged e = new GraphicChanged();
+		e.setActor(on);
+		plugin.onGraphicChanged(e);
+	}
+
 	private TargetSnapshot tick()
 	{
 		plugin.onGameTick(new GameTick());
@@ -239,6 +309,30 @@ public class FoePluginWiringTest
 		GameStateChanged e = new GameStateChanged();
 		e.setGameState(s);
 		plugin.onGameStateChanged(e);
+	}
+
+	// ---- subscriptions ----
+
+	// RuneLite's EventBus.register throws, and the plugin fails to start, for a @Subscribe method not named
+	// "on" + the event's simple name (EventBus.java:134-135 in client 1.13.1). This is that check, run without a client.
+	@Test
+	public void everySubscribedMethodIsNamedOnAndTheEventNameAndTheSetIsComplete()
+	{
+		TreeSet<String> events = new TreeSet<>();
+		for (Method m : FoePlugin.class.getDeclaredMethods())
+		{
+			if (m.getAnnotation(Subscribe.class) == null)
+			{
+				continue;
+			}
+			assertEquals(m.toString(), 1, m.getParameterCount());
+			String event = m.getParameterTypes()[0].getSimpleName();
+			assertEquals("on" + event, m.getName());
+			events.add(event);
+		}
+		assertEquals("every event the plugin listens to, none more", new TreeSet<>(java.util.Arrays.asList(
+			"ActorDeath", "GameStateChanged", "GameTick", "GraphicChanged", "HitsplatApplied", "InteractingChanged",
+			"NpcDespawned", "VarbitChanged")), events);
 	}
 
 	// ---- engagement ----
@@ -258,7 +352,7 @@ public class FoePluginWiringTest
 		assertEquals(HpEstimate.estimate(15, 30, 70), s.getHp());
 		assertEquals(40, s.getAttack());
 		assertFalse(s.isHpStale());
-		assertNull("weakness is Task 8", s.getWeakness());
+		assertNull("nothing has been learned yet", s.getWeakness());
 	}
 
 	@Test
@@ -598,10 +692,13 @@ public class FoePluginWiringTest
 		engage(b);
 		TargetSnapshot s = tick();
 		assertEquals("Ice giant 2", s.getName());
-		// b has never had a bar, so it gets the full bar at its max HP (addendum 3), not a's remembered 15/30
-		assertEquals("a's 15/30 must not carry over", s.getHpScale(), s.getHpRatio());
-		assertEquals(70, s.getHp());
-		assertTrue(s.isHpStale());
+		// b has never had a bar, so it is unhit (addendum 4): max HP only, and a's remembered 15/30 does not carry over
+		assertTrue(s.isHpUnhit());
+		assertEquals(-1, s.getHpRatio());
+		assertEquals(0, s.getHpScale());
+		assertEquals(HpEstimate.UNKNOWN, s.getHp());
+		assertEquals(70, s.getMaxHp());
+		assertFalse(s.isHpStale());
 	}
 
 	// Settings-redesign review F1: A at 35/70, switch to B, A's bar times out, back to A -> A must stay at its
@@ -624,22 +721,41 @@ public class FoePluginWiringTest
 	}
 
 	@Test
-	public void aTargetThatHasNeverHadABarShowsAFullStaleBarWithItsMaxHpUntilTheFirstHit()
+	public void aTargetThatHasNeverHadABarIsUnhitWithItsMaxHpAndNoCurrentHpUntilTheFirstHit()
 	{
 		Npc giant = iceGiant(7); // the game draws no bar until it takes damage
 		engage(giant);
 		TargetSnapshot s = tick();
 		assertEquals(70, s.getMaxHp());
-		assertEquals(70, s.getHp());
-		assertEquals(s.getHpScale(), s.getHpRatio());
-		assertTrue(s.getHpScale() > 0);
-		assertTrue(s.isHpStale());
+		assertTrue(s.isHpUnhit());
+		assertEquals("no invented current HP", HpEstimate.UNKNOWN, s.getHp());
+		assertEquals(0, s.getHpScale());
+		assertFalse(s.isHpStale());
 
 		giant.bar(22, 30); // first hit: the live bar replaces it
 		TargetSnapshot live = tick();
 		assertEquals(22, live.getHpRatio());
 		assertEquals(HpEstimate.estimate(22, 30, 70), live.getHp());
 		assertFalse(live.isHpStale());
+		assertFalse(live.isHpUnhit());
+	}
+
+	// Seen 2026-10-08: after a relog the old rule drew a damaged monster as a full bar. Memory is cleared with the
+	// session, so what was seen before the relog is unknown now, and unknown is shown as unknown.
+	@Test
+	public void afterARelogAMonsterWhoseBarIsNotShownIsUnhitNotFull()
+	{
+		Npc giant = iceGiant(7).bar(15, 30);
+		engage(giant);
+		assertFalse(tick().isHpUnhit());
+		gameState(GameState.LOGIN_SCREEN);
+		gameState(GameState.LOGGED_IN);
+		giant.bar(-1, -1); // damaged, but the client shows no bar for it yet
+		engage(giant);
+		TargetSnapshot s = tick();
+		assertTrue(s.isHpUnhit());
+		assertEquals(HpEstimate.UNKNOWN, s.getHp());
+		assertEquals(70, s.getMaxHp());
 	}
 
 	@Test
@@ -684,6 +800,339 @@ public class FoePluginWiringTest
 		setUp();
 		engage(new Npc(9, "Unknown", 53, new int[] {40, 40, 40, 0, 1, 1}).bar(15, 30));
 		assertEquals("neither knows", 0, tick().getMaxHp());
+	}
+
+	// ---- weakness: credited only to a confirmed spell impact (plan Task 8, Revision 2026-10-08) ----
+	//
+	// The sequences are the ones in docs/probe/raw-task8.txt, driven through the real handlers. WeaknessLearnerTest
+	// and WeaknessReplayTest own the rule itself; these check that each event reaches it with the right facts read
+	// off the NPC (which id keys the entry, who counts as fought, what a missing player or an empty spot-anim table
+	// means), and that the cache lives exactly as long as the spec says.
+
+	private static final Weakness.Element EARTH = Weakness.Element.EARTH;
+	private static final Weakness.Element FIRE = Weakness.Element.FIRE;
+
+	private Npc hillGiant(int index)
+	{
+		return new Npc(index, "Hill Giant", 28, ICE_GIANT).type(2103);
+	}
+
+	private Npc scorpion(int index)
+	{
+		return new Npc(index, "Poison Scorpion", 28, ICE_GIANT).type(3025);
+	}
+
+	/** The element on the panel; fails with a message, not an NPE, when the panel shows no weakness. */
+	private static Weakness.Element shownElement(TargetSnapshot s)
+	{
+		assertNotNull("a snapshot is shown", s);
+		assertNotNull("a weakness is shown", s.getWeakness());
+		return s.getWeakness().getElement();
+	}
+
+	/** A spell lands on this NPC, learned the way the trace shows it: change, target, impact, then the tick. */
+	private void learn(Npc on, int value)
+	{
+		varp(value);
+		engage(on);
+		graphic(on.npc);
+		tick();
+	}
+
+	// trace tick 508: "VARP5536=557 | myTarget=null", then the player's target, then the Hill Giant's impact
+	@Test
+	public void tick508TheChangeComesBeforeTheTargetAndTheImpactAndTheGiantIsStillCredited()
+	{
+		Npc giant = hillGiant(1).bar(15, 30);
+		varp(557);
+		engage(giant);
+		graphic(giant.npc);
+		assertEquals(EARTH, shownElement(tick()));
+		assertEquals("and it stays, with no event on the next tick", EARTH, shownElement(tick()));
+	}
+
+	// trace ticks 738, 745 and 770
+	@Test
+	public void ticks738To770TheScorpionIsLearnedTheLogoutResetNeverErasesItAndAnotherScorpionNeverSpelledShowsIt()
+	{
+		learn(scorpion(1), 554);
+		assertEquals(FIRE, shownElement(tick()));
+
+		// tick 745: the state change first, then the reset 0, 0, -1, which arrives with no local player
+		gameState(GameState.LOGIN_SCREEN);
+		meValues.put("getInteracting", null);
+		clientValues.put("getLocalPlayer", null);
+		varp(0);
+		varp(0);
+		varp(-1);
+		clientValues.put("getLocalPlayer", me);
+		gameState(GameState.LOGGED_IN);
+
+		// tick 770: a different scorpion object, only hit (a ranged or melee fight sets no varp)
+		Npc second = scorpion(2);
+		hit(second.npc, HitsplatID.DAMAGE_ME);
+		TargetSnapshot s = tick();
+		assertEquals("Poison Scorpion", s.getName());
+		assertEquals(FIRE, shownElement(s));
+		engage(hillGiant(3));
+		assertNull("the reset taught nothing, not even a none for the next type", tick().getWeakness());
+	}
+
+	@Test
+	public void aResetWithAFoughtImpactInTheSameTickDoesNotEraseWhatWasLearned()
+	{
+		Npc scorp = scorpion(1);
+		learn(scorp, 554);
+		varp(0);
+		varp(0);
+		varp(-1);
+		graphic(scorp.npc); // someone else's spell, say, with the local player present
+		assertEquals("0, 0, -1 is three values in one tick: not a spell", FIRE, shownElement(tick()));
+	}
+
+	@Test
+	public void aChangeWhileThereIsNoLocalPlayerIsIgnoredAndNotBufferedForALaterImpact()
+	{
+		clientValues.put("getLocalPlayer", null);
+		varp(557);
+		clientValues.put("getLocalPlayer", me);
+		Npc giant = hillGiant(1);
+		engage(giant);
+		graphic(giant.npc);
+		assertNull(tick().getWeakness());
+	}
+
+	@Test
+	public void aSpellCastAtOneNpcThatLandsAfterYouSwitchedToAnotherIsCreditedToNeither()
+	{
+		Npc a = scorpion(1); // tagged with a spell, then left: it is not interacting with you
+		Npc b = hillGiant(2); // your target now
+		engage(b);
+		varp(554);
+		graphic(a.npc); // the impact lands on A
+		assertNull("B did not get the impact", tick().getWeakness());
+		engage(a);
+		assertNull("and A was not being fought, so it was not credited", tick().getWeakness());
+	}
+
+	@Test
+	public void anAreaSpellOnTwoNpcsThatAreFightingYouCreditsNeither()
+	{
+		Npc a = scorpion(1).attacksYou();
+		Npc b = hillGiant(2).attacksYou();
+		engage(a);
+		varp(554);
+		graphic(a.npc);
+		graphic(b.npc);
+		assertNull(tick().getWeakness());
+		engage(b);
+		assertNull(tick().getWeakness());
+	}
+
+	@Test
+	public void onlyAWriteToVarp5536IsAChangeNotAVarbitInItNorTheVarpNextToIt()
+	{
+		Npc giant = hillGiant(1);
+		engage(giant);
+		VarbitChanged varbitInThatVarp = new VarbitChanged(); // VarbitChanged.varbitId is -1 only for a varp itself
+		varbitInThatVarp.setVarpId(5536);
+		varbitInThatVarp.setVarbitId(12345);
+		varbitInThatVarp.setValue(557);
+		plugin.onVarbitChanged(varbitInThatVarp);
+		VarbitChanged neighbour = new VarbitChanged(); // 5535 is LAST_NPC_TARGET_DISTANCE
+		neighbour.setVarpId(5535);
+		neighbour.setValue(557);
+		plugin.onVarbitChanged(neighbour);
+		graphic(giant.npc);
+		assertNull("neither is a write to 5536", tick().getWeakness());
+
+		// the control, in the same place and the same shape: the real write, right after, is credited
+		varp(557);
+		graphic(giant.npc);
+		assertEquals(EARTH, shownElement(tick()));
+	}
+
+	@Test
+	public void aChangeWithNoImpactAtAllIsNotCredited()
+	{
+		Npc giant = hillGiant(1);
+		engage(giant);
+		varp(557);
+		assertNull(tick().getWeakness());
+	}
+
+	@Test
+	public void aChangeIsNotCarriedToTheNextTickWhereAnImpactWithoutAChangeFollows()
+	{
+		Npc giant = hillGiant(1);
+		engage(giant);
+		varp(557);
+		assertNull(tick().getWeakness());
+		graphic(giant.npc); // another player's spell, or one whose value did not change
+		assertNull(tick().getWeakness());
+	}
+
+	@Test
+	public void anImpactAloneNeverTeachesAnything()
+	{
+		Npc giant = hillGiant(1);
+		engage(giant);
+		graphic(giant.npc);
+		assertNull(tick().getWeakness());
+	}
+
+	@Test
+	public void theEntryIsKeyedByTheTransformedCompositionIdNotByTheNpcId()
+	{
+		Npc a = hillGiant(1).npcId(5000).type(7000);
+		learn(a, 557);
+		assertEquals(EARTH, shownElement(tick()));
+
+		engage(hillGiant(2).npcId(9999).type(7000)); // another NPC id, the same form
+		assertEquals(EARTH, shownElement(tick()));
+
+		engage(hillGiant(3).npcId(5000).type(7001)); // the same NPC id, another form
+		assertNull(tick().getWeakness());
+	}
+
+	@Test
+	public void aConfirmedNoneShowsNothingAndReplacesAnEarlierEntry()
+	{
+		Npc a = scorpion(1);
+		learn(a, 554);
+		assertEquals(FIRE, shownElement(tick()));
+		learn(a, -1);
+		assertNull(tick().getWeakness());
+	}
+
+	@Test
+	public void noUnconfirmedChangeOverwritesOrErasesAGoodEntry()
+	{
+		Npc a = scorpion(1);
+		learn(a, 554);
+
+		varp(-1); // no impact
+		assertEquals(FIRE, shownElement(tick()));
+
+		Npc b = hillGiant(2).attacksYou(); // an area spell: two fought impacts
+		varp(555);
+		graphic(a.npc);
+		graphic(b.npc);
+		assertEquals(FIRE, shownElement(tick()));
+
+		varp(0); // a value that is not a rune
+		graphic(a.npc);
+		assertEquals(FIRE, shownElement(tick()));
+	}
+
+	@Test
+	public void aTargetWhoseInteractingFlagHasFlippedToNullBetweenAttacksIsStillTheOneBeingFought()
+	{
+		Npc giant = hillGiant(1);
+		engage(giant);
+		tick();
+		meValues.put("getInteracting", null); // raw.log: the player's target is null between attacks
+		varp(557);
+		graphic(giant.npc);
+		assertEquals("the panel's live target counts", EARTH, shownElement(tick()));
+	}
+
+	@Test
+	public void anNpcInteractingWithYouIsFoughtEvenWhenItIsNotYourTarget()
+	{
+		Npc target = scorpion(1);
+		Npc attacker = hillGiant(2).attacksYou();
+		engage(target);
+		varp(557);
+		graphic(attacker.npc);
+		assertNull("the panel shows the scorpion, which had no impact", tick().getWeakness());
+		engage(attacker);
+		assertEquals(EARTH, shownElement(tick()));
+	}
+
+	@Test
+	public void aDyingNpcIsNotCredited()
+	{
+		Npc giant = hillGiant(1);
+		engage(giant);
+		tick();
+		dyingNpcs.add(giant.npc);
+		varp(557);
+		graphic(giant.npc);
+		tick();
+		dyingNpcs.remove(giant.npc);
+		engage(hillGiant(2));
+		assertNull(tick().getWeakness());
+	}
+
+	// Task 8 review F5: the "combat NPC" gate on a credit had no test. A level-0 NPC interacting with you (a pet or
+	// follower) that is the only one with a spell graphic must not teach its type anything.
+	@Test
+	public void aNonCombatNpcIsNotCreditedEvenAsTheOnlyCandidate()
+	{
+		Npc pet = new Npc(5, "Pet", 0, ICE_GIANT).type(2103).attacksYou();
+		tick();
+		varp(557);
+		graphic(pet.npc);
+		tick();
+		engage(hillGiant(2));
+		assertNull(tick().getWeakness());
+	}
+
+	@Test
+	public void onlyAnNpcWithASpotAnimIsAnImpact()
+	{
+		Npc giant = hillGiant(1);
+		engage(giant);
+		varp(557);
+		graphic(me); // a player's spot-anim
+		assertNull(tick().getWeakness());
+
+		giant.v.put("getSpotAnims", spotAnims(false)); // a spot-anim that has just ended
+		varp(557);
+		graphic(giant.npc);
+		assertNull(tick().getWeakness());
+	}
+
+	@Test
+	public void aLogoutOrHopDropsABufferedChangeButKeepsTheCache()
+	{
+		learn(scorpion(1), 554);
+		Npc giant = hillGiant(2);
+		varp(557);
+		gameState(GameState.HOPPING);
+		gameState(GameState.LOGGED_IN);
+		engage(giant);
+		graphic(giant.npc);
+		assertNull("the change belonged to the world before the hop", tick().getWeakness());
+
+		engage(scorpion(3));
+		assertEquals("what was learned survives the hop", FIRE, shownElement(tick()));
+		gameState(GameState.LOGIN_SCREEN);
+		gameState(GameState.LOGGED_IN);
+		engage(scorpion(4));
+		assertEquals("and the logout", FIRE, shownElement(tick()));
+	}
+
+	@Test
+	public void aRegionLoadKeepsABufferedChange()
+	{
+		Npc giant = hillGiant(1);
+		engage(giant);
+		varp(557);
+		gameState(GameState.LOADING);
+		gameState(GameState.LOGGED_IN);
+		graphic(giant.npc);
+		assertEquals(EARTH, shownElement(tick()));
+	}
+
+	@Test
+	public void stoppingThePluginForgetsWhatWasLearned()
+	{
+		learn(scorpion(1), 554);
+		plugin.stop();
+		engage(scorpion(2));
+		assertNull(tick().getWeakness());
 	}
 
 	// ---- clock ----

@@ -163,29 +163,31 @@ public class SnapshotFactoryTest
 		assertEquals(live.getHp(), stale.getHp());
 	}
 
-	// ---- max HP before the first hit (spec addendum 3) ----
+	// ---- max HP before the first hit (spec addendum 4, replacing addendum 3's full bar) ----
 
 	@Test
-	public void noBarYetButMaxHpKnownIsAFullBarInTheStaleStyleWithMaxHp()
+	public void noBarYetButMaxHpKnownIsUnhitWithNoInventedCurrentHp()
 	{
-		// HpMemory reports (-1, 0, stale=false) for a target that has never had a bar
+		// HpMemory reports (-1, 0, stale=false) for a target it has never seen a bar on
 		TargetSnapshot s = SnapshotFactory.build("Kalphite Soldier", 85, new int[] {70, 80, 70, 90, 1, 1}, -1, 0, false,
 			null, null);
 		assertEquals(90, s.getMaxHp());
-		assertEquals(90, s.getHp());
-		assertTrue("a full bar: ratio equals scale, and the scale is positive", s.getHpScale() > 0);
-		assertEquals(s.getHpScale(), s.getHpRatio());
-		assertTrue("drawn in the stale style, because nothing confirms it", s.isHpStale());
+		assertTrue(s.isHpUnhit());
+		assertEquals("current HP is not known, and 90 would be a guess that lies after a relog", HpEstimate.UNKNOWN,
+			s.getHp());
+		assertEquals(-1, s.getHpRatio());
+		assertEquals(0, s.getHpScale());
+		assertFalse("nothing is remembered, so it is not a stale reading", s.isHpStale());
 	}
 
 	@Test
-	public void theFallbackMaxHpFromNpcManagerAlsoGivesTheFullBar()
+	public void theFallbackMaxHpFromNpcManagerAlsoGivesAnUnhitSnapshot()
 	{
 		int[] noHp = {40, 40, 40, 0, 1, 1};
 		TargetSnapshot s = SnapshotFactory.build("Ice giant", 53, noHp, -1, 0, false, 64, null);
-		assertEquals(64, s.getHp());
-		assertEquals(s.getHpScale(), s.getHpRatio());
-		assertTrue(s.isHpStale());
+		assertEquals(64, s.getMaxHp());
+		assertTrue(s.isHpUnhit());
+		assertEquals(HpEstimate.UNKNOWN, s.getHp());
 	}
 
 	@Test
@@ -200,6 +202,7 @@ public class SnapshotFactoryTest
 			assertEquals(-1, s.getHpRatio());
 			assertEquals(0, s.getHpScale());
 			assertFalse(s.isHpStale());
+			assertFalse("without a max HP there is nothing to show, not even an empty bar", s.isHpUnhit());
 		}
 	}
 
@@ -212,43 +215,49 @@ public class SnapshotFactoryTest
 		assertEquals(30, s.getHpScale());
 		assertEquals(35, s.getHp());
 		assertTrue(s.isHpStale());
+		assertFalse("it was seen, so it is not unhit", s.isHpUnhit());
 	}
 
 	@Test
-	public void aStaleFlagMeansAMemoryExistsSoNoFullBarIsInvented()
+	public void aStaleFlagMeansAMemoryExistsSoItIsNeverCalledUnhit()
 	{
 		// "never had a bar" is HpMemory's stale=false, (-1, 0) reading. Stale=true says something was remembered,
-		// so even with nothing left to draw the factory must not turn it into the unhit full bar.
+		// so even with nothing left to draw the factory must not turn it into the unhit state.
 		TargetSnapshot s = SnapshotFactory.build("Ice giant", 53, ICE_GIANT, -1, 0, true, null, null);
 		assertEquals(HpEstimate.UNKNOWN, s.getHp());
 		assertEquals(-1, s.getHpRatio());
 		assertEquals(0, s.getHpScale());
+		assertFalse(s.isHpUnhit());
 	}
 
 	@Test
-	public void aLiveBarIsNeverReplacedByTheFullBar()
+	public void aLiveBarIsNeverUnhit()
 	{
 		TargetSnapshot s = SnapshotFactory.build("Ice giant", 53, ICE_GIANT, 15, 30, false, null, null);
 		assertEquals(15, s.getHpRatio());
 		assertEquals(35, s.getHp());
 		assertFalse(s.isHpStale());
+		assertFalse(s.isHpUnhit());
 		TargetSnapshot dead = SnapshotFactory.build("Ice giant", 53, ICE_GIANT, 0, 30, false, null, null);
 		assertEquals("ratio 0 is a live, empty bar", 0, dead.getHpRatio());
 		assertEquals(0, dead.getHp());
 		assertFalse(dead.isHpStale());
+		assertFalse("0/30 is a bar, a dead monster's, not an unseen one", dead.isHpUnhit());
 	}
 
 	@Test
-	public void inconsistentDataIsNotTurnedIntoAFullBar()
+	public void inconsistentDataIsNotCalledUnhit()
 	{
 		// a ratio with no scale, or a scale with no ratio, is not "never had a bar": HpMemory cannot produce
-		// either, and fabricating a full bar for them would hide the inconsistency
+		// either, and calling them unhit would hide the inconsistency behind a clean empty bar
 		TargetSnapshot noScale = SnapshotFactory.build("Ice giant", 53, ICE_GIANT, 5, 0, false, null, null);
 		assertEquals(HpEstimate.UNKNOWN, noScale.getHp());
 		assertEquals(0, noScale.getHpScale());
+		assertFalse(noScale.isHpUnhit());
 		TargetSnapshot noRatio = SnapshotFactory.build("Ice giant", 53, ICE_GIANT, -1, 30, false, null, null);
 		assertEquals(HpEstimate.UNKNOWN, noRatio.getHp());
 		assertFalse(noRatio.isHpStale());
+		assertFalse(noRatio.isHpUnhit());
 	}
 
 	@Test

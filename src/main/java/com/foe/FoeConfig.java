@@ -15,6 +15,10 @@ import net.runelite.client.config.Units;
  * return the interface default, which is why a retired key is retired for good: {@code hpDisplay} (an enum with
  * other constants), {@code showCombatLevel} and {@code hideIrrelevantLevels} are gone and none of the three names
  * may come back with a different meaning. Their old profile entries are simply never read.
+ *
+ * <p>The same holds for a retired constant: {@code staleHpStyle} = {@code MARKER} (retired 2026-10-08) no longer
+ * parses, so a profile that stored it reads as the default, Faded. The handler logs a warning each time it reads such
+ * a value (it does not cache the failure), until the setting is changed once.
  */
 @ConfigGroup(FoeConfig.GROUP)
 public interface FoeConfig extends Config
@@ -23,7 +27,7 @@ public interface FoeConfig extends Config
 
 	enum Layout
 	{
-		ONE_LINE("One line"), STACKED("Stacked");
+		STACKED("Stacked"), ONE_LINE("One line");
 
 		private final String label;
 
@@ -96,7 +100,7 @@ public interface FoeConfig extends Config
 	/** How HP is drawn when it is the last known value because the live bar is missing (spec addendum 2). */
 	enum StaleHpStyle
 	{
-		FADED("Faded"), HOLLOW("Hollow"), MARKER("Marker");
+		FADED("Faded"), HOLLOW("Hollow");
 
 		private final String label;
 
@@ -113,10 +117,10 @@ public interface FoeConfig extends Config
 	}
 
 	@ConfigItem(keyName = "layout", name = "Layout", position = 0,
-		description = "One line: everything on one strip. Stacked: the bar goes under the name.")
+		description = "Stacked: the bar goes under the name. One line: everything on one strip.")
 	default Layout layout()
 	{
-		return Layout.ONE_LINE;
+		return Layout.STACKED;
 	}
 
 	@ConfigItem(keyName = "hpText", name = "HP text", position = 1,
@@ -143,9 +147,8 @@ public interface FoeConfig extends Config
 	}
 
 	@ConfigItem(keyName = "staleHpStyle", name = "Stale HP style", position = 4,
-		description = "How HP looks when the health bar has gone and the last known value is shown, or when the "
-			+ "monster has not been hit yet and its max HP is shown as a full bar. "
-			+ "Faded: bar and text at half opacity. Hollow: bar outline only. Marker: a ? after the HP text (or the bar).")
+		description = "How HP looks when the health bar has gone and the last known value is shown. "
+			+ "Faded: bar and text at half opacity. Hollow: bar outline only.")
 	default StaleHpStyle staleHpStyle()
 	{
 		return StaleHpStyle.FADED;

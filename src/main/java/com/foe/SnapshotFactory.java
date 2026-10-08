@@ -14,8 +14,8 @@ final class SnapshotFactory
 	 * @param stats          NPCComposition.getStats(); may be null or short
 	 * @param ratio          health ratio to estimate from; -1 when there is none
 	 * @param scale          health scale to estimate from; 0 when there is none. (-1, 0) with {@code hpStale}
-	 *                       false is HpMemory's answer for a target that has never had a bar. When max HP is
-	 *                       known the snapshot then carries a full bar at max HP, flagged stale (addendum 3)
+	 *                       false is HpMemory's answer for a target it has never seen a bar on. When max HP is
+	 *                       known the snapshot is then flagged unhit (addendum 4): current HP stays unknown
 	 * @param hpStale        true when ratio and scale are the last known values, not the live bar; passed through
 	 *                       so the overlay can dim the HP
 	 * @param fallbackMaxHp  NPCManager.getHealth(id); may be null, and is 0 for an entry without hitpoints
@@ -41,29 +41,19 @@ final class SnapshotFactory
 		{
 			maxHp = Math.max(fallbackMaxHp, 0);
 		}
-		int hp;
-		if (ratio < 0 && scale <= 0 && !hpStale && maxHp > 0)
-		{
-			// Never had a bar (a monster shows none until it takes damage). Max HP is known, so say so: a full bar
-			// at max HP, drawn in the stale style because nothing confirms it, until the first live reading
-			// replaces it. This is decided here and not in HpMemory, whose contract is that stale is never true
-			// when nothing is remembered. It fires on HpMemory's "nothing known" reading, which (memory being per
-			// NPC object) means Foe has seen no live bar on this NPC since it entered the scene. So it CAN show full
-			// HP for a monster damaged before Foe saw it: by another player, or before the plugin started. The
-			// stale style is the only signal of that (spec addendum 3). A raw half-bar reading (ratio without
-			// scale, or the reverse) also reads as "nothing known" through HpMemory. The raw ratio/scale of the full
-			// bar's 1/1 here, and HpEstimate is bypassed: with scale 1 it would return a midpoint, not maxHp.
-			ratio = 1;
-			scale = 1;
-			hpStale = true;
-			hp = maxHp;
-		}
-		else
-		{
-			hp = HpEstimate.estimate(ratio, scale, maxHp);
-		}
+		// Never seen a bar on this NPC (a monster shows none until it takes damage) while max HP is known: say that
+		// max HP is known and current HP is not (spec, Missing data: never an invented value). The previous rule drew
+		// a full bar here, which lied after a relog, when memory restarts and the monster may be half dead (seen
+		// 2026-10-08). Decided here and not in HpMemory, whose contract is that stale is never true when nothing is
+		// remembered. It fires on HpMemory's "nothing known" reading: no live bar seen on this NPC object since it
+		// entered the scene or since the last relog. So "unhit" means "never seen with a bar", which includes a
+		// monster another player damaged first. A raw half-bar reading (ratio without scale, or the reverse) is not
+		// this state and is left alone, so inconsistent data stays visible as such. HpEstimate returns UNKNOWN for
+		// (-1, 0), so hp needs no special case.
+		boolean unhit = ratio < 0 && scale <= 0 && !hpStale && maxHp > 0;
+		int hp = HpEstimate.estimate(ratio, scale, maxHp);
 		return new TargetSnapshot(name, combatLevel, hp, maxHp,
-			ratio, scale, hpStale,
+			ratio, scale, hpStale, unhit,
 			stat(stats, NPCComposition.STAT_ATTACK), stat(stats, NPCComposition.STAT_STRENGTH),
 			stat(stats, NPCComposition.STAT_DEFENCE), stat(stats, NPCComposition.STAT_RANGED),
 			stat(stats, NPCComposition.STAT_MAGIC), weakness);

@@ -190,3 +190,64 @@ eight settings in total.
 - **Faded applies to the bar text, not to its outline.** With HP text inside the bar, the text gets a
   1px black outline so it reads over both fill and track. Under Faded only the white fades, and the
   outline stays solid, because a faded outline would make stale text unreadable.
+
+## Addendum 4 — 2026-10-08, weakness credited only to a confirmed spell impact; display honesty (operator decisions)
+
+Appended, not edited in place. It supersedes addendum 2 item 2 (how a weakness is attributed), addendum 3's "Max HP
+before the first hit" and its Faded note, and the Marker stale style and One-line default layout. Evidence:
+`docs/probe/varp-5536.md` and `docs/probe/raw-task8.txt`; plan Task 8 and its Revision of the same date.
+
+### Where a weakness comes from
+
+Varp 5536 holds the weakness of the last NPC a spell was cast at, and does not say which NPC. In the trace every write
+arrived on the same tick as a spell-impact spot-anim (`GraphicChanged`) on the NPC the spell landed on (ticks 508,
+738, 770), and other players' impacts on nearby NPCs never changed it. So:
+
+1. A change of varp 5536 is held for the **current tick only**. It is never carried to a later tick, and it is dropped
+   on logout or hop. A change that arrives while there is no local player (the logout reset 0, 0, -1) is ignored.
+2. Every NPC that got a spot-anim this tick is held too, once each.
+3. On `GameTick` the change is credited only if **exactly one** of those NPCs is one the player is fighting (the live
+   target, an NPC the player is interacting with, or one interacting with the player), the value decodes, the tick
+   saw only one value, and that NPC is a live combat NPC. The entry is keyed by the NPC's **transformed composition
+   id**, the form the panel's name and stats come from. Anything else is dropped, never guessed. A dropped change
+   writes nothing and erases nothing. A confirmed credit may overwrite an earlier entry.
+4. Decoding: 554 fire, 555 water, 556 air (expected, never observed), 557 earth, -1 none, anything else unknown and
+   dropped. "None" is a real answer and shows nothing.
+5. The cache is in memory for the session. It survives logout and hop, because a type's weakness does not change, and
+   is cleared when the plugin stops. Nothing is written to disk. The panel shows the entry for the target's type
+   even when the target was only ranged or meleed this fight, and "Show weakness" hides it as before.
+
+### Display
+
+- **Stale HP style: Faded (default) and Hollow.** Marker is removed. A profile that stored `MARKER` reads as the
+  default; RuneLite logs a warning each time it reads that value, until the setting is changed once.
+- **HP text inside the bar has a drop shadow**, black, one pixel down and right, as RuneLite's own text component draws
+  it, instead of addendum 3's 1px outline on all eight sides (it looked rough once antialiased in the real client).
+  The shadow stays solid when the text is Faded.
+- **Default Layout is Stacked**, listed first in the settings panel.
+- **Before the first hit**, with max HP known and no health bar ever seen on this NPC, the panel draws an **empty
+  outlined bar** with the max HP as its only text (`35`), under every HP text setting except None, which draws just the
+  outlined bar. It never shows `35/35` or `100%`. This replaces addendum 3's full bar in the stale style, which lied
+  after a relog (seen 2026-10-08). It means "never seen with a bar", not "never hit": after a relog, or for a monster
+  another player damaged first, the same state shows, and that is the honest reading of what Foe knows.
+
+### Known limits (each shows a missing weakness, or the cases noted, never a made-up one)
+
+- **Same-value silence.** The game posts no event when a write leaves the value unchanged, so a spell on a second type
+  with the same element teaches nothing; that type shows no weakness until a spell on it changes the value.
+- **A splash** (spot-anim 85, no hitsplat) may or may not write the varp: the value was unchanged in the trace, so no
+  event could say. A confirmed credit from one would still be the right NPC.
+- **An area spell** that hits two NPCs the player is fighting is dropped, even when both are the same type and the
+  credit would have been safe.
+- **An area spell that also hits an unfought NPC** is dropped when that NPC got the same spell graphic in the same
+  tick (Task 8 review F1): which target the varp then holds was never probed, so the credit is not guessed.
+- **One coincidence is not caught.** Our write lands on a tick where the only fought NPC with a spell graphic got it
+  from another player. The trace has our write on the tick we engage the cast target, which makes this unlikely, and
+  the next confirmed cast on that type corrects it.
+- **Correction (Task 8 review F3):** the trace shows the write on the tick the cast target is first engaged, with
+  the damage hitsplat 3–4 ticks later. Earlier text saying "at impact, not at cast" overstated what the trace shows;
+  the graphic and the write share a tick, and that tick is the cast/engage tick.
+- **`GraphicChanged` on a spot-anim ending** `[assumed]`: whether the client also posts it then is not known, so an
+  NPC with no spot-anim left is not counted as an impact. All 65 events in the trace carried one.
+- `NPC.getId()` is the id of the untransformed composition `[assumed]`; the trace logged both and they were equal for
+  every NPC in it.
