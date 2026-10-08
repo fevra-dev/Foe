@@ -11,6 +11,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,36 +37,36 @@ public class FoeOverlayTest
 	/** FoeConfig with the interface's own defaults, each one overridable. */
 	private static final class Cfg implements FoeConfig
 	{
+		Layout layout = FoeConfig.super.layout();
+		HpText hpText = FoeConfig.super.hpText();
+		HpTextPosition hpTextPosition = FoeConfig.super.hpTextPosition();
 		Detail detail = FoeConfig.super.detail();
-		HpDisplay hpDisplay = FoeConfig.super.hpDisplay();
-		boolean hideIrrelevantLevels = FoeConfig.super.hideIrrelevantLevels();
-		boolean showCombatLevel = FoeConfig.super.showCombatLevel();
 		boolean showWeakness = FoeConfig.super.showWeakness();
 		StaleHpStyle staleHpStyle = FoeConfig.super.staleHpStyle();
 		int backgroundOpacity = FoeConfig.super.backgroundOpacity();
 
 		@Override
+		public Layout layout()
+		{
+			return layout;
+		}
+
+		@Override
+		public HpText hpText()
+		{
+			return hpText;
+		}
+
+		@Override
+		public HpTextPosition hpTextPosition()
+		{
+			return hpTextPosition;
+		}
+
+		@Override
 		public Detail detail()
 		{
 			return detail;
-		}
-
-		@Override
-		public HpDisplay hpDisplay()
-		{
-			return hpDisplay;
-		}
-
-		@Override
-		public boolean hideIrrelevantLevels()
-		{
-			return hideIrrelevantLevels;
-		}
-
-		@Override
-		public boolean showCombatLevel()
-		{
-			return showCombatLevel;
 		}
 
 		@Override
@@ -91,7 +93,17 @@ public class FoeOverlayTest
 		return SnapshotFactory.build("Ice giant", 53, stats, ratio, scale, stale, null, w);
 	}
 
-	/** The spec's worked example: ratio 22 of 30 on 70 max HP is ~52 HP, 74%. */
+	/**
+	 * A snapshot exactly as the old factory built it, for the tests of the overlay's own predicates on inputs the
+	 * factory now rewrites: (-1, 0) with a known max HP is the full bar of addendum 3, never "no bar".
+	 */
+	private static TargetSnapshot raw(int[] stats, int ratio, int scale, boolean stale)
+	{
+		return new TargetSnapshot("Ice giant", 53, HpEstimate.estimate(ratio, scale, stats[3]), stats[3], ratio, scale,
+			stale, stats[0], stats[2], stats[1], stats[4], stats[5], null);
+	}
+
+	/** The spec's worked example: ratio 22 of 30 on 70 max HP is 52 HP, 74%. */
 	private static TargetSnapshot live()
 	{
 		return snap(ICE_GIANT, 22, 30, false, FIRE);
@@ -128,10 +140,10 @@ public class FoeOverlayTest
 	@Test
 	public void noBarWhenTheClientHasNoRatioOrScale()
 	{
-		assertFalse(FoeOverlay.hasBar(snap(ICE_GIANT, -1, 0, false, null)));
-		assertFalse(FoeOverlay.hasBar(snap(ICE_GIANT, -1, 30, false, null)));
-		assertFalse("scale 0 means no bar however large the ratio", FoeOverlay.hasBar(snap(ICE_GIANT, 5, 0, false, null)));
-		assertFalse("ratio 0 of scale 0 is no bar, not an empty one", FoeOverlay.hasBar(snap(ICE_GIANT, 0, 0, false, null)));
+		assertFalse(FoeOverlay.hasBar(raw(ICE_GIANT, -1, 0, false)));
+		assertFalse(FoeOverlay.hasBar(raw(ICE_GIANT, -1, 30, false)));
+		assertFalse("scale 0 means no bar however large the ratio", FoeOverlay.hasBar(raw(ICE_GIANT, 5, 0, false)));
+		assertFalse("ratio 0 of scale 0 is no bar, not an empty one", FoeOverlay.hasBar(raw(ICE_GIANT, 0, 0, false)));
 	}
 
 	@Test
@@ -143,33 +155,56 @@ public class FoeOverlayTest
 	@Test
 	public void barFillIsProportionalAndNeverExceedsTheBar()
 	{
-		assertEquals(40, FoeOverlay.barFill(snap(ICE_GIANT, 15, 30, false, null)));
-		assertEquals(FoeOverlay.BAR_W, FoeOverlay.barFill(snap(ICE_GIANT, 30, 30, false, null)));
-		assertEquals(0, FoeOverlay.barFill(snap(ICE_GIANT, 0, 30, false, null)));
-		assertEquals("a living monster never shows an empty bar", 1, FoeOverlay.barFill(snap(ICE_GIANT, 1, 255, false, null)));
+		assertEquals(40, FoeOverlay.barFill(snap(ICE_GIANT, 15, 30, false, null), FoeOverlay.BAR_W));
+		assertEquals(FoeOverlay.BAR_W, FoeOverlay.barFill(snap(ICE_GIANT, 30, 30, false, null), FoeOverlay.BAR_W));
+		assertEquals(0, FoeOverlay.barFill(snap(ICE_GIANT, 0, 30, false, null), FoeOverlay.BAR_W));
+		assertEquals("a living monster never shows an empty bar", 1,
+			FoeOverlay.barFill(snap(ICE_GIANT, 1, 255, false, null), FoeOverlay.BAR_W));
+		assertEquals("the fill scales with a widened bar", 75, FoeOverlay.barFill(snap(ICE_GIANT, 15, 30, false, null), 150));
+		assertEquals("and the extremes clamp to the widened bar", 149,
+			FoeOverlay.barFill(snap(ICE_GIANT, 254, 255, false, null), 150));
 	}
 
 	@Test
 	public void barFillIsZeroWhenThereIsNoBar()
 	{
-		assertEquals("ratio > scale: unclamped it would be 83", 0, FoeOverlay.barFill(snap(ICE_GIANT, 31, 30, false, null)));
-		assertEquals("no scale: the division would be by zero", 0, FoeOverlay.barFill(snap(ICE_GIANT, -1, 0, false, null)));
+		assertEquals("ratio > scale: unclamped it would be 83", 0,
+			FoeOverlay.barFill(snap(ICE_GIANT, 31, 30, false, null), FoeOverlay.BAR_W));
+		assertEquals("no scale: the division would be by zero", 0,
+			FoeOverlay.barFill(raw(ICE_GIANT, -1, 0, false), FoeOverlay.BAR_W));
 	}
 
 	// ---- HP text (requirement 2) ----
 
 	@Test
-	public void hpTextFollowsTheDisplaySetting()
+	public void hpTextFollowsTheHpTextSetting()
 	{
 		Cfg c = new Cfg();
-		c.hpDisplay = FoeConfig.HpDisplay.NUMBER;
-		assertEquals("~52/70", FoeOverlay.hpText(live(), c));
-		c.hpDisplay = FoeConfig.HpDisplay.PERCENT;
+		c.hpText = FoeConfig.HpText.CURRENT_MAX;
+		assertEquals("52/70", FoeOverlay.hpText(live(), c));
+		c.hpText = FoeConfig.HpText.CURRENT;
+		assertEquals("52", FoeOverlay.hpText(live(), c));
+		c.hpText = FoeConfig.HpText.PERCENT;
 		assertEquals("74%", FoeOverlay.hpText(live(), c));
-		c.hpDisplay = FoeConfig.HpDisplay.NUMBER_AND_PERCENT;
-		assertEquals("~52/70 (74%)", FoeOverlay.hpText(live(), c));
-		c.hpDisplay = FoeConfig.HpDisplay.BAR_ONLY;
+		c.hpText = FoeConfig.HpText.NONE;
 		assertEquals("", FoeOverlay.hpText(live(), c));
+	}
+
+	@Test
+	public void hpTextNeverCarriesATildeUnderAnySettingOrStyle()
+	{
+		// Addendum 3: no "~". The bar already says the value is approximate.
+		for (FoeConfig.HpText t : FoeConfig.HpText.values())
+		{
+			for (FoeConfig.StaleHpStyle style : FoeConfig.StaleHpStyle.values())
+			{
+				Cfg c = new Cfg();
+				c.hpText = t;
+				c.staleHpStyle = style;
+				assertFalse(t + "/" + style, FoeOverlay.hpText(live(), c).contains("~"));
+				assertFalse(t + "/" + style, FoeOverlay.hpText(stale(), c).contains("~"));
+			}
+		}
 	}
 
 	@Test
@@ -179,7 +214,7 @@ public class FoeOverlayTest
 		TargetSnapshot s = snap(ICE_GIANT, 23, 30, false, null);
 		assertEquals(55, s.getHp());
 		Cfg c = new Cfg();
-		c.hpDisplay = FoeConfig.HpDisplay.PERCENT;
+		c.hpText = FoeConfig.HpText.PERCENT;
 		assertEquals("79%", FoeOverlay.hpText(s, c));
 	}
 
@@ -188,24 +223,26 @@ public class FoeOverlayTest
 	{
 		Cfg c = new Cfg();
 		TargetSnapshot dead = snap(ICE_GIANT, 0, 30, false, null);
-		assertEquals("~0/70", FoeOverlay.hpText(dead, c));
-		c.hpDisplay = FoeConfig.HpDisplay.PERCENT;
+		assertEquals("0/70", FoeOverlay.hpText(dead, c));
+		c.hpText = FoeConfig.HpText.CURRENT;
+		assertEquals("0", FoeOverlay.hpText(dead, c));
+		c.hpText = FoeConfig.HpText.PERCENT;
 		assertEquals("0%", FoeOverlay.hpText(dead, c));
 	}
 
 	@Test
-	public void unknownMaxHpShowsNoTextUnderAnyDisplayButStillDrawsTheBar()
+	public void unknownMaxHpShowsNoTextUnderAnySettingButStillDrawsTheBar()
 	{
 		int[] noHitpoints = {40, 40, 40, 0, 1, 1};
 		TargetSnapshot s = snap(noHitpoints, 22, 30, false, null);
 		assertTrue(FoeOverlay.hasBar(s));
 		Cfg c = new Cfg();
-		for (FoeConfig.HpDisplay d : FoeConfig.HpDisplay.values())
+		for (FoeConfig.HpText t : FoeConfig.HpText.values())
 		{
-			c.hpDisplay = d;
-			assertEquals("display " + d, "", FoeOverlay.hpText(s, c));
+			c.hpText = t;
+			assertEquals("setting " + t, "", FoeOverlay.hpText(s, c));
 		}
-		c.hpDisplay = FoeConfig.HpDisplay.NUMBER;
+		c.hpText = FoeConfig.HpText.CURRENT_MAX;
 		FoeOverlay.Cell hpCell = FoeOverlay.cells(s, c).get(1);
 		assertTrue("the bar survives without a max HP", hpCell.hp);
 		assertEquals("", hpCell.text);
@@ -231,6 +268,10 @@ public class FoeOverlayTest
 		// depend on that: a number beside a missing bar is exactly the disagreement plan Task 7 item 8 forbids.
 		TargetSnapshot s = new TargetSnapshot("Ice giant", 53, 52, 70, 31, 30, false, 40, 40, 40, 1, 1, null);
 		assertEquals("", FoeOverlay.hpText(s, new Cfg()));
+		for (FoeOverlay.Cell cell : FoeOverlay.cells(s, new Cfg()))
+		{
+			assertFalse("no HP cell for an inconsistent snapshot", cell.hp);
+		}
 	}
 
 	// ---- stale HP (requirement 3) ----
@@ -240,13 +281,13 @@ public class FoeOverlayTest
 	{
 		Cfg c = new Cfg();
 		c.staleHpStyle = FoeConfig.StaleHpStyle.MARKER;
-		c.hpDisplay = FoeConfig.HpDisplay.NUMBER;
-		assertEquals("~52/70?", FoeOverlay.hpText(stale(), c));
-		c.hpDisplay = FoeConfig.HpDisplay.PERCENT;
+		c.hpText = FoeConfig.HpText.CURRENT_MAX;
+		assertEquals("52/70?", FoeOverlay.hpText(stale(), c));
+		c.hpText = FoeConfig.HpText.CURRENT;
+		assertEquals("52?", FoeOverlay.hpText(stale(), c));
+		c.hpText = FoeConfig.HpText.PERCENT;
 		assertEquals("74%?", FoeOverlay.hpText(stale(), c));
-		c.hpDisplay = FoeConfig.HpDisplay.NUMBER_AND_PERCENT;
-		assertEquals("~52/70 (74%)?", FoeOverlay.hpText(stale(), c));
-		assertEquals("live HP carries no marker", "~52/70 (74%)", FoeOverlay.hpText(live(), c));
+		assertEquals("live HP carries no marker", "74%", FoeOverlay.hpText(live(), c));
 	}
 
 	@Test
@@ -254,22 +295,22 @@ public class FoeOverlayTest
 	{
 		Cfg c = new Cfg();
 		c.staleHpStyle = FoeConfig.StaleHpStyle.FADED;
-		assertEquals("~52/70", FoeOverlay.hpText(stale(), c));
+		assertEquals("52/70", FoeOverlay.hpText(stale(), c));
 		c.staleHpStyle = FoeConfig.StaleHpStyle.HOLLOW;
-		assertEquals("~52/70", FoeOverlay.hpText(stale(), c));
+		assertEquals("52/70", FoeOverlay.hpText(stale(), c));
 	}
 
 	@Test
 	public void markerStillMarksAStaleBarWhenThereIsNoText()
 	{
-		// Bar-only has no HP text to append "?" to, and a stale bar must not read as live.
+		// HP text None has no text to append "?" to, and a stale bar must not read as live.
 		Cfg c = new Cfg();
 		c.staleHpStyle = FoeConfig.StaleHpStyle.MARKER;
-		c.hpDisplay = FoeConfig.HpDisplay.BAR_ONLY;
+		c.hpText = FoeConfig.HpText.NONE;
 		FoeOverlay.Cell hpCell = FoeOverlay.cells(stale(), c).get(1);
 		assertTrue(hpCell.hp);
 		assertEquals("?", hpCell.text);
-		assertEquals("a live bar-only HP cell stays bare", "", FoeOverlay.cells(live(), c).get(1).text);
+		assertEquals("a live HP cell with no text stays bare", "", FoeOverlay.cells(live(), c).get(1).text);
 	}
 
 	// ---- the segments (name, HP, levels, weakness) ----
@@ -277,15 +318,15 @@ public class FoeOverlayTest
 	@Test
 	public void fullDetailShowsEverythingInOrder()
 	{
-		assertEquals(Arrays.asList("Ice giant  53", "~52/70", "Att 40  Str 40  Def 40", "Fire"), texts(live(), new Cfg()));
+		assertEquals(Arrays.asList("Ice giant  53", "52/70", "Att 40  Str 40  Def 40", "Fire"), texts(live(), new Cfg()));
 	}
 
 	@Test
-	public void compactDropsTheLevelsOnly()
+	public void compactDropsTheLevelsOnlyAndKeepsTheCombatLevelBesideTheName()
 	{
 		Cfg c = new Cfg();
 		c.detail = FoeConfig.Detail.COMPACT;
-		assertEquals(Arrays.asList("Ice giant  53", "~52/70", "Fire"), texts(live(), c));
+		assertEquals(Arrays.asList("Ice giant  53", "52/70", "Fire"), texts(live(), c));
 	}
 
 	@Test
@@ -296,15 +337,14 @@ public class FoeOverlayTest
 	}
 
 	@Test
-	public void hideIrrelevantLevelsHidesOnesAndAlwaysHidesZeros()
+	public void levelsOfOneOrLessAreNeverDrawn()
 	{
+		// Addendum 3: "hide irrelevant levels" is always on, so there is no setting that shows a 1 or a 0
 		int[] stats = {5, 0, 0, 70, 1, 0};
 		TargetSnapshot s = snap(stats, 22, 30, false, null);
-		Cfg c = new Cfg();
-		c.hideIrrelevantLevels = true;
-		assertEquals("Att 5", texts(s, c).get(2));
-		c.hideIrrelevantLevels = false;
-		assertEquals("a 1 is shown, a 0 (unknown) never is", "Att 5  Rng 1", texts(s, c).get(2));
+		assertEquals("Att 5", texts(s, new Cfg()).get(2));
+		int[] twos = {2, 2, 2, 70, 2, 2};
+		assertEquals("a 2 is shown", "Att 2  Str 2  Def 2  Rng 2  Mag 2", texts(snap(twos, 22, 30, false, null), new Cfg()).get(2));
 	}
 
 	@Test
@@ -312,18 +352,20 @@ public class FoeOverlayTest
 	{
 		int[] stats = {1, 1, 1, 70, 1, 1};
 		// name, HP only: no empty cell, so no gap
-		assertEquals(Arrays.asList("Ice giant  53", "~52/70"), texts(snap(stats, 22, 30, false, null), new Cfg()));
+		assertEquals(Arrays.asList("Ice giant  53", "52/70"), texts(snap(stats, 22, 30, false, null), new Cfg()));
 	}
 
 	@Test
-	public void nameShowsTheCombatLevelOnlyWhenEnabledAndKnown()
+	public void nameAlwaysShowsTheCombatLevelWhenKnownUnderEveryDetailLevel()
 	{
-		Cfg c = new Cfg();
-		c.showCombatLevel = false;
-		assertEquals("Ice giant", texts(live(), c).get(0));
-		c.showCombatLevel = true;
+		for (FoeConfig.Detail d : FoeConfig.Detail.values())
+		{
+			Cfg c = new Cfg();
+			c.detail = d;
+			assertEquals("detail " + d, "Ice giant  53", texts(live(), c).get(0));
+		}
 		TargetSnapshot noLevel = SnapshotFactory.build("Ice giant", 0, ICE_GIANT, 22, 30, false, null, null);
-		assertEquals("combat level 0 is unknown, not shown", "Ice giant", texts(noLevel, c).get(0));
+		assertEquals("combat level 0 is unknown, not shown", "Ice giant", texts(noLevel, new Cfg()).get(0));
 	}
 
 	@Test
@@ -369,10 +411,10 @@ public class FoeOverlayTest
 	}
 
 	@Test
-	public void barOnlyHpIsOneCellHoldingTheBarWithNoText()
+	public void hpTextNoneIsOneCellHoldingTheBarWithNoText()
 	{
 		Cfg c = new Cfg();
-		c.hpDisplay = FoeConfig.HpDisplay.BAR_ONLY;
+		c.hpText = FoeConfig.HpText.NONE;
 		List<FoeOverlay.Cell> cells = FoeOverlay.cells(live(), c);
 		// name | bar | levels | weakness: the bar is its own cell, not tied to the name or to a text slot
 		assertEquals(4, cells.size());
@@ -388,7 +430,7 @@ public class FoeOverlayTest
 	{
 		FoeOverlay.Cell hpCell = FoeOverlay.cells(live(), new Cfg()).get(1);
 		assertTrue(hpCell.hp);
-		assertEquals("~52/70", hpCell.text);
+		assertEquals("52/70", hpCell.text);
 	}
 
 	// ---- background opacity (requirement 5) ----
@@ -449,8 +491,8 @@ public class FoeOverlayTest
 
 	private static Painted paint(TargetSnapshot s, Cfg c)
 	{
-		BufferedImage img = new BufferedImage(800, 60, BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g = img.createGraphics();
+		BufferedImage img = new BufferedImage(800, 80, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = graphics(img);
 		try
 		{
 			Dimension d = new FoeOverlay(new FoePlugin(), c).draw(g, s);
@@ -503,17 +545,17 @@ public class FoeOverlayTest
 	public void percentAndFillNeverClaimEmptyOrFullUnlessTheBarIs()
 	{
 		Cfg c = new Cfg();
-		c.hpDisplay = FoeConfig.HpDisplay.PERCENT;
+		c.hpText = FoeConfig.HpText.PERCENT;
 		int[] big = {40, 40, 40, 2000, 1, 1};
 		TargetSnapshot nearlyDead = snap(big, 1, 255, false, null);
 		TargetSnapshot nearlyFull = snap(big, 254, 255, false, null);
 		assertEquals("1%", FoeOverlay.hpText(nearlyDead, c));
 		assertEquals("99%", FoeOverlay.hpText(nearlyFull, c));
-		assertEquals(1, FoeOverlay.barFill(nearlyDead));
-		assertEquals(FoeOverlay.BAR_W - 1, FoeOverlay.barFill(nearlyFull));
+		assertEquals(1, FoeOverlay.barFill(nearlyDead, FoeOverlay.BAR_W));
+		assertEquals(FoeOverlay.BAR_W - 1, FoeOverlay.barFill(nearlyFull, FoeOverlay.BAR_W));
 		// the ends themselves are unchanged
 		assertEquals("100%", FoeOverlay.hpText(snap(big, 255, 255, false, null), c));
-		assertEquals(FoeOverlay.BAR_W, FoeOverlay.barFill(snap(big, 255, 255, false, null)));
+		assertEquals(FoeOverlay.BAR_W, FoeOverlay.barFill(snap(big, 255, 255, false, null), FoeOverlay.BAR_W));
 	}
 
 	private static Cfg flat()
@@ -643,7 +685,7 @@ public class FoeOverlayTest
 	{
 		Cfg c = flat();
 		c.detail = FoeConfig.Detail.COMPACT;
-		c.hpDisplay = FoeConfig.HpDisplay.BAR_ONLY;
+		c.hpText = FoeConfig.HpText.NONE;
 		c.showWeakness = false;
 		int withBar = paint(snap(ICE_GIANT, 22, 30, false, null), c).dim.width;
 		int without = paint(snap(ICE_GIANT, 31, 30, false, null), c).dim.width; // ratio > scale: no bar
@@ -660,11 +702,500 @@ public class FoeOverlayTest
 		Painted p = paint(live(), c);
 		int expected = FoeOverlay.PAD
 			+ p.fm.stringWidth("Ice giant  53") + FoeOverlay.GAP
-			+ FoeOverlay.BAR_W + FoeOverlay.BAR_TEXT_GAP + p.fm.stringWidth("~52/70") + FoeOverlay.GAP
+			+ FoeOverlay.BAR_W + FoeOverlay.BAR_TEXT_GAP + p.fm.stringWidth("52/70") + FoeOverlay.GAP
 			+ p.fm.stringWidth("Att 40  Str 40  Def 40") + FoeOverlay.GAP
 			+ p.fm.stringWidth("Fire")
 			+ FoeOverlay.PAD;
 		assertEquals(expected, p.dim.width);
+	}
+
+	// ---- Addendum 3: HP text position, layout, and max HP before the first hit ----
+
+	private static final int WHITE = 0xFFFFFFFF;
+	private static final int BLACK = 0xFF000000;
+
+	/** A graphics with text antialiasing off, so glyph pixels are exactly the text colour or the outline colour. */
+	private static Graphics2D graphics(BufferedImage img)
+	{
+		Graphics2D g = img.createGraphics();
+		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
+		return g;
+	}
+
+	private static FontMetrics fm()
+	{
+		Graphics2D g = graphics(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB));
+		try
+		{
+			return g.getFontMetrics();
+		}
+		finally
+		{
+			g.dispose();
+		}
+	}
+
+	private static FoeOverlay.Frame frame(TargetSnapshot s, Cfg c)
+	{
+		return FoeOverlay.frame(FoeOverlay.cells(s, c), c.layout(), fm());
+	}
+
+	private static Cfg inside()
+	{
+		Cfg c = flat();
+		c.hpTextPosition = FoeConfig.HpTextPosition.INSIDE;
+		return c;
+	}
+
+	private static Cfg stacked()
+	{
+		Cfg c = flat();
+		c.layout = FoeConfig.Layout.STACKED;
+		return c;
+	}
+
+	/** The bounding box of every pixel that is the bar's fill or its track colour; null when there is no bar. */
+	private static Rectangle barBounds(BufferedImage img)
+	{
+		int x0 = Integer.MAX_VALUE, y0 = Integer.MAX_VALUE, x1 = -1, y1 = -1;
+		for (int y = 0; y < img.getHeight(); y++)
+		{
+			for (int x = 0; x < img.getWidth(); x++)
+			{
+				int p = img.getRGB(x, y);
+				if (p == FILL || p == TRACK)
+				{
+					x0 = Math.min(x0, x);
+					y0 = Math.min(y0, y);
+					x1 = Math.max(x1, x);
+					y1 = Math.max(y1, y);
+				}
+			}
+		}
+		return x1 < 0 ? null : new Rectangle(x0, y0, x1 - x0 + 1, y1 - y0 + 1);
+	}
+
+	private static int count(BufferedImage img, Rectangle r, int argb)
+	{
+		int n = 0;
+		for (int y = r.y; y < r.y + r.height; y++)
+		{
+			for (int x = r.x; x < r.x + r.width; x++)
+			{
+				if (img.getRGB(x, y) == argb)
+				{
+					n++;
+				}
+			}
+		}
+		return n;
+	}
+
+	@Test
+	public void theHpCellIsInsideOnlyWhenTheSettingSaysSoAndThereIsTextToPlace()
+	{
+		Cfg c = new Cfg();
+		assertFalse("beside is the default", FoeOverlay.cells(live(), c).get(1).inside);
+		c.hpTextPosition = FoeConfig.HpTextPosition.INSIDE;
+		assertTrue(FoeOverlay.cells(live(), c).get(1).inside);
+		c.hpText = FoeConfig.HpText.NONE;
+		assertFalse("no text, nothing to centre", FoeOverlay.cells(live(), c).get(1).inside);
+		c.staleHpStyle = FoeConfig.StaleHpStyle.MARKER;
+		assertTrue("the lone ? of a stale bar is text too", FoeOverlay.cells(stale(), c).get(1).inside);
+		assertEquals("?", FoeOverlay.cells(stale(), c).get(1).text);
+		for (FoeOverlay.Cell cell : FoeOverlay.cells(live(), c))
+		{
+			if (!cell.hp)
+			{
+				assertFalse("only the HP cell is ever inside", cell.inside);
+			}
+		}
+	}
+
+	@Test
+	public void insideTextAddsNothingBesideTheBar()
+	{
+		TargetSnapshot s = live();
+		int beside = frame(s, flat()).width;
+		int in = frame(s, inside()).width;
+		assertEquals(FoeOverlay.BAR_TEXT_GAP + fm().stringWidth("52/70"), beside - in);
+	}
+
+	@Test
+	public void insideBarKeepsItsWidthWhenTheTextFits()
+	{
+		FoeOverlay.Frame f = frame(live(), inside());
+		assertTrue("precondition: 52/70 fits in the standard bar",
+			fm().stringWidth("52/70") + 2 * FoeOverlay.INSIDE_PAD <= FoeOverlay.BAR_W);
+		assertEquals(FoeOverlay.BAR_W, f.bar.width);
+	}
+
+	// Overflow rule: widen the bar to fit. Falling back to BESIDE would move the text across the bar under the
+	// user's own setting, and clipping would hide digits. Widening keeps both the choice and the number.
+	@Test
+	public void insideBarWidensToFitTextWiderThanTheBarAndTheFillScales()
+	{
+		int[] huge = {40, 40, 40, 123456, 1, 1};
+		TargetSnapshot s = snap(huge, 15, 30, false, null);
+		String text = FoeOverlay.hpText(s, inside());
+		int needed = fm().stringWidth(text) + 2 * FoeOverlay.INSIDE_PAD;
+		assertTrue("precondition: " + text + " does not fit in the standard bar", needed > FoeOverlay.BAR_W);
+		FoeOverlay.Frame f = frame(s, inside());
+		assertEquals(needed, f.bar.width);
+		assertEquals("beside never widens the bar", FoeOverlay.BAR_W, frame(s, flat()).bar.width);
+
+		Painted p = paint(s, inside());
+		Rectangle drawn = barBounds(p.img);
+		assertEquals("the pixels agree with the frame", f.bar.width, drawn.width);
+		assertEquals(f.bar.x, drawn.x);
+		// half full: the fill is half of the WIDENED bar
+		assertEquals(FILL, p.argb(drawn.x + 2, drawn.y + 1));
+		assertEquals(TRACK, p.argb(drawn.x + drawn.width - 2, drawn.y + 1));
+	}
+
+	@Test
+	public void insideTextNeverOverhangsTheBarAtAnyMaxHp()
+	{
+		FontMetrics fm = fm();
+		for (int max : new int[] {1, 9, 99, 999, 9999, 99999, 999999, 9999999})
+		{
+			int[] stats = {40, 40, 40, max, 1, 1};
+			for (FoeConfig.HpText t : FoeConfig.HpText.values())
+			{
+				Cfg c = inside();
+				c.hpText = t;
+				TargetSnapshot s = snap(stats, 29, 30, false, null);
+				String text = FoeOverlay.hpText(s, c);
+				FoeOverlay.Frame f = frame(s, c);
+				assertTrue("max " + max + " " + t + " '" + text + "'",
+					f.bar.width >= (text.isEmpty() ? 0 : fm.stringWidth(text) + 2 * FoeOverlay.INSIDE_PAD));
+				assertTrue(f.bar.width >= FoeOverlay.BAR_W);
+			}
+		}
+	}
+
+	@Test
+	public void insideTextIsCentredOnTheBar()
+	{
+		Painted p = paint(halfBar(false), inside());
+		Rectangle bar = barBounds(p.img);
+		int left = Integer.MAX_VALUE, right = -1;
+		for (int y = bar.y; y < bar.y + bar.height; y++)
+		{
+			for (int x = bar.x; x < bar.x + bar.width; x++)
+			{
+				if (p.argb(x, y) == WHITE)
+				{
+					left = Math.min(left, x);
+					right = Math.max(right, x);
+				}
+			}
+		}
+		assertTrue("the text is drawn on the bar", right > left);
+		int leftMargin = left - bar.x;
+		int rightMargin = bar.x + bar.width - 1 - right;
+		// glyph side bearings make the ink a pixel or two off the advance-width centre, never more
+		assertTrue("margins " + leftMargin + " / " + rightMargin, Math.abs(leftMargin - rightMargin) <= 2);
+	}
+
+	// The point of the outline: a white number that straddles a green fill and a pale track has no single
+	// background to contrast with, so every glyph pixel must be surrounded by outline, whatever is behind it.
+	@Test
+	public void insideTextIsLegibleOverBothTheFillAndTheTrack()
+	{
+		Painted p = paint(halfBar(false), inside()); // 15/30: the fill ends at the middle of the text
+		Rectangle bar = barBounds(p.img);
+		int glyphs = 0;
+		boolean overFill = false, overTrack = false;
+		for (int y = bar.y; y < bar.y + bar.height; y++)
+		{
+			for (int x = bar.x; x < bar.x + bar.width; x++)
+			{
+				if (p.argb(x, y) != WHITE)
+				{
+					continue;
+				}
+				glyphs++;
+				for (int dy = -1; dy <= 1; dy++)
+				{
+					for (int dx = -1; dx <= 1; dx++)
+					{
+						int n = p.argb(x + dx, y + dy);
+						assertTrue("glyph pixel (" + x + "," + y + ") touches background " + Integer.toHexString(n),
+							n == WHITE || n == BLACK);
+					}
+				}
+			}
+		}
+		assertTrue("the text is drawn", glyphs > 20);
+		// the glyphs really do sit over both backgrounds: some fill and some track remain visible around them
+		int mid = bar.x + bar.width / 2;
+		for (int y = bar.y; y < bar.y + bar.height; y++)
+		{
+			overFill |= p.argb(mid - 20, y) == FILL || p.argb(mid - 18, y) == FILL;
+			overTrack |= p.argb(mid + 20, y) == TRACK || p.argb(mid + 18, y) == TRACK;
+		}
+		assertTrue("fill visible left of the text", overFill);
+		assertTrue("track visible right of the text", overTrack);
+		assertTrue("a black outline ring exists around the glyphs", count(p.img, bar, BLACK) > glyphs);
+	}
+
+	@Test
+	public void insideTextStaysWithinTheBarsRows()
+	{
+		Painted p = paint(halfBar(false), inside());
+		Rectangle bar = barBounds(p.img);
+		for (int y = 0; y < p.img.getHeight(); y++)
+		{
+			for (int x = bar.x; x < bar.x + bar.width; x++)
+			{
+				if (p.argb(x, y) == WHITE)
+				{
+					assertTrue("white glyph pixel at y=" + y + " outside bar rows " + bar.y + ".." + (bar.y + bar.height - 1),
+						y >= bar.y && y < bar.y + bar.height);
+				}
+			}
+		}
+	}
+
+	@Test
+	public void insideBarIsTallEnoughForTheFont()
+	{
+		FontMetrics fm = fm();
+		FoeOverlay.Frame f = frame(live(), inside());
+		// glyphs plus the 1px outline above and below (settings-redesign review F3: >= ascent alone let a fixed
+		// BAR_H survive, since the test font's ascent equals BAR_H)
+		assertTrue(f.bar.height >= fm.getAscent() + 2);
+		assertTrue(f.bar.height >= FoeOverlay.BAR_H);
+		assertEquals("beside keeps the standard bar height", FoeOverlay.BAR_H, frame(live(), flat()).bar.height);
+	}
+
+	@Test
+	public void fadedInsideTextIsDimmerThanLiveInsideText()
+	{
+		Cfg c = inside();
+		c.staleHpStyle = FoeConfig.StaleHpStyle.FADED;
+		Painted live = paint(halfBar(false), c);
+		Painted dim = paint(halfBar(true), c);
+		Rectangle bar = frame(halfBar(true), c).bar;
+		assertTrue("live text has pure white pixels", count(live.img, bar, WHITE) > 0);
+		assertEquals("faded text has none", 0, count(dim.img, bar, WHITE));
+		assertTrue("but the outline is still there, so it stays legible", count(dim.img, bar, BLACK) > 0);
+	}
+
+	@Test
+	public void insideMarkerOnAStaleBarWithNoTextDrawsTheLoneQuestionMarkOnTheBar()
+	{
+		Cfg c = inside();
+		c.hpText = FoeConfig.HpText.NONE;
+		c.staleHpStyle = FoeConfig.StaleHpStyle.MARKER;
+		Painted p = paint(halfBar(true), c);
+		Rectangle bar = barBounds(p.img);
+		assertTrue("a ? is drawn on the bar", count(p.img, bar, WHITE) > 0);
+		assertEquals("and nothing is drawn on a live bar with no text", 0,
+			count(paint(halfBar(false), c).img, bar, WHITE));
+	}
+
+	// ---- stacked ----
+
+	@Test
+	public void stackedDimensionIsTheWiderRowAndBothHeights()
+	{
+		FontMetrics fm = fm();
+		Cfg c = stacked();
+		// full detail: the name line (name | levels | weakness) is wider than bar + text
+		TargetSnapshot s = live();
+		FoeOverlay.Frame f = frame(s, c);
+		int nameLine = FoeOverlay.PAD + fm.stringWidth("Ice giant  53") + FoeOverlay.GAP
+			+ fm.stringWidth("Att 40  Str 40  Def 40") + FoeOverlay.GAP + fm.stringWidth("Fire") + FoeOverlay.PAD;
+		int barLine = FoeOverlay.PAD + FoeOverlay.BAR_W + FoeOverlay.BAR_TEXT_GAP + fm.stringWidth("52/70") + FoeOverlay.PAD;
+		assertTrue("precondition: the name line is the wider one", nameLine > barLine);
+		assertEquals(nameLine, f.width);
+		int barRow = Math.max(FoeOverlay.BAR_H, fm.getHeight()); // beside text is taller than the bar
+		assertEquals(FoeOverlay.PAD + fm.getHeight() + FoeOverlay.ROW_GAP + barRow + FoeOverlay.PAD, f.height);
+
+		// short name, compact, no weakness: the bar line is the wider one
+		Cfg narrow = stacked();
+		narrow.detail = FoeConfig.Detail.COMPACT;
+		narrow.showWeakness = false;
+		TargetSnapshot rat = SnapshotFactory.build("Rat", 1, ICE_GIANT, 22, 30, false, null, null);
+		FoeOverlay.Frame g = frame(rat, narrow);
+		int ratLine = FoeOverlay.PAD + fm.stringWidth("Rat  1") + FoeOverlay.PAD;
+		assertTrue("precondition", ratLine < barLine);
+		assertEquals(barLine, g.width);
+	}
+
+	@Test
+	public void stackedDrawnSizeMatchesTheFrame()
+	{
+		Painted p = paint(live(), stacked());
+		FoeOverlay.Frame f = frame(live(), stacked());
+		assertEquals(f.width, p.dim.width);
+		assertEquals(f.height, p.dim.height);
+		assertTrue("taller than the one-line strip", p.dim.height > frame(live(), flat()).height);
+	}
+
+	@Test
+	public void stackedPutsTheBarUnderTheNameAndStretchesItToTheNameLine()
+	{
+		FontMetrics fm = fm();
+		Painted p = paint(halfBar(false), stacked());
+		Rectangle bar = barBounds(p.img);
+		assertEquals("left-aligned under the name", FoeOverlay.PAD, bar.x);
+		assertTrue("below the name row", bar.y >= FoeOverlay.PAD + fm.getHeight() + FoeOverlay.ROW_GAP);
+		int text = FoeOverlay.BAR_TEXT_GAP + fm.stringWidth("52/70");
+		assertEquals("stretched to the name line, leaving room for the text beside it",
+			p.dim.width - 2 * FoeOverlay.PAD - text, bar.width);
+		assertEquals("the fill is half of the stretched bar", FILL, p.argb(bar.x + bar.width / 4, bar.y + 1));
+		assertEquals(TRACK, p.argb(bar.x + bar.width * 3 / 4, bar.y + 1));
+		// the name is above the bar, not beside it
+		boolean nameAbove = false;
+		for (int x = 0; x < p.dim.width; x++)
+		{
+			for (int y = 0; y < bar.y; y++)
+			{
+				nameAbove |= p.argb(x, y) == WHITE;
+			}
+		}
+		assertTrue(nameAbove);
+		assertEquals("nothing white on the bar itself: the text is beside it", 0, count(p.img, bar, WHITE));
+	}
+
+	@Test
+	public void stackedInsideTextBarFillsTheWholeWidthAndCentresItsText()
+	{
+		Painted p = paint(halfBar(false), stackedInside());
+		Rectangle bar = barBounds(p.img);
+		assertEquals(FoeOverlay.PAD, bar.x);
+		assertEquals("no text beside, so the bar runs to the right edge", p.dim.width - 2 * FoeOverlay.PAD, bar.width);
+		assertTrue("white text on the bar", count(p.img, bar, WHITE) > 0);
+	}
+
+	private static Cfg stackedInside()
+	{
+		Cfg c = stacked();
+		c.hpTextPosition = FoeConfig.HpTextPosition.INSIDE;
+		return c;
+	}
+
+	// Decision: dividers separate the cells of the name line in both layouts. There is none between the two lines
+	// (the stacking is the separation) and none inside the bar line (the bar and its text are one cell, as in the
+	// one-line strip, where nothing sits between the bar and its text either).
+	@Test
+	public void stackedDividersSeparateTheNameLineCellsAndNothingElse()
+	{
+		FontMetrics fm = fm();
+		Painted p = paint(live(), stacked());
+		int dividerX = FoeOverlay.PAD + fm.stringWidth("Ice giant  53") + FoeOverlay.GAP / 2;
+		assertTrue("divider between name and levels", alpha(p.argb(dividerX, FoeOverlay.PAD + fm.getHeight() / 2)) > 0);
+		Rectangle bar = barBounds(p.img);
+		for (int x = 0; x < p.dim.width; x++)
+		{
+			for (int y = FoeOverlay.PAD + fm.getHeight(); y < FoeOverlay.PAD + fm.getHeight() + FoeOverlay.ROW_GAP; y++)
+			{
+				assertEquals("nothing drawn between the two lines at " + x + "," + y, 0, alpha(p.argb(x, y)));
+			}
+		}
+		int betweenBarAndText = bar.x + bar.width + FoeOverlay.BAR_TEXT_GAP / 2;
+		for (int y = bar.y; y < bar.y + bar.height; y++)
+		{
+			assertEquals("no divider between the bar and its text", 0, alpha(p.argb(betweenBarAndText, y)));
+		}
+		assertEquals("no divider in the bar line left of the bar", 0,
+			alpha(p.argb(FoeOverlay.PAD - FoeOverlay.GAP / 2, bar.y + bar.height / 2)));
+	}
+
+	@Test
+	public void stackedWithNoBarIsJustTheNameLine()
+	{
+		int[] noHitpoints = {40, 40, 40, 0, 1, 1};
+		TargetSnapshot s = raw(noHitpoints, -1, 0, false);
+		Painted p = paint(s, stacked());
+		assertEquals(FoeOverlay.PAD * 2 + fm().getHeight(), p.dim.height);
+		assertEquals(frame(s, flat()).width, p.dim.width);
+		assertNull("no bar drawn", barBounds(p.img));
+	}
+
+	@Test
+	public void oneLineIsStillOneStripWithTheBarBetweenTheNameAndTheLevels()
+	{
+		Painted p = paint(halfBar(false), flat());
+		assertEquals(FoeOverlay.PAD * 2 + Math.max(fm().getHeight(), FoeOverlay.BAR_H), p.dim.height);
+		Rectangle bar = barBounds(p.img);
+		assertEquals(p.barX, bar.x);
+		assertEquals(FoeOverlay.BAR_W, bar.width);
+	}
+
+	// ---- max HP before the first hit (the factory's full bar, as the overlay draws it) ----
+
+	/** HpMemory's answer for a target that has never had a bar, with max HP known from the stats. */
+	private static TargetSnapshot unhit()
+	{
+		return snap(ICE_GIANT, -1, 0, false, null);
+	}
+
+	@Test
+	public void anUnhitMonsterShowsItsMaxHpAsTheTextPerTheHpTextSetting()
+	{
+		Cfg c = new Cfg();
+		c.hpText = FoeConfig.HpText.CURRENT_MAX;
+		assertEquals("70/70", FoeOverlay.hpText(unhit(), c));
+		c.hpText = FoeConfig.HpText.CURRENT;
+		assertEquals("70", FoeOverlay.hpText(unhit(), c));
+		c.hpText = FoeConfig.HpText.PERCENT;
+		assertEquals("100%", FoeOverlay.hpText(unhit(), c));
+		c.hpText = FoeConfig.HpText.NONE;
+		assertEquals("", FoeOverlay.hpText(unhit(), c));
+		c.hpText = FoeConfig.HpText.CURRENT_MAX;
+		c.staleHpStyle = FoeConfig.StaleHpStyle.MARKER;
+		assertEquals("70/70?", FoeOverlay.hpText(unhit(), c));
+	}
+
+	@Test
+	public void anUnhitMonsterDrawsAFullFadedBar()
+	{
+		Cfg c = flat();
+		c.staleHpStyle = FoeConfig.StaleHpStyle.FADED;
+		Painted p = paint(unhit(), c);
+		for (int off : new int[] {2, 40, FoeOverlay.BAR_W - 3})
+		{
+			int a = alpha(p.argb(p.barX + off, p.barMidY));
+			assertTrue("fill is translucent across the whole bar at +" + off + ", alpha " + a, a < 255 && a > FoeOverlay.BAR_BG.getAlpha());
+		}
+	}
+
+	@Test
+	public void anUnhitMonsterDrawsAFullHollowBar()
+	{
+		Cfg c = flat();
+		c.staleHpStyle = FoeConfig.StaleHpStyle.HOLLOW;
+		Painted p = paint(unhit(), c);
+		assertEquals(FILL, p.argb(p.barX, p.barMidY));
+		assertEquals("the outline reaches the right end: the bar is full", FILL,
+			p.argb(p.barX + FoeOverlay.BAR_W - 1, p.barMidY));
+		assertEquals(TRACK, p.argb(p.barX + 40, p.barMidY));
+	}
+
+	@Test
+	public void anUnhitMonsterWithAMarkerStyleDrawsAnOpaqueFullBarAndAQuestionMark()
+	{
+		Cfg c = flat();
+		c.staleHpStyle = FoeConfig.StaleHpStyle.MARKER;
+		Painted p = paint(unhit(), c);
+		assertEquals(FILL, p.argb(p.barX + FoeOverlay.BAR_W - 3, p.barMidY));
+		assertEquals("70/70?", FoeOverlay.cells(unhit(), c).get(1).text);
+	}
+
+	@Test
+	public void aMonsterWithNoKnownMaxHpAndNoBarDrawsNoBarEvenAfterTheFactoryRule()
+	{
+		int[] noHitpoints = {40, 40, 40, 0, 1, 1};
+		TargetSnapshot s = snap(noHitpoints, -1, 0, false, null);
+		for (FoeOverlay.Cell cell : FoeOverlay.cells(s, new Cfg()))
+		{
+			assertFalse(cell.hp);
+		}
+		assertNull(barBounds(paint(s, flat()).img));
 	}
 
 	@Test

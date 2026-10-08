@@ -182,3 +182,11 @@ eight settings in total.
 - **Max HP before the first hit.** A monster has no health bar until it takes damage (seen on a
   Kalphite Soldier). When max HP is known and there is no bar yet, Foe shows a full bar drawn in the
   stale style, with the max HP as its text, until the first live reading.
+- **Known limit of the full bar before the first hit (settings-redesign review, 2026-10-08).** Foe
+  remembers each NPC's last bar for as long as that NPC stays in the scene, so switching targets and
+  back keeps the last real reading. But a monster that was damaged *before* Foe saw a bar on it (by
+  another player, or before the plugin started) is still drawn as a full bar until its first visible
+  bar. The stale style is the only signal of that.
+- **Faded applies to the bar text, not to its outline.** With HP text inside the bar, the text gets a
+  1px black outline so it reads over both fill and track. Under Faded only the white fades, and the
+  outline stays solid, because a faded outline would make stale text unreadable.

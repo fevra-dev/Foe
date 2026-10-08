@@ -1,9 +1,11 @@
 package com.foe;
 
+import java.util.IdentityHashMap;
+import java.util.Map;
 import lombok.Value;
 
 /**
- * The last health bar seen on one target (spec: "health ratio -1 -> last known value, dimmed").
+ * The last health bar seen on each NPC (spec: "health ratio -1 -> last known value, dimmed").
  * Pure, so FoePlugin only has to ask it once per tick.
  *
  * <p>A bar is live when the client reports both a scale above 0 and a ratio of at least 0. Upstream's
@@ -12,9 +14,12 @@ import lombok.Value;
  * nothing. The client reports -1 for both once the bar has gone (Actor.getHealthRatio/getHealthScale docs), so
  * the two rules agree on every reading the client is documented to send.
  *
- * <p>The memory belongs to one target, compared by identity: the plugin passes the NPC object, so a new target
- * starts empty even if the NPC index was reused. Nothing is time-limited. A remembered value stays until the
- * target changes, {@link #clear} is called, or a live bar replaces it, and it is always reported as stale.
+ * <p>Memory is kept per NPC object, compared by identity, so a reused NPC index starts empty. It is kept across
+ * target switches: switching A -> B -> A must not forget A, or SnapshotFactory's "never had a bar" rule would
+ * draw a damaged A at full HP (settings-redesign review F1). An entry lives until the NPC dies or despawns
+ * ({@link #forget}), or the plugin forgets everything on logout, hop or stop ({@link #clear}); despawn bounds the
+ * map to NPCs still in the scene. Only the current target is read each tick, so a remembered value is the last
+ * one seen while it was the target, and it is always reported as stale.
  */
 final class HpMemory
 {
@@ -29,32 +34,29 @@ final class HpMemory
 		boolean stale;
 	}
 
-	private Object owner;
-	private int ratio = -1;
-	private int scale = 0;
+	private final Map<Object, int[]> bars = new IdentityHashMap<>();
 
 	/** The reading to draw for {@code target}, given what the client reports for it right now. */
 	Reading read(Object target, int liveRatio, int liveScale)
 	{
-		if (target != owner)
-		{
-			clear();
-			owner = target;
-		}
 		if (liveScale > 0 && liveRatio >= 0)
 		{
-			ratio = liveRatio;
-			scale = liveScale;
-			return new Reading(ratio, scale, false);
+			bars.put(target, new int[]{liveRatio, liveScale});
+			return new Reading(liveRatio, liveScale, false);
 		}
-		return scale > 0 ? new Reading(ratio, scale, true) : new Reading(-1, 0, false);
+		int[] last = bars.get(target);
+		return last != null ? new Reading(last[0], last[1], true) : new Reading(-1, 0, false);
 	}
 
-	/** Forget everything: logout, hop, the target died or despawned, or the plugin stopped. */
+	/** This NPC died or despawned: its object will not come back, and its index may be reused. */
+	void forget(Object target)
+	{
+		bars.remove(target);
+	}
+
+	/** Forget every NPC: logout, hop, or the plugin stopped. */
 	void clear()
 	{
-		owner = null;
-		ratio = -1;
-		scale = 0;
+		bars.clear();
 	}
 }
