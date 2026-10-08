@@ -251,3 +251,18 @@ arrived on the same tick as a spell-impact spot-anim (`GraphicChanged`) on the N
   NPC with no spot-anim left is not counted as an impact. All 65 events in the trace carried one.
 - `NPC.getId()` is the id of the untransformed composition `[assumed]`; the trace logged both and they were equal for
   every NPC in it.
+
+## Addendum 5 — 2026-10-08: exact HP from hitsplats, and remembered weaknesses (operator decisions)
+
+**Exact HP.**
+- The bar gives only a range: for example ratio 22/30 on 85 max HP means 62–64. Hitsplats give exact damage.
+- **Tracking:** Foe tracks, per NPC object, `maxHp − Σ damage + Σ heal`, summed over every hitsplat it sees on that NPC (yours and other players'), from the moment it first sees the NPC.
+- **Shown value:** the tracked value whenever it lies inside the bar's current `[min, max]` range (`HpEstimate`'s bounds). Otherwise Foe shows the midpoint, as today, and drops the tracked value for that NPC until an exact bar reading (min == max) re-anchors it.
+- **Result:** exact when Foe has watched the NPC from full health, and never worse than today's estimate. A relog, a monster damaged before Foe saw it, regeneration or a missed hitsplat all fall back to the midpoint, because the range check rejects the tracked value.
+- The memory is dropped on death, despawn, logout and hop, like `HpMemory`.
+
+**Remembered weaknesses.**
+- **Storage:** learned entries are saved in RuneLite's own config (ConfigManager, group `foe`) and loaded at startup, so each monster type is taught once, ever.
+- **Format and defaults:** they are game data, not account data, so one global store holds them. Malformed entries are ignored. There is no new visible setting.
+- **Known limit:** a wrong entry, or one made stale by a game update that changes a monster's weakness, now persists across sessions. Only a confirmed spell credit on that type replaces it.
+- **A bundled wiki weakness table stays v2.**
