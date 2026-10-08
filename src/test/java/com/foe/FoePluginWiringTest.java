@@ -604,6 +604,25 @@ public class FoePluginWiringTest
 		assertTrue(s.isHpStale());
 	}
 
+	// Settings-redesign review F1: A at 35/70, switch to B, A's bar times out, back to A -> A must stay at its
+	// remembered 15/30 (stale), not be redrawn as a full 70/70.
+	@Test
+	public void switchingAwayAndBackKeepsTheRememberedBarNotAFullOne()
+	{
+		Npc a = iceGiant(1).bar(15, 30);
+		Npc b = iceGiant(2).bar(10, 30);
+		engage(a);
+		tick();
+		engage(b);
+		tick();
+		a.bar(-1, -1);
+		engage(a);
+		TargetSnapshot s = tick();
+		assertEquals(15, s.getHpRatio());
+		assertEquals(30, s.getHpScale());
+		assertTrue(s.isHpStale());
+	}
+
 	@Test
 	public void aTargetThatHasNeverHadABarShowsAFullStaleBarWithItsMaxHpUntilTheFirstHit()
 	{

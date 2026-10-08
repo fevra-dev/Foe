@@ -56,13 +56,24 @@ public class HpMemoryTest
 	}
 
 	@Test
-	public void theMemoryBelongsToOneTarget()
+	public void eachNpcHasItsOwnMemory()
 	{
 		memory.read(a, 15, 30);
-		// b is a different target: a's value must not be shown for it.
+		// b is a different NPC: a's value must not be shown for it.
 		assertReading(-1, 0, false, memory.read(b, -1, -1));
-		// and it must not come back for a either, because b replaced it.
+		// Settings-redesign review F1: switching A -> B -> A must not forget A, or the factory's
+		// "never had a bar" rule would draw a damaged A at full HP.
+		assertReading(15, 30, true, memory.read(a, -1, -1));
+	}
+
+	@Test
+	public void forgetDropsOneNpcOnly()
+	{
+		memory.read(a, 15, 30);
+		memory.read(b, 3, 30);
+		memory.forget(a);
 		assertReading(-1, 0, false, memory.read(a, -1, -1));
+		assertReading(3, 30, true, memory.read(b, -1, -1));
 	}
 
 	@Test
@@ -100,11 +111,13 @@ public class HpMemoryTest
 	}
 
 	@Test
-	public void clearForgetsEverythingIncludingTheOwner()
+	public void clearForgetsEveryNpc()
 	{
 		memory.read(a, 15, 30);
+		memory.read(b, 3, 30);
 		memory.clear();
 		assertReading(-1, 0, false, memory.read(a, -1, -1));
+		assertReading(-1, 0, false, memory.read(b, -1, -1));
 	}
 
 	@Test

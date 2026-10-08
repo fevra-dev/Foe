@@ -191,9 +191,9 @@ public class FoePlugin extends Plugin
 
 	private void forget(NPC npc)
 	{
+		hpMemory.forget(npc); // any NPC that died or left: its memory must not outlive it
 		if (feed.gone(npc))
 		{
-			hpMemory.clear();
 			snapshot = null; // the panel clears now, not on the next tick
 		}
 	}

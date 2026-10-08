@@ -47,9 +47,11 @@ final class SnapshotFactory
 			// Never had a bar (a monster shows none until it takes damage). Max HP is known, so say so: a full bar
 			// at max HP, drawn in the stale style because nothing confirms it, until the first live reading
 			// replaces it. This is decided here and not in HpMemory, whose contract is that stale is never true
-			// when nothing is remembered. It is exactly HpMemory's "nothing known" reading, so a bar that was seen
-			// and then lost (stale, with its last ratio and scale) and inconsistent data (a ratio with no scale,
-			// or the reverse) never come through this branch. The raw ratio/scale of the snapshot are the full
+			// when nothing is remembered. It fires on HpMemory's "nothing known" reading, which (memory being per
+			// NPC object) means Foe has seen no live bar on this NPC since it entered the scene. So it CAN show full
+			// HP for a monster damaged before Foe saw it: by another player, or before the plugin started. The
+			// stale style is the only signal of that (spec addendum 3). A raw half-bar reading (ratio without
+			// scale, or the reverse) also reads as "nothing known" through HpMemory. The raw ratio/scale of the full
 			// bar's 1/1 here, and HpEstimate is bypassed: with scale 1 it would return a midpoint, not maxHp.
 			ratio = 1;
 			scale = 1;

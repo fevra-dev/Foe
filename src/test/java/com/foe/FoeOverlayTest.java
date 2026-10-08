@@ -963,7 +963,9 @@ public class FoeOverlayTest
 	{
 		FontMetrics fm = fm();
 		FoeOverlay.Frame f = frame(live(), inside());
-		assertTrue(f.bar.height >= fm.getAscent());
+		// glyphs plus the 1px outline above and below (settings-redesign review F3: >= ascent alone let a fixed
+		// BAR_H survive, since the test font's ascent equals BAR_H)
+		assertTrue(f.bar.height >= fm.getAscent() + 2);
 		assertTrue(f.bar.height >= FoeOverlay.BAR_H);
 		assertEquals("beside keeps the standard bar height", FoeOverlay.BAR_H, frame(live(), flat()).bar.height);
 	}
