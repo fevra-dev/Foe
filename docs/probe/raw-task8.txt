@@ -1,0 +1,258 @@
+14:06:39 tick=0 VARP5536=0 | myTarget=- | panel=-
+14:06:39 tick=0 VARP5536=-1 | myTarget=- | panel=-
+14:06:39 tick=0 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:39 tick=0 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:39 tick=0 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:39 tick=0 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:39 tick=0 GFX on Greater Nechryael id=7278 tid=7278 idx=6468 spotanims=[363] | myTarget=null
+14:06:39 tick=0 GFX on Greater Nechryael id=7278 tid=7278 idx=6466 spotanims=[363] | myTarget=null
+14:06:39 tick=0 GFX on Greater Nechryael id=7278 tid=7278 idx=6469 spotanims=[363] | myTarget=null
+14:06:39 tick=0 GFX on Greater Nechryael id=7278 tid=7278 idx=6476 spotanims=[363] | myTarget=null
+14:06:39 tick=0 GFX on Death spawn id=10 tid=10 idx=64165 spotanims=[363] | myTarget=null
+14:06:40 tick=0 HIT on Greater Nechryael id=7278 tid=7278 idx=6468 mine=false type=17 amt=16
+14:06:40 tick=0 HIT on Greater Nechryael id=7278 tid=7278 idx=6466 mine=false type=17 amt=17
+14:06:40 tick=0 HIT on Greater Nechryael id=7278 tid=7278 idx=6469 mine=false type=17 amt=16
+14:06:40 tick=0 HIT on Greater Nechryael id=7278 tid=7278 idx=6476 mine=false type=17 amt=16
+14:06:40 tick=0 HIT on Death spawn id=10 tid=10 idx=64165 mine=false type=17 amt=19
+14:06:40 tick=0 GFX on Greater Nechryael id=7278 tid=7278 idx=6483 spotanims=[369] | myTarget=null
+14:06:40 tick=0 GFX on Greater Nechryael id=7278 tid=7278 idx=6484 spotanims=[369] | myTarget=null
+14:06:40 tick=0 GFX on Greater Nechryael id=7278 tid=7278 idx=6485 spotanims=[369] | myTarget=null
+14:06:40 tick=0 GFX on Death spawn id=10 tid=10 idx=64126 spotanims=[369] | myTarget=null
+14:06:40 tick=0 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:40 tick=0 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:40 tick=0 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:40 tick=0 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:40 tick=0 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:40 tick=0 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:40 tick=0 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:40 tick=0 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:40 tick=0 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:40 tick=0 HIT on Greater Nechryael id=7278 tid=7278 idx=6483 mine=false type=17 amt=25
+14:06:40 tick=0 HIT on Greater Nechryael id=7278 tid=7278 idx=6484 mine=false type=17 amt=5
+14:06:40 tick=0 HIT on Greater Nechryael id=7278 tid=7278 idx=6485 mine=false type=17 amt=36
+14:06:40 tick=0 HIT on Death spawn id=10 tid=10 idx=64126 mine=false type=17 amt=7
+14:06:40 tick=0 GFX on Greater Nechryael id=7278 tid=7278 idx=6468 spotanims=[363] | myTarget=null
+14:06:40 tick=0 GFX on Greater Nechryael id=7278 tid=7278 idx=6466 spotanims=[363] | myTarget=null
+14:06:40 tick=0 GFX on Greater Nechryael id=7278 tid=7278 idx=6469 spotanims=[363] | myTarget=null
+14:06:40 tick=0 GFX on Greater Nechryael id=7278 tid=7278 idx=6476 spotanims=[363] | myTarget=null
+14:06:40 tick=1 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:40 tick=1 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:40 tick=1 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:40 tick=1 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:40 tick=1 GFX on Greater Nechryael id=7278 tid=7278 idx=6480 spotanims=[369] | myTarget=null
+14:06:40 tick=1 HIT on Greater Nechryael id=7278 tid=7278 idx=6468 mine=false type=17 amt=16
+14:06:40 tick=1 HIT on Greater Nechryael id=7278 tid=7278 idx=6466 mine=false type=17 amt=15
+14:06:40 tick=1 HIT on Greater Nechryael id=7278 tid=7278 idx=6469 mine=false type=17 amt=2
+14:06:40 tick=1 HIT on Greater Nechryael id=7278 tid=7278 idx=6476 mine=false type=17 amt=19
+14:06:40 tick=1 GFX on Greater Nechryael id=7278 tid=7278 idx=6483 spotanims=[369] | myTarget=null
+14:06:40 tick=1 GFX on Greater Nechryael id=7278 tid=7278 idx=6484 spotanims=[369] | myTarget=null
+14:06:40 tick=1 GFX on Greater Nechryael id=7278 tid=7278 idx=6485 spotanims=[369] | myTarget=null
+14:06:40 tick=1 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:40 tick=1 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:40 tick=1 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:40 tick=1 HIT on Greater Nechryael id=7278 tid=7278 idx=6480 mine=false type=17 amt=11
+14:06:40 tick=1 HIT on Greater Nechryael id=7278 tid=7278 idx=6483 mine=false type=17 amt=31
+14:06:40 tick=1 HIT on Greater Nechryael id=7278 tid=7278 idx=6484 mine=false type=17 amt=15
+14:06:40 tick=1 HIT on Greater Nechryael id=7278 tid=7278 idx=6485 mine=false type=17 amt=39
+14:06:41 tick=2 GFX on Greater Nechryael id=7278 tid=7278 idx=6473 spotanims=[363] | myTarget=null
+14:06:41 tick=3 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:41 tick=3 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:41 tick=3 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:41 tick=3 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:42 tick=4 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:42 tick=4 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:42 tick=4 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:42 tick=4 GFX on Greater Nechryael id=7278 tid=7278 idx=6480 spotanims=[369] | myTarget=null
+14:06:42 tick=4 GFX on Greater Nechryael id=7278 tid=7278 idx=6483 spotanims=[369] | myTarget=null
+14:06:42 tick=4 GFX on Greater Nechryael id=7278 tid=7278 idx=6484 spotanims=[369] | myTarget=null
+14:06:42 tick=4 GFX on Greater Nechryael id=7278 tid=7278 idx=6485 spotanims=[369] | myTarget=null
+14:06:42 tick=5 HIT on Greater Nechryael id=7278 tid=7278 idx=6473 mine=false type=17 amt=14
+14:06:43 tick=6 HIT on Greater Nechryael id=7278 tid=7278 idx=6480 mine=false type=17 amt=23
+14:06:43 tick=6 HIT on Greater Nechryael id=7278 tid=7278 idx=6483 mine=false type=17 amt=32
+14:06:43 tick=6 HIT on Greater Nechryael id=7278 tid=7278 idx=6484 mine=false type=17 amt=24
+14:06:43 tick=6 HIT on Greater Nechryael id=7278 tid=7278 idx=6485 mine=false type=17 amt=22
+14:06:44 tick=7 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:44 tick=7 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:44 tick=7 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:44 tick=7 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:44 tick=7 GFX on Greater Nechryael id=7278 tid=7278 idx=6468 spotanims=[363] | myTarget=null
+14:06:44 tick=7 GFX on Greater Nechryael id=7278 tid=7278 idx=6466 spotanims=[363] | myTarget=null
+14:06:44 tick=7 GFX on Greater Nechryael id=7278 tid=7278 idx=6469 spotanims=[363] | myTarget=null
+14:06:44 tick=7 GFX on Greater Nechryael id=7278 tid=7278 idx=6476 spotanims=[363] | myTarget=null
+14:06:44 tick=8 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:44 tick=8 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:45 tick=9 GFX on Greater Nechryael id=7278 tid=7278 idx=6480 spotanims=[369] | myTarget=null
+14:06:45 tick=9 HIT on Greater Nechryael id=7278 tid=7278 idx=6468 mine=false type=17 amt=10
+14:06:45 tick=9 HIT on Greater Nechryael id=7278 tid=7278 idx=6466 mine=false type=17 amt=15
+14:06:45 tick=9 HIT on Greater Nechryael id=7278 tid=7278 idx=6469 mine=false type=17 amt=1
+14:06:45 tick=9 HIT on Greater Nechryael id=7278 tid=7278 idx=6476 mine=false type=17 amt=6
+14:06:45 tick=9 GFX on Greater Nechryael id=7278 tid=7278 idx=6483 spotanims=[369] | myTarget=null
+14:06:45 tick=9 GFX on Greater Nechryael id=7278 tid=7278 idx=6484 spotanims=[369] | myTarget=null
+14:06:45 tick=9 GFX on Greater Nechryael id=7278 tid=7278 idx=6485 spotanims=[369] | myTarget=null
+14:06:46 tick=11 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:46 tick=11 HIT on bd@601ee956 mine=false type=17 amt=1
+14:06:46 tick=11 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:46 tick=11 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:46 tick=11 HIT on Greater Nechryael id=7278 tid=7278 idx=6480 mine=false type=17 amt=24
+14:06:46 tick=11 HIT on Greater Nechryael id=7278 tid=7278 idx=6483 mine=false type=17 amt=39
+14:06:46 tick=11 HIT on Greater Nechryael id=7278 tid=7278 idx=6484 mine=false type=17 amt=38
+14:06:46 tick=11 HIT on Greater Nechryael id=7278 tid=7278 idx=6485 mine=false type=17 amt=14
+14:06:47 tick=12 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:47 tick=12 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:48 tick=14 GFX on Greater Nechryael id=7278 tid=7278 idx=6480 spotanims=[369] | myTarget=null
+14:06:48 tick=14 GFX on Greater Nechryael id=7278 tid=7278 idx=6483 spotanims=[369] | myTarget=null
+14:06:48 tick=14 GFX on Greater Nechryael id=7278 tid=7278 idx=6484 spotanims=[369] | myTarget=null
+14:06:48 tick=14 GFX on Greater Nechryael id=7278 tid=7278 idx=6485 spotanims=[369] | myTarget=null
+14:06:48 tick=15 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:48 tick=15 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:48 tick=15 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:48 tick=15 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:48 tick=15 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:49 tick=16 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:49 tick=16 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:49 tick=16 HIT on Greater Nechryael id=7278 tid=7278 idx=6480 mine=false type=17 amt=39
+14:06:49 tick=16 HIT on Greater Nechryael id=7278 tid=7278 idx=6483 mine=false type=17 amt=8
+14:06:49 tick=16 HIT on Greater Nechryael id=7278 tid=7278 idx=6484 mine=false type=17 amt=27
+14:06:49 tick=16 HIT on Greater Nechryael id=7278 tid=7278 idx=6485 mine=false type=17 amt=12
+14:06:50 tick=18 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:50 tick=18 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:51 tick=19 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:51 tick=19 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:51 tick=19 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:51 tick=19 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:51 tick=19 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:51 tick=19 GFX on Greater Nechryael id=7278 tid=7278 idx=6480 spotanims=[369] | myTarget=null
+14:06:51 tick=19 GFX on Greater Nechryael id=7278 tid=7278 idx=6484 spotanims=[369] | myTarget=null
+14:06:51 tick=19 GFX on Greater Nechryael id=7278 tid=7278 idx=6485 spotanims=[369] | myTarget=null
+14:06:51 tick=20 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:51 tick=20 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:52 tick=21 HIT on Greater Nechryael id=7278 tid=7278 idx=6480 mine=false type=17 amt=29
+14:06:52 tick=21 HIT on Greater Nechryael id=7278 tid=7278 idx=6484 mine=false type=17 amt=27
+14:06:52 tick=21 HIT on Greater Nechryael id=7278 tid=7278 idx=6485 mine=false type=17 amt=32
+14:06:53 tick=22 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:53 tick=22 GFX on Greater Nechryael id=7278 tid=7278 idx=6473 spotanims=[363] | myTarget=null
+14:06:53 tick=22 GFX on Greater Nechryael id=7278 tid=7278 idx=6468 spotanims=[363] | myTarget=null
+14:06:53 tick=22 GFX on Greater Nechryael id=7278 tid=7278 idx=6466 spotanims=[363] | myTarget=null
+14:06:53 tick=22 GFX on Greater Nechryael id=7278 tid=7278 idx=6469 spotanims=[363] | myTarget=null
+14:06:53 tick=22 GFX on Greater Nechryael id=7278 tid=7278 idx=6476 spotanims=[363] | myTarget=null
+14:06:53 tick=22 GFX on Death spawn id=10 tid=10 idx=64720 spotanims=[363] | myTarget=null
+14:06:53 tick=23 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:53 tick=23 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:53 tick=23 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:53 tick=23 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:53 tick=23 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:54 tick=24 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:54 tick=24 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:54 tick=24 GFX on Greater Nechryael id=7278 tid=7278 idx=6480 spotanims=[369] | myTarget=null
+14:06:54 tick=24 HIT on Greater Nechryael id=7278 tid=7278 idx=6473 mine=false type=17 amt=3
+14:06:54 tick=24 HIT on Greater Nechryael id=7278 tid=7278 idx=6468 mine=false type=17 amt=16
+14:06:54 tick=24 HIT on Greater Nechryael id=7278 tid=7278 idx=6466 mine=false type=17 amt=25
+14:06:54 tick=24 HIT on Greater Nechryael id=7278 tid=7278 idx=6469 mine=false type=17 amt=7
+14:06:54 tick=24 HIT on Greater Nechryael id=7278 tid=7278 idx=6476 mine=false type=17 amt=3
+14:06:54 tick=24 GFX on Greater Nechryael id=7278 tid=7278 idx=6484 spotanims=[369] | myTarget=null
+14:06:54 tick=24 GFX on Greater Nechryael id=7278 tid=7278 idx=6485 spotanims=[369] | myTarget=null
+14:06:54 tick=24 HIT on Death spawn id=10 tid=10 idx=64720 mine=false type=17 amt=1
+14:06:55 tick=26 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:55 tick=26 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:55 tick=26 HIT on Greater Nechryael id=7278 tid=7278 idx=6480 mine=false type=17 amt=35
+14:06:55 tick=26 HIT on Greater Nechryael id=7278 tid=7278 idx=6484 mine=false type=17 amt=3
+14:06:55 tick=26 HIT on Greater Nechryael id=7278 tid=7278 idx=6485 mine=false type=17 amt=17
+14:06:56 tick=27 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:56 tick=27 HIT on bd@601ee956 mine=false type=17 amt=1
+14:06:56 tick=27 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:56 tick=27 GFX on Greater Nechryael id=7278 tid=7278 idx=6473 spotanims=[363] | myTarget=null
+14:06:56 tick=27 GFX on Greater Nechryael id=7278 tid=7278 idx=6468 spotanims=[363] | myTarget=null
+14:06:56 tick=27 GFX on Greater Nechryael id=7278 tid=7278 idx=6466 spotanims=[363] | myTarget=null
+14:06:56 tick=27 GFX on Greater Nechryael id=7278 tid=7278 idx=6469 spotanims=[363] | myTarget=null
+14:06:56 tick=27 GFX on Greater Nechryael id=7278 tid=7278 idx=6476 spotanims=[363] | myTarget=null
+14:06:56 tick=27 GFX on Death spawn id=10 tid=10 idx=64720 spotanims=[363] | myTarget=null
+14:06:56 tick=27 GFX on Death spawn id=10 tid=10 idx=64947 spotanims=[363] | myTarget=null
+14:06:56 tick=28 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:56 tick=28 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:57 tick=29 HIT on Greater Nechryael id=7278 tid=7278 idx=6473 mine=false type=17 amt=11
+14:06:57 tick=29 HIT on Greater Nechryael id=7278 tid=7278 idx=6468 mine=false type=17 amt=20
+14:06:57 tick=29 HIT on Greater Nechryael id=7278 tid=7278 idx=6466 mine=false type=17 amt=10
+14:06:57 tick=29 HIT on Greater Nechryael id=7278 tid=7278 idx=6469 mine=false type=17 amt=5
+14:06:57 tick=29 HIT on Greater Nechryael id=7278 tid=7278 idx=6476 mine=false type=17 amt=11
+14:06:57 tick=29 HIT on Death spawn id=10 tid=10 idx=64720 mine=false type=17 amt=10
+14:06:57 tick=29 HIT on Death spawn id=10 tid=10 idx=64947 mine=false type=17 amt=10
+14:06:57 tick=30 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:57 tick=30 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:58 tick=31 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:58 tick=31 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:58 tick=31 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:59 tick=32 HIT on bd@601ee956 mine=false type=13 amt=0
+14:06:59 tick=32 HIT on bd@529bd42e mine=false type=13 amt=0
+14:06:59 tick=32 GFX on Greater Nechryael id=7278 tid=7278 idx=6473 spotanims=[363] | myTarget=null
+14:06:59 tick=32 GFX on Greater Nechryael id=7278 tid=7278 idx=6468 spotanims=[363] | myTarget=null
+14:06:59 tick=32 GFX on Greater Nechryael id=7278 tid=7278 idx=6469 spotanims=[363] | myTarget=null
+14:06:59 tick=32 GFX on Death spawn id=10 tid=10 idx=64720 spotanims=[363] | myTarget=null
+14:06:59 tick=32 GFX on Death spawn id=10 tid=10 idx=64947 spotanims=[363] | myTarget=null
+14:07:00 tick=34 HIT on Greater Nechryael id=7278 tid=7278 idx=6473 mine=false type=17 amt=13
+14:07:00 tick=34 HIT on Greater Nechryael id=7278 tid=7278 idx=6468 mine=false type=17 amt=22
+14:07:00 tick=34 HIT on Greater Nechryael id=7278 tid=7278 idx=6469 mine=false type=17 amt=19
+14:07:00 tick=34 HIT on Death spawn id=10 tid=10 idx=64720 mine=false type=17 amt=18
+14:07:00 tick=34 HIT on Death spawn id=10 tid=10 idx=64947 mine=false type=17 amt=24
+14:07:00 tick=35 HIT on bd@529bd42e mine=false type=13 amt=0
+14:07:00 tick=35 HIT on bd@529bd42e mine=false type=13 amt=0
+14:07:00 tick=35 HIT on bd@601ee956 mine=false type=13 amt=0
+14:07:00 tick=35 HIT on bd@601ee956 mine=false type=13 amt=0
+14:10:02 tick=330 HIT on Baby blue dragon id=242 tid=242 idx=21991 mine=false type=17 amt=28
+14:10:03 tick=332 HIT on bd@28248178 mine=false type=13 amt=0
+14:10:05 tick=335 HIT on Baby blue dragon id=242 tid=242 idx=21991 mine=false type=13 amt=0
+14:10:06 tick=336 HIT on bd@28248178 mine=false type=13 amt=0
+14:10:08 tick=340 HIT on Baby blue dragon id=242 tid=242 idx=21991 mine=false type=17 amt=22
+14:10:26 tick=370 HIT on Blue dragon id=265 tid=265 idx=21996 mine=false type=17 amt=29
+14:10:29 tick=375 HIT on Blue dragon id=265 tid=265 idx=21996 mine=false type=13 amt=0
+14:10:54 tick=417 HIT on ME mine=true type=12 amt=0
+14:11:50 tick=508 VARP5536=557 | myTarget=null | panel=-
+14:11:50 tick=508 GFX on Hill Giant id=2103 tid=2103 idx=21968 spotanims=[180] | myTarget=Hill Giant id=2103 tid=2103 idx=21968
+14:11:51 tick=511 HIT on Hill Giant id=2103 tid=2103 idx=21968 mine=true type=16 amt=1
+14:12:02 tick=528 HIT on ME mine=true type=12 amt=0
+14:12:04 tick=532 HIT on Hill Giant id=2103 tid=2103 idx=21968 mine=true type=16 amt=13
+14:12:05 tick=534 HIT on ME mine=true type=12 amt=0
+14:12:08 tick=538 GFX on Hill Giant id=2103 tid=2103 idx=21968 spotanims=[85] | myTarget=Hill Giant id=2103 tid=2103 idx=21968
+14:12:30 tick=575 GFX on Hill Giant id=2103 tid=2103 idx=21968 spotanims=[180] | myTarget=Hill Giant id=2103 tid=2103 idx=21968
+14:12:33 tick=580 HIT on Hill Giant id=2103 tid=2103 idx=21968 mine=true type=16 amt=1
+14:12:44 tick=599 HIT on ME mine=true type=12 amt=0
+14:12:47 tick=603 HIT on Hill Giant id=2103 tid=2103 idx=21968 mine=true type=12 amt=0
+14:12:48 tick=605 HIT on ME mine=true type=16 amt=1
+14:12:49 tick=607 HIT on Hill Giant id=2103 tid=2103 idx=21968 mine=true type=16 amt=3
+14:12:51 tick=611 HIT on ME mine=true type=12 amt=0
+14:12:51 tick=611 HIT on Hill Giant id=2103 tid=2103 idx=21968 mine=true type=12 amt=0
+14:12:54 tick=615 HIT on Hill Giant id=2103 tid=2103 idx=21968 mine=true type=16 amt=3
+14:12:55 tick=617 HIT on ME mine=true type=12 amt=0
+14:12:56 tick=619 HIT on Hill Giant id=2103 tid=2103 idx=21968 mine=true type=16 amt=13
+14:12:59 tick=623 HIT on Hill Giant id=2103 tid=2103 idx=21968 mine=true type=16 amt=2
+14:13:20 tick=659 GFX on Hill Giant id=2103 tid=2103 idx=21968 spotanims=[180] | myTarget=Hill Giant id=2103 tid=2103 idx=21968
+14:13:22 tick=662 HIT on Hill Giant id=2103 tid=2103 idx=21968 mine=true type=16 amt=1
+14:13:26 tick=668 HIT on Poison Scorpion id=3025 tid=3025 idx=21975 mine=true type=16 amt=4
+14:13:27 tick=671 HIT on Poison Scorpion id=3025 tid=3025 idx=21975 mine=true type=16 amt=10
+14:13:30 tick=675 HIT on Poison Scorpion id=3025 tid=3025 idx=21975 mine=true type=16 amt=9
+14:13:42 tick=696 HIT on Hill Giant id=2103 tid=2103 idx=21968 mine=true type=16 amt=6
+14:13:45 tick=700 HIT on ME mine=true type=12 amt=0
+14:13:46 tick=702 GFX on Hill Giant id=2103 tid=2103 idx=21968 spotanims=[180] | myTarget=Hill Giant id=2103 tid=2103 idx=21968
+14:13:47 tick=704 HIT on Hill Giant id=2103 tid=2103 idx=21968 mine=true type=16 amt=2
+14:13:48 tick=706 HIT on ME mine=true type=12 amt=0
+14:13:50 tick=709 HIT on Hill Giant id=2103 tid=2103 idx=21968 mine=true type=16 amt=12
+14:13:52 tick=712 HIT on ME mine=true type=12 amt=0
+14:13:53 tick=713 HIT on Hill Giant id=2103 tid=2103 idx=21968 mine=true type=16 amt=11
+14:13:55 tick=717 HIT on Hill Giant id=2103 tid=2103 idx=21968 mine=true type=16 amt=3
+14:14:08 tick=738 VARP5536=554 | myTarget=null | panel=-
+14:14:08 tick=738 GFX on Poison Scorpion id=3025 tid=3025 idx=21975 spotanims=[180] | myTarget=Poison Scorpion id=3025 tid=3025 idx=21975
+14:14:11 tick=743 HIT on Poison Scorpion id=3025 tid=3025 idx=21975 mine=true type=16 amt=2
+14:14:20 tick=745 VARP5536=0 | myTarget=- | panel=-
+14:14:20 tick=745 VARP5536=0 | myTarget=- | panel=-
+14:14:20 tick=745 VARP5536=-1 | myTarget=- | panel=-
+14:14:26 tick=755 HIT on Poison Scorpion id=3025 tid=3025 idx=21975 mine=true type=16 amt=5
+14:14:28 tick=758 HIT on ME mine=true type=12 amt=0
+14:14:28 tick=758 HIT on Poison Scorpion id=3025 tid=3025 idx=21975 mine=true type=16 amt=10
+14:14:30 tick=762 HIT on Poison Scorpion id=3025 tid=3025 idx=21975 mine=true type=16 amt=6
+14:14:35 tick=770 VARP5536=554 | myTarget=null | panel=-
+14:14:35 tick=770 GFX on Poison Scorpion id=3025 tid=3025 idx=21978 spotanims=[180] | myTarget=Poison Scorpion id=3025 tid=3025 idx=21978
+14:14:38 tick=774 HIT on Poison Scorpion id=3025 tid=3025 idx=21978 mine=true type=16 amt=1
+14:14:41 tick=780 HIT on Poison Scorpion id=3025 tid=3025 idx=21978 mine=true type=16 amt=3
+14:14:44 tick=784 HIT on Poison Scorpion id=3025 tid=3025 idx=21978 mine=true type=16 amt=3
+14:14:46 tick=788 HIT on Poison Scorpion id=3025 tid=3025 idx=21978 mine=true type=16 amt=6
+14:14:49 tick=792 HIT on Poison Scorpion id=3025 tid=3025 idx=21978 mine=true type=16 amt=9
+14:14:51 tick=796 HIT on Poison Scorpion id=3025 tid=3025 idx=21978 mine=true type=16 amt=1
