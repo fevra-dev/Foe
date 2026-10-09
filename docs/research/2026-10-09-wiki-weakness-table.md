@@ -98,3 +98,13 @@ developer runs, with the output committed to `src/main/resources`**. The Hub bui
 offline. Every table update is a reviewable diff. And there is still no network at runtime. The
 generator lives in the repo (e.g. `scripts/`) but isn't part of the Gradle build. Its output header
 should record the source, the date and the row/id counts, so a reviewer can re-run it and diff.
+
+## Follow-up checks, 2026-10-09 (after the Task 8b review)
+
+- **Transclusion (addendum 10's open `[assumed]`): closed for today's data** `[measured]`. All 627 pages with a
+  weakness row set `elementalweaknesstype` in their own wikitext, and 0 set it from a template (`{{…}}`). The regex was
+  checked against a template value (match) and a literal one (no match). So an edit that changes a weakness is an edit
+  to that monster's page, which the 7-day hold sees. A future page could still transclude it; the generator doesn't
+  re-check this on each run.
+- **In-game cross-check:** both weaknesses Foe had learned in the operator's profile (7244 and 7245, Greater demon,
+  WATER) agree with the table (WATER 40). n=2, so it's a sanity check, not a sweep.

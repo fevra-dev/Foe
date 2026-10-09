@@ -1,0 +1,183 @@
+Foe weakness table report
+run at 2026-10-09T17:54:18.764041Z, fetched date 2026-10-09
+no previous table (first generation: nothing quarantined)
+
+== Summary (5) ==
+rows read: 3271 (4 duplicate rows dropped)
+ids written: 1769
+ids skipped: 0 element without percent, 7 non-numeric id, 0 element conflict; rows skipped: 1 with no ids
+changes held back: 0
+accept-shrink used: no
+
+== Element conflicts (no entry written) (0) ==
+(none)
+
+== Percent conflicts (element written, no percent) (1) ==
+15742: Maggot King [Far] FIRE 80; Maggot King [Nearby] FIRE 5; Maggot King [Roaring] FIRE 80
+
+== Ids shared by two or more tabs of one page (53) ==
+413: Gargoyle tabs [Basement, Upstairs] -> EARTH 40
+7530: Vespula tabs [Challenge Mode, Normal] -> FIRE 50
+7531: Vespula tabs [Challenge Mode, Normal] -> FIRE 50
+7532: Vespula tabs [Challenge Mode, Normal] -> FIRE 50
+7533: Abyssal portal tabs [Challenge Mode, Normal] -> FIRE 50
+7550: Great Olm tabs [Right claw (Challenge Mode), Right claw (Normal)] -> EARTH 50
+7551: Great Olm tabs [Head (Challenge Mode), Head (Normal)] -> EARTH 50
+7552: Great Olm tabs [Left claw (Challenge Mode), Left claw (Normal)] -> EARTH 50
+7553: Great Olm tabs [Right claw (Challenge Mode), Right claw (Normal)] -> EARTH 50
+7554: Great Olm tabs [Head (Challenge Mode), Head (Normal)] -> EARTH 50
+7555: Great Olm tabs [Left claw (Challenge Mode), Left claw (Normal)] -> EARTH 50
+7561: Muttadile tabs [Large, Large (Challenge Mode)] -> EARTH 40
+7562: Muttadile tabs [Small, Small (Challenge Mode)] -> EARTH 40
+7563: Muttadile tabs [Large, Large (Challenge Mode)] -> EARTH 40
+7706: TzKal-Zuk tabs [Enraged, Normal] -> WATER 40
+8367: Blood spawn tabs [Entry, Normal] -> EARTH 50
+10821: Blood spawn tabs [Entry, Normal] -> EARTH 50
+10829: Blood spawn tabs [Entry, Normal] -> EARTH 50
+11761: Elidinis' Warden tabs [Damaged, Enraged] -> EARTH 50
+11762: Tumeken's Warden tabs [Damaged, Enraged] -> EARTH 50
+12204: The Whisperer tabs [Awakened, Post-quest] -> EARTH 60
+12205: The Whisperer tabs [Awakened, Post-quest] -> EARTH 60
+12223: Vardorvis tabs [Awakened, Post-quest] -> FIRE 35
+12426: Vardorvis tabs [Awakened, Post-quest] -> FIRE 35
+12439: Dagannoth Rex (Deadman) tabs [Annihilation, Apocalypse, Armageddon, Permanent] -> EARTH 35
+12440: King Black Dragon (Deadman) tabs [Annihilation, Apocalypse, Armageddon, Permanent] -> WATER 50
+12441: Dagannoth Supreme (Deadman) tabs [Annihilation, Apocalypse, Armageddon, Permanent] -> EARTH 35
+12442: Dagannoth Prime (Deadman) tabs [Annihilation, Apocalypse, Armageddon, Permanent] -> EARTH 35
+12443: Kree'arra (Deadman) tabs [Apocalypse, Armageddon] -> AIR 30
+12444: General Graardor (Deadman) tabs [Annihilation, Apocalypse, Armageddon, Permanent] -> EARTH 40
+12446: K'ril Tsutsaroth (Deadman) tabs [Annihilation, Apocalypse, Armageddon, Permanent] -> WATER 30
+12447: Dharok the Wretched (Deadman) tabs [Annihilation, Apocalypse, Armageddon, Permanent] -> AIR 50
+12453: Flaming pyrelord (Deadman) tabs [Annihilation, Apocalypse, Armageddon, Permanent] -> WATER 100
+12455: Jal-ImKot (Deadman) tabs [Annihilation, Apocalypse, Armageddon, Permanent] -> WATER 30
+12456: Malevolent Mage (Deadman) tabs [Annihilation, Apocalypse, Armageddon, Permanent] -> WATER 50
+12457: Vitreous warped Jelly (Deadman) tabs [Annihilation, Apocalypse, Armageddon, Permanent] -> EARTH 30
+12738: Armoured zombie (Defender of Varrock) tabs [Melee (invasion), Ranged (invasion)] -> FIRE 50
+13012: Eclipse Moon tabs [Clone, Regular] -> AIR 15
+13656: Vardorvis (Deadman) tabs [Annihilation, Armageddon, Permanent] -> FIRE 35
+13657: Cerberus (Deadman) tabs [Annihilation, Apocalypse, Armageddon, Permanent] -> WATER 40
+13658: Bee Swarm (Deadman) tabs [Annihilation, Armageddon, Permanent] -> FIRE 50
+13659: Thermonuclear smoke devil (Deadman) tabs [Annihilation, Armageddon, Permanent] -> AIR 20
+13661: TzTok-Jad (Deadman) tabs [Annihilation, Armageddon, Permanent] -> WATER 40
+13668: Araxxor tabs [Enraged, In combat] -> FIRE 50
+14176: Yama tabs [Normal, Phase 3] -> WATER 50
+14420: Earthen Nagua tabs [Normal, Weakened] -> AIR 15
+15025: Black Eye Bethel tabs [Dragon scimitar, Rune scimitar, Steel scimitar] -> FIRE 50
+15549: Phantom Muspah (Deadman) tabs [Annihilation, Permanent] -> AIR 65
+15551: Tumeken's Warden (Deadman) tabs [Annihilation, Permanent] -> EARTH 50
+15552: Elidinis' Warden (Deadman) tabs [Annihilation, Permanent] -> EARTH 50
+15553: I DSCIM YOU tabs [Annihilation, Permanent] -> FIRE 50
+15555: Yama (Deadman) tabs [Annihilation, Permanent] -> WATER 50
+15742: Maggot King tabs [Far, Nearby, Roaring] -> FIRE
+
+== Pages edited within 7 days (check in game before committing) (84) ==
+Abyssal portal (last edit 2026-10-03T18:14:35Z): Challenge Mode: ids 7533 -> FIRE 50 | Normal: ids 7533 -> FIRE 50
+Alchemical Hydra (last edit 2026-10-05T21:54:28Z): Electric: ids 8617, 8619 -> EARTH 50 | Extinguished: ids 8621-8622 -> EARTH 50 | Fire: ids 8618, 8620 -> EARTH 50 | Serpentine: ids 8615-8616 -> EARTH 50
+Ammonite Crab (last edit 2026-10-06T23:24:24Z): (no tab name): ids 7799 -> EARTH 25
+Ancient Wyvern (last edit 2026-10-05T20:50:07Z): (no tab name): ids 7795 -> AIR 35
+Ancient Zygomite (last edit 2026-10-05T22:05:21Z): (no tab name): ids 7797 -> FIRE 40
+Animated Adamant Armour (last edit 2026-10-04T10:56:17Z): (no tab name): ids 2455 -> EARTH 30
+Animated Black Armour (last edit 2026-10-04T10:56:08Z): (no tab name): ids 2453 -> EARTH 30
+Animated Bronze Armour (last edit 2026-10-04T10:55:53Z): (no tab name): ids 2450 -> EARTH 30
+Animated Iron Armour (last edit 2026-10-04T10:56:02Z): (no tab name): ids 2451 -> EARTH 30
+Animated Mithril Armour (last edit 2026-10-04T10:56:12Z): (no tab name): ids 2454 -> EARTH 30
+Animated Rune Armour (last edit 2026-10-04T10:56:22Z): (no tab name): ids 2456 -> EARTH 30
+Animated Steel Armour (last edit 2026-10-04T10:55:57Z): (no tab name): ids 2452 -> EARTH 30
+Ankou (last edit 2026-10-03T10:47:03Z): Level 75: ids 2514, 2517 -> AIR 40 | Level 82: ids 2515, 2518 -> AIR 40 | Level 86: ids 2516, 2519, 6608 -> AIR 40 | Level 95: ids 7257 -> AIR 40 | Level 98: ids 7864 -> AIR 40
+Baby black dragon (last edit 2026-10-07T17:14:49Z): Normal: ids 1871-1872 -> WATER 50
+Bird (last edit 2026-10-03T12:44:55Z): Level 11: ids 5240 -> AIR 25 | Level 5: ids 5241, 10541 -> AIR 25
+Brutal black dragon (last edit 2026-10-04T10:31:10Z): (no tab name): ids 7275, 8092-8093 -> WATER 50
+Brutus (last edit 2026-10-08T13:31:11Z): (no tab name): ids 15626-15627 -> EARTH 25
+Bryophyta (last edit 2026-10-07T21:29:33Z): (no tab name): ids 8195 -> FIRE 50
+Cave crawler (last edit 2026-10-04T22:48:48Z): Icy (1): ids 13800 -> FIRE 50 | Icy (2): ids 13801 -> FIRE 50
+Cave slime (last edit 2026-10-05T15:06:06Z): (no tab name): ids 480 -> EARTH 50
+Cerberus (last edit 2026-10-03T16:59:46Z): (no tab name): ids 5862-5863, 5866 -> WATER 40
+Chasm Crawler (last edit 2026-10-04T22:49:33Z): Icy: ids 14031 -> FIRE 50
+Corporeal Beast (last edit 2026-10-04T21:55:51Z): (no tab name): ids 319 -> EARTH 10
+Crocodile (last edit 2026-10-03T10:40:04Z): Land: ids 11582 -> EARTH 40 | Water: ids 11581 -> EARTH 40 | Water & land: ids 4184 -> EARTH 40
+Demonic gorilla (last edit 2026-10-03T16:28:55Z): 1: ids 7144-7146 -> WATER 35 | 2: ids 7147-7149, 7152 -> WATER 35
+Drake (last edit 2026-10-06T01:35:55Z): (no tab name): ids 8612-8613 -> WATER 50
+Enormous Tentacle (last edit 2026-10-08T19:00:35Z): Enormous Tentacle: ids 5535 -> EARTH 50 | Whirlpool: ids 5534 -> NONE
+Ent (last edit 2026-10-05T20:32:59Z): (no tab name): ids 6594 -> FIRE 40 | (no tab name): ids 7234 -> FIRE 40
+Fire giant (last edit 2026-10-04T11:09:10Z): Level 104: ids 7252 -> WATER 100 | Level 109: ids 7251 -> WATER 100 | Level 86: ids 2075-2084 -> WATER 100
+Flambeed (last edit 2026-10-02T19:34:14Z): (no tab name): ids 4881 -> WATER 50
+Ghast (last edit 2026-10-07T19:39:14Z): Level 109: ids 5626 -> AIR 25 | Level 139: ids 5627 -> AIR 25 | Level 30: ids 946 -> AIR 25 | Level 79: ids 5625 -> AIR 25
+Giant Mole (last edit 2026-10-03T12:02:04Z): (no tab name): ids 5779 -> EARTH 50
+Great Olm (last edit 2026-10-05T16:32:49Z): Head (Challenge Mode): ids 7551, 7554 -> EARTH 50 | Head (Normal): ids 7551, 7554 -> EARTH 50 | Left claw (Challenge Mode): ids 7552, 7555 -> EARTH 50 | Left claw (Normal): ids 7552, 7555 -> EARTH 50 | Right claw (Challenge Mode): ids 7550, 7553 -> EARTH 50 | Right claw (Normal): ids 7550, 7553 -> EARTH 50
+Green dragon (last edit 2026-10-02T19:02:43Z): Level 79: ids 260-264, 8073, 8076, 8082 -> WATER 50 | Level 88: ids 7868-7870 -> WATER 50
+Hill Giant (last edit 2026-10-03T12:53:13Z): (no tab name): ids 7261 -> EARTH 25 | 1: ids 2098, 13502 -> EARTH 25 | 2: ids 2099, 13503 -> EARTH 25 | 3: ids 2100, 13504 -> EARTH 25 | 4: ids 2101 -> EARTH 25 | 5: ids 2102 -> EARTH 25 | 6: ids 2103 -> EARTH 25 | Brassard: ids 10374 -> EARTH 25 | Clothed: ids 12849 -> EARTH 25 | Hammer: ids 10375 -> EARTH 25 | Helmetless: ids 12850 -> EARTH 25 | Scimitar and singlet: ids 10376 -> EARTH 25 | Shirtless: ids 12848 -> EARTH 25
+Hopeless creature (last edit 2026-10-03T14:55:10Z): Level 40: ids 1072-1074 -> FIRE 40 | Level 71: ids 4695 -> FIRE 40
+Ice demon (last edit 2026-10-03T16:12:08Z): Challenge Mode: ids 7585 -> FIRE 150 | Normal: ids 7584 -> FIRE 150
+Imp (last edit 2026-10-06T13:25:25Z): GWD: ids 3134 -> WATER 10 | Normal: ids 5007 -> WATER 10
+Jal-Zek (last edit 2026-10-03T18:14:11Z): (no tab name): ids 7699, 7703 -> WATER 40
+Jungle horror (last edit 2026-10-09T10:50:57Z): Guard: ids 1046 -> FIRE 25 | Warrior: ids 1044 -> FIRE 25 | Worker: ids 1042 -> FIRE 25 | Young warrior: ids 1045 -> FIRE 25 | Young worker: ids 1043 -> FIRE 25
+Killerwatt (last edit 2026-10-04T22:06:21Z): Attacking: ids 469 -> AIR 60 | Idle: ids 470 -> AIR 60
+King Black Dragon (last edit 2026-10-03T10:54:59Z): (no tab name): ids 239, 2642 -> WATER 50
+Kraken (last edit 2026-10-08T18:21:09Z): Kraken: ids 494 -> EARTH 50 | Whirlpool: ids 496 -> NONE
+Lesser demon (last edit 2026-10-06T13:40:02Z): Level 82: ids 2005-2008, 2018, 7656-7657, 7664 -> WATER 40 | Level 87: ids 7247 -> WATER 40 | Level 94: ids 7248 -> WATER 40 | Level 94 (Wilderness Slayer Cave): ids 7865-7867 -> WATER 40
+Long-tailed Wyvern (last edit 2026-10-05T20:50:23Z): (no tab name): ids 7792 -> AIR 25
+Mad Angel (last edit 2026-10-06T09:31:43Z): Post-quest: ids 16305, 16307 -> EARTH 15 | Quest: ids 16309, 16311 -> EARTH 15
+Maggot King (last edit 2026-10-06T09:31:44Z): Far: ids 15742 -> FIRE 80 | Nearby: ids 15742 -> FIRE 5 | Roaring: ids 15742 -> FIRE 80
+Mind Golem (last edit 2026-10-08T11:44:42Z): Golem: ids 10693 -> EARTH 35 | Rubble: ids 10694 -> EARTH 35
+Moss Giant (Iorwerth Dungeon) (last edit 2026-10-05T22:36:28Z): (no tab name): ids 8736 -> FIRE 50
+Moss Guardian (Nightmare Zone) (last edit 2026-10-06T01:31:04Z): Hard Mode: ids 6325 -> FIRE 50 | Normal Mode: ids 6386 -> FIRE 50
+Moss giant (last edit 2026-10-05T22:38:57Z): Level 42: ids 2090-2093, 7262, 14422 -> FIRE 50 | Level 42 (Varlamore): ids 12844-12847 -> FIRE 50 | Level 48: ids 3851-3852 -> FIRE 50
+Mountain troll (last edit 2026-10-02T19:03:01Z): Level 69: ids 936-942, 16330-16332 -> FIRE 50 | Level 71: ids 4143 -> EARTH 50
+Nylocas Vasilias (last edit 2026-10-05T23:18:10Z): Entry: ids 10786-10789 -> FIRE 15 | Hard: ids 10807-10810 -> FIRE 15 | Normal: ids 8354-8357 -> FIRE 15
+Ogre (last edit 2026-10-06T22:19:01Z): GWD: ids 2233 -> EARTH 20 | Level 53: ids 136, 2095-2096 -> EARTH 20 | Level 63: ids 1153 -> EARTH 20
+Ogress Warrior (last edit 2026-10-09T01:50:29Z): 1: ids 7989 -> EARTH 20 | 2: ids 7990 -> EARTH 20
+Phantom Muspah (last edit 2026-10-07T09:51:18Z): Melee: ids 12078 -> AIR 65 | Post-shield: ids 12080 -> AIR 65 | Ranged: ids 12077 -> AIR 65 | Shielded: ids 12079 -> AIR 65 | Teleporting: ids 12082 -> AIR 65
+Ranalph Devere (last edit 2026-10-06T18:44:42Z): (no tab name): ids 3966 -> AIR 10
+Rune dragon (last edit 2026-10-04T21:27:47Z): (no tab name): ids 8031, 8091 -> EARTH 50
+Sand Snake (last edit 2026-10-04T12:22:33Z): (no tab name): ids 7903 -> EARTH 40
+Sarachnis (last edit 2026-10-05T22:21:30Z): (no tab name): ids 8713 -> FIRE 40
+Scorpia (last edit 2026-10-03T12:53:49Z): (no tab name): ids 6615 -> FIRE 35
+Shellbane gryphon (last edit 2026-10-05T22:36:43Z): (no tab name): ids 14860 -> AIR 50
+Skeleton Mage (last edit 2026-10-03T16:57:09Z): Level 16: ids 84 -> EARTH 35 | Level 83: ids 4319 -> EARTH 35
+Skotizo (last edit 2026-10-03T12:35:25Z): (no tab name): ids 7286 -> WATER 40
+Spitting Wyvern (last edit 2026-10-05T20:50:12Z): (no tab name): ids 7794 -> AIR 25
+Steel dragon (last edit 2026-10-05T13:57:18Z): Level 246: ids 274 -> EARTH 50 | Level 246 (Task only): ids 275 -> EARTH 50 | Level 274: ids 7255 -> EARTH 50
+Taloned Wyvern (last edit 2026-10-05T20:50:17Z): (no tab name): ids 7793 -> AIR 35
+Tekton (last edit 2026-10-05T00:45:29Z): Enraged: ids 7543 -> WATER 20 | Enraged (Challenge Mode): ids 7544 -> WATER 20 | Normal: ids 7540-7542 -> WATER 20 | Normal (Challenge Mode): ids 7545 -> WATER 20
+The Whisperer (last edit 2026-10-05T18:02:16Z): Awakened: ids 12204-12205 -> EARTH 60 | Post-quest: ids 12204-12205 -> EARTH 60 | Quest: ids 12206-12207 -> EARTH 60
+Thermonuclear smoke devil (last edit 2026-10-09T16:35:49Z): (no tab name): ids 499 -> AIR 20
+TzTok-Jad (last edit 2026-10-04T02:53:19Z): (no tab name): ids 3127 -> WATER 40
+Undead Lumberjack (last edit 2026-10-03T10:27:05Z): Level 30: ids 5648-5655 -> FIRE 50 | Level 35: ids 5656-5663 -> FIRE 50 | Level 40: ids 5665-5672 -> FIRE 50 | Level 45: ids 5673-5680 -> FIRE 50 | Level 50: ids 5681-5688 -> FIRE 50 | Level 55: ids 5689-5696 -> FIRE 50 | Level 60: ids 5697-5704 -> FIRE 50 | Level 64: ids 5705-5712 -> FIRE 50 | Level 70: ids 5713-5720 -> FIRE 50
+Undead cow (last edit 2026-10-04T16:55:58Z): (no tab name): ids 2992 -> FIRE 50
+Vardorvis (last edit 2026-10-05T17:55:34Z): Awakened: ids 12223, 12426 -> FIRE 35 | Post-quest: ids 12223, 12426 -> FIRE 35 | Quest: ids 12224, 12228, 12425 -> FIRE 35
+Venenatis (last edit 2026-10-03T12:37:13Z): (no tab name): ids 6610 -> FIRE 40
+Verzik Vitur (last edit 2026-10-05T15:45:06Z): Phase 3: ids 10835-10836 -> FIRE 50 | Phase 3: ids 10852-10853 -> FIRE 50 | Phase 3: ids 8374-8375 -> FIRE 50
+Vorkath (last edit 2026-10-04T22:25:10Z): Dragon Slayer II: ids 8058, 8060 -> FIRE 40 | Post-quest: ids 8059, 8061 -> FIRE 40
+Wolf (last edit 2026-10-05T21:34:25Z): Level 11: ids 2491 -> FIRE 25 | Level 14: ids 2490 -> FIRE 25 | Level 25: ids 110 -> FIRE 25 | Level 64: ids 106 -> FIRE 25 | Level 64 (Rellekka): ids 3912 -> FIRE 25
+Yama (last edit 2026-10-07T13:44:09Z): Normal: ids 14176 -> WATER 50 | Phase 3: ids 14176 -> WATER 50
+Yt-HurKot (last edit 2026-10-04T02:39:58Z): Level 108: ids 3128 -> WATER 40 | Level 141: ids 7701, 7705, 10624 -> WATER 40
+Zombie pirate (Harmony Island) (last edit 2026-10-02T19:44:40Z): 1: ids 563-564 -> FIRE 50 | 10: ids 575 -> FIRE 50 | 11: ids 576 -> FIRE 50 | 12: ids 577 -> FIRE 50 | 13: ids 578 -> FIRE 50 | 14: ids 579 -> FIRE 50 | 15: ids 580 -> FIRE 50 | 16: ids 581 -> FIRE 50 | 17: ids 582-583 -> FIRE 50 | 18: ids 584-585 -> FIRE 50 | 19: ids 586-587 -> FIRE 50 | 2: ids 565-566 -> FIRE 50 | 20: ids 588-589 -> FIRE 50 | 21: ids 590-591 -> FIRE 50 | 22: ids 592 -> FIRE 50 | 23: ids 593-594 -> FIRE 50 | 24: ids 595-596 -> FIRE 50 | 25: ids 597-598 -> FIRE 50 | 26: ids 599 -> FIRE 50 | 3: ids 567 -> FIRE 50 | 4: ids 568 -> FIRE 50 | 5: ids 569-570 -> FIRE 50 | 6: ids 571 -> FIRE 50 | 7: ids 572 -> FIRE 50 | 8: ids 573 -> FIRE 50 | 9: ids 574 -> FIRE 50
+Zombified Spawn (last edit 2026-10-04T21:45:13Z): Dragon Slayer II: ids 8062 -> FIRE 50 | Post-quest: ids 8063 -> FIRE 50
+Zulrah (last edit 2026-10-05T22:03:37Z): Magma: ids 2043 -> FIRE 50 | Serpentine: ids 2042 -> FIRE 50 | Tanzanite: ids 2044 -> FIRE 50
+Zygomite (last edit 2026-10-05T22:05:13Z): (no tab name): ids 1024 -> FIRE 40 | (no tab name): ids 537 -> FIRE 40
+
+== Pages with no known edit time (treated as edited within 7 days) (0) ==
+(none)
+
+== Held back: changed, page edited within 7 days (previous value kept) (0) ==
+(not applicable: first generation, there is no previous table)
+
+== Ids changed (accepted) (0) ==
+(not applicable: first generation, there is no previous table)
+
+== Ids added (0) ==
+(not applicable: first generation, there is no previous table)
+
+== Ids removed (0) ==
+(not applicable: first generation, there is no previous table)
+
+== Skipped (8) ==
+non-numeric id override13685: Amoxliatl (Echo) FIRE 30
+non-numeric id override7852: Dawn (Echo) EARTH 70
+non-numeric id override7882: Definitely Not Dusk EARTH 40
+non-numeric id override7888: Dusk (Echo) EARTH 40
+non-numeric id override8583: Hespori (Echo) FIRE 100
+no ids: King Black Dragon (Echo) Water 50
+non-numeric id override499: Thermonuclear smoke devil (Echo) AIR 20
+non-numeric id override10623: Unbound JalTok-Jad WATER 40
+

@@ -2,7 +2,7 @@
 
 <One-line tagline that is a pitch, not a description.>
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-BSD--2--Clause-blue.svg)](LICENSE)
 [![CI](https://github.com/fevra-dev/<repo>/actions/workflows/ci.yml/badge.svg)](https://github.com/fevra-dev/<repo>/actions/workflows/ci.yml)
 
 <Two to three sentences: what it does, who it is for, and the one thing that is
@@ -72,6 +72,14 @@ blocks direct pushes to `main`.
      For a research tool this is the difference between being cited and being quietly
      reimplemented uncredited. -->
 
+## Credits
+
+Foe's elemental weakness table (`src/main/resources/com/foe/weakness-table.tsv`) is derived from the
+[Old School RuneScape Wiki](https://oldschool.runescape.wiki), whose content is licensed under
+[CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/). The table carries its own notice,
+[`weakness-table.LICENSE`](src/main/resources/com/foe/weakness-table.LICENSE), and the wiki's editors are credited
+through each page's history. The plugin's code is licensed separately (see below).
+
 ## License
 
-[MIT](LICENSE)
+The plugin code: [BSD 2-Clause](LICENSE). The weakness table: CC BY-NC-SA 3.0, as above.

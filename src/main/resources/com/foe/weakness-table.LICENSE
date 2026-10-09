@@ -1,0 +1,33 @@
+weakness-table.tsv: licence notice
+
+The data in weakness-table.tsv (the elemental weakness and weakness percent of each monster, keyed by NPC id) is
+derived from the Old School RuneScape Wiki, https://oldschool.runescape.wiki, and is licensed under the Creative
+Commons Attribution-NonCommercial-ShareAlike 3.0 Unported licence (CC BY-NC-SA 3.0):
+
+    https://creativecommons.org/licenses/by-nc-sa/3.0/
+
+Source and attribution
+- Source: the wiki's Bucket API, bucket "infobox_monster", fields page_name, version_anchor, id,
+  elemental_weakness and elemental_weakness_percent (https://oldschool.runescape.wiki/api.php?action=bucket).
+- Authors: the editors of the wiki pages named in the source rows. Each page's history lists them, at
+  https://oldschool.runescape.wiki/w/<page name>?action=history. The wiki's own terms are at
+  https://oldschool.runescape.wiki/w/RuneScape:Copyrights.
+- The fetch date and the number of rows read are in the header of weakness-table.tsv, and the rows as fetched are in
+  data/wiki-infobox-monster.jsonl in the Foe source repository (not shipped in the plugin).
+
+Changes made
+- Only the fields above were kept, and only for NPC ids the wiki lists.
+- Element names were normalised to AIR, WATER, EARTH, FIRE or NONE ("None" on the wiki means the monster has no
+  elemental weakness).
+- Rows without a weakness, with a non-numeric id, or without any id were left out.
+- Where several tabs of one page share an id: tabs with no weakness were ignored; when the rest agree on the element
+  but not the percent, the element is kept and the percent is left empty; when they name different elements the id is
+  left out.
+- Values for a monster whose wiki page was edited in the 7 days before a regeneration are held at their previous
+  value until that edit is a week old.
+
+ShareAlike
+This notice and the licence apply to weakness-table.tsv and to data derived from it. The plugin's source code is
+licensed separately, under the BSD 2-Clause licence (see LICENSE at the root of the repository).
+
+No endorsement is implied by the wiki, its editors, Jagex or the licensor.

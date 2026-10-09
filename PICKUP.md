@@ -20,6 +20,8 @@
 
 **Next actions, in order:**
 
+0. **Task 8b done 2026-10-09** (branch `feat/weakness-table-generator`: generator, review fixes, spec addendum 10, first table of 1,769 ids). Next is **Task 8c** (runtime load, `resolve()`, percent display, the "Show weakness %" setting). Open: should the generator re-check transclusion on each run (measured clean today, research note); and a possible heal indicator (operator asked 2026-10-09; heal hitsplats already raise exact HP live).
+
 1. **Wiki weakness table (operator decision 2026-10-09: in v1).**
    - **Goal:** every monster shows its weakness, with the percentage, from the first attack.
    - **Shape:** a table generated from the OSRS wiki **at build time**, keyed by **NPC id** (so variants come out right), shipped as a resource. No network at runtime.
