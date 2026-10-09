@@ -402,3 +402,25 @@ rebalance update.
 
 **Still `[assumed]`:** wiki ids equal the transformed composition id for NPCs that transform by varbit. All 6 probe
 NPCs match, and none of them transforms. **Task 9 acceptance checks one transforming monster** before release.
+
+## Addendum 9 — 2026-10-09: conflict rule refined; a percent toggle (operator decisions)
+
+Appended, not edited in place. It supersedes addendum 8's **F4** rule and adds one setting.
+
+**Conflicts (replaces addendum 8 F4).** For each id, gather the rows that carry a weakness (an element or `None`).
+Rows with no weakness at all are ignored, since a blank tab is unfilled, not a claim.
+- **All rows agree on the element and the percent:** emit it.
+- **They agree on the element but not the percent:** emit the element with **no percent**. That element is true in
+  every phase, and the percent isn't.
+- **They name different elements** (counting `None` as an element): **no entry**.
+- Every id that hits either of the last two cases is listed in the report.
+
+Measured 2026-10-09 over the full pull: **0** ids name two different elements. Of the 15 former conflicts, the 14
+Deadman ids (a blank `Apocalypse` tab) now emit their value, e.g. Earth 35, and Maggot King 15742 emits `FIRE` with
+no percent (5 when Nearby, 80 when Far or Roaring). Case normalisation was never the cause: its rows are all `fire`.
+Picking the largest percent was considered and rejected. It would show Maggot King at 80% while it sits at 5%.
+
+**Setting: "Show weakness %"** (key `showWeaknessPercent`, default **On**), placed directly after "Show weakness".
+- On: `Fire 50%`.
+- Off: `Fire`.
+- It has no effect when "Show weakness" is off, or when the entry has no percent.
