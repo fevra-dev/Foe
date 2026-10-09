@@ -256,6 +256,29 @@ public class WeaknessStoreTest
 		assertEquals(1, writes);
 	}
 
+	// Spec addendum 7: Weakness gained a percent, and equality now includes it. The store is element-only: nothing it
+	// is given may change what it writes, or make it write again for an entry it already holds.
+	@Test
+	public void aWeaknessWithAPercentIsStoredAsItsElementAlone()
+	{
+		store.put(2103, new Weakness(Weakness.Element.EARTH, 60));
+		assertEquals("2103:EARTH", stored);
+		assertEquals("5:FIRE,6:NONE", WeaknessStore.format(map(5, new Weakness(Weakness.Element.FIRE, 200), 6, Weakness.NONE)));
+		assertEntries(map(2103, EARTH), WeaknessStore.parse(stored));
+	}
+
+	@Test
+	public void putWritesNothingWhenTheStoredElementIsTheSameWhateverThePercent()
+	{
+		stored = "2103:EARTH";
+		store.put(2103, new Weakness(Weakness.Element.EARTH, 60));
+		store.put(2103, EARTH);
+		assertEquals("a repeated credit costs a read and no config change", 0, writes);
+		store.put(2103, new Weakness(Weakness.Element.FIRE, 60));
+		assertEquals("2103:FIRE", stored);
+		assertEquals(1, writes);
+	}
+
 	@Test
 	public void putMergesIntoWhatIsStoredAndNeverReplacesIt()
 	{

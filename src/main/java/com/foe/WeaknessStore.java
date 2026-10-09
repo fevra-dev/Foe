@@ -124,11 +124,14 @@ final class WeaknessStore
 			return; // rewriting from a capped parse would delete every entry past the cap (review of 77ccc4e, F5)
 		}
 		Map<Integer, Weakness> stored = parse(raw);
-		if (w.equals(stored.get(key)))
+		Weakness held = stored.get(key);
+		// The element, not Weakness.equals: the store holds elements only (spec addendum 7 gave Weakness a percent, and
+		// equality includes it), so a percent must neither be stored nor make an unchanged entry look changed.
+		if (held != null && held.getElement() == w.getElement())
 		{
 			return;
 		}
-		stored.put(key, w);
+		stored.put(key, w); // format() writes the element alone, so a percent on w goes no further
 		write.accept(format(stored));
 	}
 
@@ -190,7 +193,7 @@ final class WeaknessStore
 	{
 		if (sameName(name, NONE))
 		{
-			return Weakness.NONE; // the shared instance: WeaknessLearner.weaknessFor tests it by identity
+			return Weakness.NONE;
 		}
 		for (Weakness.Element e : Weakness.Element.values())
 		{

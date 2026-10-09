@@ -49,6 +49,7 @@ public class FoeOverlayTest
 		HpTextPosition hpTextPosition = FoeConfig.super.hpTextPosition();
 		Detail detail = FoeConfig.super.detail();
 		boolean showWeakness = FoeConfig.super.showWeakness();
+		boolean showWeaknessPercent = FoeConfig.super.showWeaknessPercent();
 		StaleHpStyle staleHpStyle = FoeConfig.super.staleHpStyle();
 		int backgroundOpacity = FoeConfig.super.backgroundOpacity();
 
@@ -80,6 +81,12 @@ public class FoeOverlayTest
 		public boolean showWeakness()
 		{
 			return showWeakness;
+		}
+
+		@Override
+		public boolean showWeaknessPercent()
+		{
+			return showWeaknessPercent;
 		}
 
 		@Override
@@ -371,12 +378,143 @@ public class FoeOverlayTest
 	{
 		String text = texts(live(), new Cfg()).get(3);
 		assertEquals("Fire", text);
-		assertFalse("the client never receives a percent", text.contains("%"));
+		assertFalse("a weakness with no percent (one learned in game) draws none", text.contains("%"));
 		for (Weakness.Element e : Weakness.Element.values())
 		{
 			String t = texts(snap(ICE_GIANT, 22, 30, false, new Weakness(e)), new Cfg()).get(3);
 			assertEquals(e.name().charAt(0) + e.name().substring(1).toLowerCase(Locale.ROOT), t);
 		}
+	}
+
+	// ---- the percent (spec addendum 9: "Show weakness %", default on) ----
+
+	private static TargetSnapshot withWeakness(Weakness w)
+	{
+		return snap(ICE_GIANT, 22, 30, false, w);
+	}
+
+	/** The weakness cell: the last of the four, which is the fourth when HP, levels and weakness are all there. */
+	private static String weaknessText(Weakness w, Cfg c)
+	{
+		List<String> t = texts(withWeakness(w), c);
+		assertEquals("name, HP, levels, weakness", 4, t.size());
+		return t.get(3);
+	}
+
+	@Test
+	public void thePercentIsDrawnAfterTheElementWhenThereIsOneAndTheSettingIsOn()
+	{
+		Cfg c = new Cfg();
+		assertTrue("on by default", c.showWeaknessPercent);
+		assertEquals("Fire 50%", weaknessText(new Weakness(Weakness.Element.FIRE, 50), c));
+		assertEquals("Water 100%", weaknessText(new Weakness(Weakness.Element.WATER, 100), c));
+		assertEquals("0 is a percent the wiki gives, so it is drawn", "Earth 0%",
+			weaknessText(new Weakness(Weakness.Element.EARTH, 0), c));
+		assertEquals("Air 5%", weaknessText(new Weakness(Weakness.Element.AIR, 5), c));
+	}
+
+	@Test
+	public void aPercentOverOneHundredIsDrawnAsGiven()
+	{
+		Cfg c = new Cfg();
+		assertEquals("Spiritual mage (Zaros) is 200", "Fire 200%", weaknessText(new Weakness(Weakness.Element.FIRE, 200), c));
+		assertEquals("Ice demon is 150", "Fire 150%", weaknessText(new Weakness(Weakness.Element.FIRE, 150), c));
+		assertEquals("the top of the generator's range", "Fire 999%", weaknessText(new Weakness(Weakness.Element.FIRE, 999), c));
+	}
+
+	@Test
+	public void noPercentDrawsTheElementAloneWhateverTheSetting()
+	{
+		Cfg c = new Cfg();
+		assertEquals("Fire", weaknessText(new Weakness(Weakness.Element.FIRE), c));
+		assertEquals("Fire", weaknessText(new Weakness(Weakness.Element.FIRE, null), c));
+		c.showWeaknessPercent = false;
+		assertEquals("Fire", weaknessText(new Weakness(Weakness.Element.FIRE), c));
+	}
+
+	@Test
+	public void theSettingOffDrawsTheElementAloneEvenWhenThereIsAPercent()
+	{
+		Cfg c = new Cfg();
+		c.showWeaknessPercent = false;
+		assertEquals("Fire", weaknessText(new Weakness(Weakness.Element.FIRE, 50), c));
+		assertEquals("Fire", weaknessText(new Weakness(Weakness.Element.FIRE, 200), c));
+	}
+
+	@Test
+	public void thePercentSettingDoesNothingWhenShowWeaknessIsOff()
+	{
+		for (boolean percent : new boolean[] {true, false})
+		{
+			Cfg c = new Cfg();
+			c.showWeakness = false;
+			c.showWeaknessPercent = percent;
+			assertEquals("percent=" + percent, 3, texts(withWeakness(new Weakness(Weakness.Element.FIRE, 50)), c).size());
+			for (String t : texts(withWeakness(new Weakness(Weakness.Element.FIRE, 50)), c))
+			{
+				assertFalse(t, t.contains("Fire"));
+			}
+		}
+	}
+
+	@Test
+	public void aNoneWithNoElementDrawsNothingEvenIfSomethingGaveItAPercent()
+	{
+		// nothing should build one, but the cell must not read "null 50%" if it ever happens
+		Cfg c = new Cfg();
+		assertEquals(3, texts(withWeakness(new Weakness(null, 50)), c).size());
+		assertEquals(3, texts(withWeakness(Weakness.NONE), c).size());
+	}
+
+	// "The cell width comes from the measured text": 200% is wider than 50%, which is wider than none, in the frame and
+	// in the pixels, and nothing is clipped past the frame's right edge.
+	@Test
+	public void theCellWidthFollowsTheMeasuredTextSoTwoHundredPercentFits()
+	{
+		Cfg c = new Cfg();
+		FontMetrics fm = fm();
+		int none = frame(withWeakness(new Weakness(Weakness.Element.FIRE)), c).width;
+		int fifty = frame(withWeakness(new Weakness(Weakness.Element.FIRE, 50)), c).width;
+		int twoHundred = frame(withWeakness(new Weakness(Weakness.Element.FIRE, 200)), c).width;
+		assertEquals(fm.stringWidth("Fire 50%") - fm.stringWidth("Fire"), fifty - none);
+		assertEquals(fm.stringWidth("Fire 200%") - fm.stringWidth("Fire"), twoHundred - none);
+		assertTrue("a third digit takes room", twoHundred > fifty);
+
+		Painted p = paint(withWeakness(new Weakness(Weakness.Element.FIRE, 200)), c);
+		assertEquals("the drawn size is the frame", twoHundred, p.dim.width);
+		assertEquals("nothing is drawn past the frame: no text spills out of it", 0, maxAlpha(p.img, p.dim.width, p.img.getWidth()));
+		assertTrue("the text does reach the last cell, up to the padding",
+			maxAlpha(p.img, p.dim.width - FoeOverlay.PAD - fm.stringWidth("0%"), p.dim.width - FoeOverlay.PAD) > 0);
+	}
+
+	// review finding 6: every other percent test uses One line/Full, and the default layout is Stacked
+	@Test
+	public void twoHundredPercentFitsInEveryLayoutAndDetail()
+	{
+		for (FoeConfig.Layout layout : FoeConfig.Layout.values())
+		{
+			for (FoeConfig.Detail detail : FoeConfig.Detail.values())
+			{
+				Cfg c = new Cfg();
+				c.layout = layout;
+				c.detail = detail;
+				String at = layout + "/" + detail;
+				TargetSnapshot s = withWeakness(new Weakness(Weakness.Element.FIRE, 200));
+				assertTrue(at, texts(s, c).contains("Fire 200%"));
+				int plain = frame(withWeakness(new Weakness(Weakness.Element.FIRE)), c).width;
+				Painted p = paint(s, c);
+				assertTrue(at + ": the frame does not shrink for a longer cell", p.dim.width >= plain);
+				assertEquals(at + ": nothing drawn past the frame", 0, maxAlpha(p.img, p.dim.width, p.img.getWidth()));
+			}
+		}
+	}
+
+	@Test
+	public void thePercentIsPartOfTheOneWeaknessCellNotACellOfItsOwn()
+	{
+		Cfg c = new Cfg();
+		assertEquals("no extra divider or cell for the percent", 4,
+			FoeOverlay.cells(withWeakness(new Weakness(Weakness.Element.FIRE, 50)), c).size());
 	}
 
 	@Test

@@ -1,6 +1,7 @@
 package com.foe;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Set;
@@ -33,6 +34,11 @@ import java.util.function.Predicate;
  * entry (FoePlugin saves it through {@link WeaknessStore}), and {@link #load} replaces the cache with what was saved
  * (FoePlugin calls it on the first tick after the plugin starts). Both run on the client thread, the same thread as
  * {@link #tick}, so a load can never interleave with a credit.
+ *
+ * <p>What is shown for a type is not only what was learned: {@link #weaknessFor} combines it with the bundled wiki table
+ * (spec addenda 7 to 9, {@link #useTable}) by {@link WeaknessTable#resolve}. The table never enters {@code known}, so
+ * {@link #tick} still compares a learned value with a learned value, and what {@code onLearned} is told, and so what
+ * is saved, never carries a table percent.
  *
  * <p>Known limits, none of which can show a false weakness:
  * <ul>
@@ -73,6 +79,8 @@ final class WeaknessLearner<T>
 	}
 
 	private final Map<Integer, Weakness> known = new ConcurrentHashMap<>();
+	/** Never holds a learned value: {@link #tick} compares learned with learned, so a table percent cannot look like a change. */
+	private volatile Map<Integer, Weakness> table = Collections.emptyMap();
 	private final BiConsumer<Integer, Weakness> onLearned;
 
 	/** A learner that remembers nothing beyond this object's life. */
@@ -172,7 +180,7 @@ final class WeaknessLearner<T>
 			Set<Integer> soleIds = anims.get(sole);
 			for (T npc : impacts)
 			{
-				if (npc != sole && !involved.test(npc) && !java.util.Collections.disjoint(soleIds, anims.get(npc)))
+				if (npc != sole && !involved.test(npc) && !Collections.disjoint(soleIds, anims.get(npc)))
 				{
 					return Outcome.AOE_BYSTANDER;
 				}
@@ -194,11 +202,27 @@ final class WeaknessLearner<T>
 		}
 	}
 
-	/** The weakness to show for this type, or null: not known, or known to have none. */
+	/**
+	 * The bundled wiki table to combine with what is learned (spec addenda 7 to 9), keyed like {@code known}. It is
+	 * static data, so {@link #load} does not touch it. FoePlugin sets it once when the plugin starts, on the Swing
+	 * thread, and the client thread reads it, hence the volatile field.
+	 *
+	 * @param table immutable, or null for none
+	 */
+	void useTable(Map<Integer, Weakness> table)
+	{
+		this.table = table == null ? Collections.emptyMap() : table;
+	}
+
+	/**
+	 * The weakness to show for this type, or null: not known, or known to have none. What was learned and what the
+	 * table says are combined by {@link WeaknessTable#resolve}; a learned NONE that the table does not contradict is
+	 * the game's "no weakness", and shows nothing.
+	 */
 	Weakness weaknessFor(int key)
 	{
-		Weakness w = known.get(key);
-		return w == Weakness.NONE ? null : w;
+		Weakness w = WeaknessTable.resolve(known.get(key), table.get(key));
+		return w == null || w.getElement() == null ? null : w;
 	}
 
 	/** Forget this tick's change and impacts, keep what was learned: logout or hop starts a new session. */

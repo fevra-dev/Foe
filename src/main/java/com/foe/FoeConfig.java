@@ -7,7 +7,7 @@ import net.runelite.client.config.Range;
 import net.runelite.client.config.Units;
 
 /**
- * Eight settings (spec addendum 3), defaults first in every enum so the settings panel lists the default first.
+ * Nine settings (spec addenda 3 and 9), defaults first in every enum so the settings panel lists the default first.
  *
  * <p>Storage is by {@code Enum.name()} under {@code keyName} (ConfigPanel.createComboBox writes
  * {@code ((Enum) selected).name()}), so the {@code toString} labels below only change what the combo box shows,
@@ -161,13 +161,21 @@ public interface FoeConfig extends Config
 		return true;
 	}
 
+	@ConfigItem(keyName = "showWeaknessPercent", name = "Show weakness %", position = 6,
+		description = "Show the weakness percentage beside the element, for example Fire 50%, when one is known. "
+			+ "Has no effect when Show weakness is off.")
+	default boolean showWeaknessPercent()
+	{
+		return true;
+	}
+
 	// min = 0 is written out on purpose: 0 is a real choice (spec: "0-60 s"), not an inherited default.
 	// @Range is only enforced by the settings spinner (the sole consumer is ConfigPanel.createIntSpinner in
 	// client 1.13.1; ConfigInvocationHandler does not clamp), so a hand-edited profile can still hold any int.
 	// Whoever reads this value must clamp it themselves.
 	@Range(min = 0, max = 60)
 	@Units(Units.SECONDS)
-	@ConfigItem(keyName = "lingerSeconds", name = "Linger after combat", position = 6,
+	@ConfigItem(keyName = "lingerSeconds", name = "Linger after combat", position = 7,
 		description = "How long the panel stays after the last sign of combat. It always clears when the "
 			+ "monster dies. Very short values can flicker between hits.")
 	default int lingerSeconds()
@@ -180,7 +188,7 @@ public interface FoeConfig extends Config
 	// spinner, and a Color with alpha above 255 throws, so clamp to 0-100 before converting.
 	@Range(min = 0, max = 100)
 	@Units(Units.PERCENT)
-	@ConfigItem(keyName = "backgroundOpacity", name = "Background opacity", position = 7,
+	@ConfigItem(keyName = "backgroundOpacity", name = "Background opacity", position = 8,
 		description = "0% draws the text alone.")
 	default int backgroundOpacity()
 	{
