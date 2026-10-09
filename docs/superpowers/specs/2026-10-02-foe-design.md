@@ -285,3 +285,54 @@ arrived on the same tick as a spell-impact spot-anim (`GraphicChanged`) on the N
 - The store lives in the **active RuneLite config profile**, not in one global store. A profile switch reloads it on the next tick.
 - A saved value at or beyond the 50,000-entry cap is never rewritten, so entries past the cap are never deleted.
 - **Two clients at once:** the config file merges key by key, so the whole value is last-writer-wins. One client can drop another's new entries, or revert a correction, until the next confirmed credit.
+
+## Addendum 7 — 2026-10-09: a bundled wiki weakness table, in v1 (operator decisions)
+
+Appended, not edited in place. It supersedes the Constraints line "no bundled monster tables" **for elemental
+weaknesses only** (defensive bonuses and a "best style" hint stay v2), and addendum 5's "A bundled wiki weakness table
+stays v2". Evidence: `docs/research/2026-10-09-wiki-weakness-table.md`.
+
+**Goal.** Every monster the wiki covers shows its weakness, with the percentage, from the first attack. In-game
+learning (addenda 4–6) stays, and wins where it has an answer.
+
+**Source and generation.**
+- The OSRS Wiki Bucket API, bucket `infobox_monster`: fields `id` (repeated), `elemental_weakness`,
+  `elemental_weakness_percent`, plus `page_name` and `version_anchor` for the report. No page scraping.
+- A **developer-run script** in `scripts/` fetches it and writes the table into `src/main/resources/com/foe/`. The
+  output is committed. It is **not** a Gradle task: the Plugin Hub's standard build replaces `build.gradle`, so a
+  build-time fetch would never run there. The Hub build stays offline, and each table change is a reviewable diff.
+- The table's header records the source URL, the fetch date, and the counts of rows, ids written and ids skipped.
+- Regenerate it before each release.
+
+**Generator rules** (each one is a test):
+1. Element case is normalised (`fire` = `Fire`).
+2. The literal `None` is written as NONE: a positive "no weakness", as in addendum 4 item 4.
+3. The percent is written as the wiki gives it, including values above 100 (Zaros spiritual monsters 200, Ice demon
+   150) and 0. A row with an element other than None but no percent is skipped.
+4. Non-numeric ids (`beta…`) and rows with no ids are skipped.
+5. **Conflict:** an id whose rows disagree on element or percent gets **no entry**, and the script prints every
+   conflict. Measured: 15 ids. 14 are Deadman tabs, and one is real game state: Maggot King, fire 5% or 80% on one id.
+   In-game learning covers these.
+
+**Lookup and precedence.** The key is the same transformed composition id the learned store uses.
+- **Learned entry present** (a confirmed in-game credit), so it wins:
+  - same element as the table → shown with the table's percent;
+  - different element → shown with **no percent**, because the table is stale for that monster;
+  - learned NONE → nothing shown.
+- **Learned entry absent:** the table entry, if any, with its percent.
+- **Neither:** nothing, as today.
+
+`Weakness` gains an optional percent. The varp still never carries one.
+
+**Display.** The percent is drawn as given, e.g. `Fire 200%`. The renderer must not assume ≤100.
+
+**Licence.** Wiki content is CC BY-NC-SA 3.0. The data file carries its own CC BY-NC-SA 3.0 notice with a link to
+`oldschool.runescape.wiki`, and the README credits the wiki. Foe's code stays BSD-2. The resource is read with
+`getResourceAsStream`, never `getResource`, because the Hub jar is not unpacked.
+
+**Known limits.**
+- A monster the wiki has not filled in, or has filled in wrong, shows nothing or the wrong value until an in-game
+  credit corrects it. The correction then shows the element without a percent.
+- `[assumed]` The wiki's `id` values match the transformed composition id the panel uses. For an NPC that transforms,
+  the wiki may list the base id. To be checked against the probe trace before building.
+- A Jagex rebalance between releases is right only after a regeneration, or a credit, for that monster.
