@@ -20,7 +20,7 @@
 
 **Next actions, in order:**
 
-0. **Task 8b done 2026-10-09** (branch `feat/weakness-table-generator`: generator, review fixes, spec addendum 10, first table of 1,769 ids). Next is **Task 8c** (runtime load, `resolve()`, percent display, the "Show weakness %" setting). Open: should the generator re-check transclusion on each run (measured clean today, research note); and a possible heal indicator (operator asked 2026-10-09; heal hitsplats already raise exact HP live).
+0. **Wiki weakness table done 2026-10-09** (PRs #13–#17: generator, first table of 1,769 ids, runtime load, `resolve()`, `Fire 50%` display, "Show weakness %", learned-vs-table startup check; spec addenda 7–12; 600 tests). **Next is Task 9 (in-game acceptance)**, which now includes a Fire giant showing `Water 100%` before any spell, a monster that transforms by varbit, and one `weakness check:` line in `client.log` per start. Open, optional: have the generator re-check transclusion each run (measured clean 2026-10-09). v2: a `+12` heal indicator.
 
 1. **Wiki weakness table (operator decision 2026-10-09: in v1).**
    - **Goal:** every monster shows its weakness, with the percentage, from the first attack.
