@@ -2,6 +2,7 @@ package com.foe;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -65,6 +66,12 @@ public class FoePluginWiringTest
 	private final Map<String, Object> clientValues = new HashMap<>();
 	private Player me;
 	private FoePlugin plugin;
+	/** What the plugin's one config key holds; null is "never set". */
+	private String storedWeaknesses;
+	private final List<String> configWrites = new ArrayList<>();
+	private int configReads;
+	private boolean configReadFails;
+	private boolean configWriteFails;
 
 	/** A Proxy that answers from a map and throws on anything else. */
 	private static <T> T fake(Class<T> type, Map<String, Object> values)
@@ -152,6 +159,11 @@ public class FoePluginWiringTest
 		lingerSeconds = 10;
 		clock = 1_000;
 		npcManagerHealth = null;
+		storedWeaknesses = null;
+		configWrites.clear();
+		configReads = 0;
+		configReadFails = false;
+		configWriteFails = false;
 		world.clear();
 		meValues.clear();
 
@@ -177,7 +189,16 @@ public class FoePluginWiringTest
 		clientValues.clear();
 		clientValues.put("getLocalPlayer", me);
 
-		plugin = new FoePlugin()
+		plugin = newPlugin();
+	}
+
+	/**
+	 * A plugin wired to the fakes. Every instance shares the fake config above, so a second one is "the next time
+	 * RuneLite starts": nothing is in its memory, and what it knows has to come from the stored value.
+	 */
+	private FoePlugin newPlugin() throws Exception
+	{
+		FoePlugin p = new FoePlugin()
 		{
 			@Override
 			Integer fallbackMaxHp(int npcId)
@@ -196,9 +217,31 @@ public class FoePluginWiringTest
 			{
 				return dyingNpcs.contains(npc);
 			}
+
+			@Override
+			String storedWeaknesses()
+			{
+				configReads++;
+				if (configReadFails)
+				{
+					throw new IllegalStateException("config unavailable");
+				}
+				return storedWeaknesses;
+			}
+
+			@Override
+			void storeWeaknesses(String value)
+			{
+				if (configWriteFails)
+				{
+					throw new IllegalStateException("config unavailable");
+				}
+				storedWeaknesses = value;
+				configWrites.add(value);
+			}
 		};
-		set("client", fake(Client.class, clientValues));
-		set("config", new FoeConfig()
+		set(p, "client", fake(Client.class, clientValues));
+		set(p, "config", new FoeConfig()
 		{
 			@Override
 			public int lingerSeconds()
@@ -206,16 +249,22 @@ public class FoePluginWiringTest
 				return lingerSeconds;
 			}
 		});
+		return p;
 	}
 
-	private void set(String field, Object value) throws Exception
+	private static void set(FoePlugin target, String field, Object value) throws Exception
 	{
 		Field f = FoePlugin.class.getDeclaredField(field);
 		f.setAccessible(true);
-		f.set(plugin, value);
+		f.set(target, value);
 	}
 
 	private static Hitsplat hitsplat(int type)
+	{
+		return hitsplat(type, 5);
+	}
+
+	private static Hitsplat hitsplat(int type, int amount)
 	{
 		return new Hitsplat()
 		{
@@ -228,7 +277,7 @@ public class FoePluginWiringTest
 			@Override
 			public int getAmount()
 			{
-				return 5;
+				return amount;
 			}
 
 			@Override
@@ -247,9 +296,14 @@ public class FoePluginWiringTest
 
 	private void hit(Actor on, int hitsplatType)
 	{
+		hit(on, hitsplatType, 5);
+	}
+
+	private void hit(Actor on, int hitsplatType, int amount)
+	{
 		HitsplatApplied e = new HitsplatApplied();
 		e.setActor(on);
-		e.setHitsplat(hitsplat(hitsplatType));
+		e.setHitsplat(hitsplat(hitsplatType, amount));
 		plugin.onHitsplatApplied(e);
 	}
 
@@ -802,6 +856,239 @@ public class FoePluginWiringTest
 		assertEquals("neither knows", 0, tick().getMaxHp());
 	}
 
+	// ---- exact HP from hitsplats (spec addendum 5) ----
+	//
+	// HpTrackerTest owns the rule. These check the wiring: every hitsplat on every NPC reaches the tracker with its
+	// type and amount, the max HP it is judged against is the panel's, and the memory is dropped when HpMemory's is.
+
+	private static final int[] GIANT_85 = {40, 40, 40, 85, 1, 1};
+
+	private Npc giant85(int index)
+	{
+		return new Npc(index, "Giant " + index, 53, GIANT_85);
+	}
+
+	/** The ratio the server sends for this true HP (the formula in RuneLite's OpponentInfoOverlay comment). */
+	private static int ratioFor(int hp, int maxHp, int scale)
+	{
+		return hp <= 0 ? 0 : 1 + (scale - 1) * hp / maxHp;
+	}
+
+	// The case that prompted addendum 5: ratio 22/30 on 85 max HP is 62-64; the midpoint says 63, the truth was 64.
+	@Test
+	public void theTrackedHpIsShownWhenTheBarAllowsIt()
+	{
+		Npc giant = giant85(7);
+		engage(giant);
+		assertEquals("unhit: no current HP", HpEstimate.UNKNOWN, tick().getHp());
+		hit(giant.npc, HitsplatID.DAMAGE_ME, 21);
+		giant.bar(22, 30);
+		TargetSnapshot s = tick();
+		assertEquals(63, HpEstimate.estimate(22, 30, 85));
+		assertEquals(64, s.getHp());
+		assertEquals("the bar itself is untouched", 22, s.getHpRatio());
+		assertEquals(85, s.getMaxHp());
+		assertFalse(s.isHpStale());
+	}
+
+	@Test
+	public void otherPlayersHitsOnTheTargetAreCounted()
+	{
+		Npc giant = giant85(7);
+		engage(giant);
+		hit(giant.npc, HitsplatID.DAMAGE_OTHER, 10); // someone else's hit: not our fight, but it is damage
+		hit(giant.npc, HitsplatID.DAMAGE_ME, 11);
+		giant.bar(22, 30);
+		assertEquals(64, tick().getHp());
+	}
+
+	@Test
+	public void hitsOnAnNpcBeforeItBecomesTheTargetAreCounted()
+	{
+		Npc giant = giant85(7);
+		hit(giant.npc, HitsplatID.DAMAGE_OTHER, 21);
+		assertNull("not ours, so no panel", tick());
+		engage(giant);
+		giant.bar(22, 30);
+		assertEquals(64, tick().getHp());
+	}
+
+	@Test
+	public void poisonVenomDiseaseAndHealsCountToo()
+	{
+		Npc giant = giant85(7);
+		engage(giant);
+		hit(giant.npc, HitsplatID.DAMAGE_ME, 20);
+		hit(giant.npc, HitsplatID.POISON, 3);
+		hit(giant.npc, HitsplatID.VENOM, 1);
+		hit(giant.npc, HitsplatID.DISEASE, 1);
+		hit(giant.npc, HitsplatID.HEAL, 4);
+		hit(giant.npc, HitsplatID.BLOCK_ME, 7); // a block moves nothing
+		giant.bar(22, 30);
+		assertEquals("20 + 3 + 1 + 1 - 4 = 21 taken", 64, tick().getHp());
+	}
+
+	@Test
+	public void aMonsterDamagedBeforeFoeSawItShowsTheBarsMidpointNotTheTrackedValue()
+	{
+		Npc giant = giant85(7);
+		engage(giant);
+		hit(giant.npc, HitsplatID.DAMAGE_ME, 5); // all Foe saw; 40 more were dealt before
+		giant.bar(ratioFor(45, 85, 30), 30);
+		assertEquals(HpEstimate.estimate(ratioFor(45, 85, 30), 30, 85), tick().getHp());
+		hit(giant.npc, HitsplatID.DAMAGE_ME, 5);
+		giant.bar(ratioFor(40, 85, 30), 30);
+		assertEquals("and it stays that way until an exact reading",
+			HpEstimate.estimate(ratioFor(40, 85, 30), 30, 85), tick().getHp());
+	}
+
+	@Test
+	public void anExactBarReadingBringsTheTrackingBack()
+	{
+		Npc giant = giant85(7);
+		engage(giant);
+		hit(giant.npc, HitsplatID.DAMAGE_ME, 5);
+		giant.bar(ratioFor(45, 85, 30), 30);
+		assertEquals("rejected: the midpoint is shown", HpEstimate.estimate(ratioFor(45, 85, 30), 30, 85), tick().getHp());
+		giant.bar(30, 30); // healed to full: exact
+		assertEquals(85, tick().getHp());
+		hit(giant.npc, HitsplatID.DAMAGE_ME, 21);
+		giant.bar(22, 30);
+		assertEquals(64, tick().getHp());
+	}
+
+	@Test
+	public void aLogoutOrHopStartsTheCountOver()
+	{
+		Npc giant = giant85(7);
+		engage(giant);
+		hit(giant.npc, HitsplatID.DAMAGE_ME, 21);
+		giant.bar(22, 30);
+		assertEquals("counted", 64, tick().getHp());
+		gameState(GameState.HOPPING);
+		gameState(GameState.LOGGED_IN);
+		engage(giant);
+		assertEquals("the count was dropped with the world, so the bar alone is believed", 63, tick().getHp());
+	}
+
+	@Test
+	public void aDeathDropsTheCountOfThatNpcOnly()
+	{
+		Npc a = giant85(1);
+		Npc b = giant85(2);
+		hit(a.npc, HitsplatID.DAMAGE_OTHER, 21);
+		hit(b.npc, HitsplatID.DAMAGE_OTHER, 21);
+		plugin.onActorDeath(new ActorDeath(a.npc));
+		a.bar(22, 30);
+		b.bar(22, 30);
+		engage(a);
+		assertEquals("a's count is gone", 63, tick().getHp());
+		engage(b);
+		assertEquals("b's is not", 64, tick().getHp());
+	}
+
+	@Test
+	public void aDespawnDropsTheCountOfThatNpcOnly()
+	{
+		Npc a = giant85(1);
+		Npc b = giant85(2);
+		hit(a.npc, HitsplatID.DAMAGE_OTHER, 21);
+		hit(b.npc, HitsplatID.DAMAGE_OTHER, 21);
+		plugin.onNpcDespawned(new NpcDespawned(a.npc));
+		a.bar(22, 30);
+		b.bar(22, 30);
+		engage(a);
+		assertEquals(63, tick().getHp());
+		engage(b);
+		assertEquals(64, tick().getHp());
+	}
+
+	@Test
+	public void aReusedIndexStartsEmpty()
+	{
+		Npc old = giant85(7);
+		hit(old.npc, HitsplatID.DAMAGE_OTHER, 21);
+		plugin.onNpcDespawned(new NpcDespawned(old.npc));
+		Npc fresh = giant85(7).bar(22, 30); // the same index, a different object
+		engage(fresh);
+		assertEquals(63, tick().getHp());
+	}
+
+	@Test
+	public void stoppingThePluginDropsTheCount()
+	{
+		Npc giant = giant85(7);
+		engage(giant);
+		hit(giant.npc, HitsplatID.DAMAGE_ME, 21);
+		giant.bar(22, 30);
+		assertEquals(64, tick().getHp());
+		plugin.stop();
+		engage(giant);
+		assertEquals(63, tick().getHp());
+	}
+
+	@Test
+	public void noBarMeansNoCurrentHpWhateverWasCounted()
+	{
+		Npc giant = giant85(7);
+		engage(giant);
+		hit(giant.npc, HitsplatID.DAMAGE_ME, 21);
+		TargetSnapshot s = tick();
+		assertTrue("never seen a bar: unhit, as before", s.isHpUnhit());
+		assertEquals(HpEstimate.UNKNOWN, s.getHp());
+		giant.bar(22, 30);
+		assertEquals("and the first bar finds the count waiting", 64, tick().getHp());
+	}
+
+	// A remembered bar and the count agree while nothing happened since; if they do not, the remembered bar wins
+	// (it is what "last known" means) and the count is neither lost nor trusted.
+	@Test
+	public void aRememberedBarShowsTheCountedValueInsideItAndTheRememberedMidpointOtherwise()
+	{
+		Npc giant = giant85(7).bar(22, 30);
+		engage(giant);
+		hit(giant.npc, HitsplatID.DAMAGE_ME, 21);
+		assertEquals(64, tick().getHp());
+
+		giant.bar(-1, -1);
+		TargetSnapshot s = tick();
+		assertTrue(s.isHpStale());
+		assertEquals("still 64 once the bar has gone, not a drop to the midpoint 63", 64, s.getHp());
+
+		hit(giant.npc, HitsplatID.DAMAGE_OTHER, 28); // while the bar is off the screen: 85 - 21 - 28 = 36 now
+		s = tick();
+		assertTrue(s.isHpStale());
+		assertEquals("36 is not in the remembered 62-64: the remembered midpoint", 63, s.getHp());
+
+		giant.bar(ratioFor(36, 85, 30), 30);
+		assertNotEquals("the bar alone would say " + HpEstimate.estimate(ratioFor(36, 85, 30), 30, 85) + ": 36 must come from the count",
+			36, HpEstimate.estimate(ratioFor(36, 85, 30), 30, 85));
+		s = tick();
+		assertFalse(s.isHpStale());
+		assertEquals("the count survived the stale stretch", 36, s.getHp());
+	}
+
+	@Test
+	public void theCountIsJudgedAgainstTheMaxHpThePanelShows()
+	{
+		// stats say nothing; NPCManager says 85. The same figure must be used for the count's range check.
+		npcManagerHealth = 85;
+		Npc giant = new Npc(7, "No stats", 53, new int[] {40, 40, 40, 0, 1, 1});
+		engage(giant);
+		hit(giant.npc, HitsplatID.DAMAGE_ME, 21);
+		giant.bar(22, 30);
+		TargetSnapshot s = tick();
+		assertEquals(85, s.getMaxHp());
+		assertEquals(64, s.getHp());
+
+		npcManagerHealth = null; // no max HP at all: nothing to count against
+		Npc unknown = new Npc(8, "Unknown", 53, new int[] {40, 40, 40, 0, 1, 1});
+		engage(unknown);
+		hit(unknown.npc, HitsplatID.DAMAGE_ME, 21);
+		unknown.bar(22, 30);
+		assertEquals(HpEstimate.UNKNOWN, tick().getHp());
+	}
+
 	// ---- weakness: credited only to a confirmed spell impact (plan Task 8, Revision 2026-10-08) ----
 	//
 	// The sequences are the ones in docs/probe/raw-task8.txt, driven through the real handlers. WeaknessLearnerTest
@@ -1126,13 +1413,224 @@ public class FoePluginWiringTest
 		assertEquals(EARTH, shownElement(tick()));
 	}
 
+	// ---- remembered across sessions (spec addendum 5) ----
+	//
+	// What was learned is saved as one string under one key of the plugin's own config group (WeaknessStore) and
+	// loaded again when the plugin starts. WeaknessStoreTest owns the format and WeaknessLearnerTest the credit; these
+	// check the wiring and the ordering questions the Task 8 review (F4) raised about stop and start.
+
 	@Test
-	public void stoppingThePluginForgetsWhatWasLearned()
+	public void aCreditIsSavedAtOnceUnderTheTypeNotTheNpcId()
 	{
 		learn(scorpion(1), 554);
+		assertEquals("3025:FIRE", storedWeaknesses);
+		assertEquals(1, configWrites.size());
+	}
+
+	@Test
+	public void theSameCreditAgainWritesNothingMoreAndAChangedOneWritesOver()
+	{
+		learn(scorpion(1), 554);
+		learn(scorpion(2), 554);
+		assertEquals("nothing new to save", 1, configWrites.size());
+		learn(scorpion(3), 557);
+		assertEquals("3025:EARTH", storedWeaknesses);
+		assertEquals(2, configWrites.size());
+	}
+
+	@Test
+	public void aConfirmedNoneIsSavedToo()
+	{
+		learn(scorpion(1), -1);
+		assertEquals("3025:NONE", storedWeaknesses);
+	}
+
+	@Test
+	public void aDroppedChangeSavesNothing()
+	{
+		Npc giant = hillGiant(1);
+		varp(557); // no impact: never credited
+		engage(giant);
+		tick();
+		assertEquals(0, configWrites.size());
+		assertNull(storedWeaknesses);
+		assertEquals("and a tick with nothing to credit does not even read the store", 0, configReads);
+	}
+
+	@Test
+	public void aNewSessionLoadsWhatWasSaved() throws Exception
+	{
+		learn(scorpion(1), 554);
+		learn(hillGiant(2), 557);
+		learn(new Npc(3, "Goblin", 2, ICE_GIANT).type(2006), -1);
+		assertEquals("2006:NONE,2103:EARTH,3025:FIRE", storedWeaknesses);
+
+		plugin = newPlugin(); // RuneLite starts again: empty memory, same config
+		plugin.begin();
+		engage(scorpion(10));
+		assertEquals(FIRE, shownElement(tick()));
+		engage(hillGiant(11));
+		assertEquals(EARTH, shownElement(tick()));
+		engage(new Npc(12, "Goblin", 2, ICE_GIANT).type(2006));
+		assertNull("a loaded NONE shows nothing, and does not throw", tick().getWeakness());
+	}
+
+	@Test
+	public void theStoreIsReadOnceAtStartNotEveryTick() throws Exception
+	{
+		storedWeaknesses = "3025:FIRE";
+		plugin.begin();
+		assertEquals("nothing is read on the Swing thread", 0, configReads);
+		engage(scorpion(1));
+		tick();
+		tick();
+		tick();
+		assertEquals(1, configReads);
+		assertEquals(FIRE, shownElement(plugin.getSnapshot()));
+	}
+
+	@Test
+	public void aRestartReloadsTheStoreNotTheMemory()
+	{
+		learn(scorpion(1), 554);
+		storedWeaknesses = "2103:EARTH"; // changed behind the plugin's back (a profile switch, a hand edit)
 		plugin.stop();
+		plugin.begin();
+		engage(scorpion(2));
+		assertNull("the scorpion is no longer in the store", tick().getWeakness());
+		engage(hillGiant(3));
+		assertEquals(EARTH, shownElement(tick()));
+	}
+
+	@Test
+	public void stoppingThePluginKeepsWhatWasSavedAndWritesNothing()
+	{
+		learn(scorpion(1), 554);
+		int writes = configWrites.size();
+		plugin.stop();
+		assertEquals("3025:FIRE", storedWeaknesses);
+		assertEquals("stop() touches no config", writes, configWrites.size());
+	}
+
+	// F4 (Task 8 review): stop() runs on the Swing thread and a credit already running on the client thread can land
+	// after it. When a learned entry could not survive a restart that was a wrong-state risk; now the entry is meant
+	// to survive, so what must hold is that the late credit is kept and erases nothing already stored.
+	@Test
+	public void aCreditThatLandsAfterStopIsKeptAndErasesNothingStored() throws Exception
+	{
+		storedWeaknesses = "2103:EARTH";
+		plugin.begin();
+		tick(); // loads
+		plugin.stop();
+		learn(scorpion(1), 554); // the in-flight credit
+		assertEquals("both, in key order", "2103:EARTH,3025:FIRE", storedWeaknesses);
+
+		plugin = newPlugin();
+		plugin.begin();
+		engage(hillGiant(2));
+		assertEquals(EARTH, shownElement(tick()));
+		engage(scorpion(3));
+		assertEquals(FIRE, shownElement(tick()));
+	}
+
+	// The same store is written by merging one entry into whatever it holds, never by writing out the memory, so even
+	// a credit that lands while the memory is empty (just after stop(), or before the first load) cannot overwrite
+	// the others with a single-entry copy.
+	@Test
+	public void aCreditIntoAnEmptyMemoryDoesNotOverwriteTheStore() throws Exception
+	{
+		storedWeaknesses = "2006:NONE,2103:EARTH";
+		plugin = newPlugin(); // nothing loaded yet
+		learn(scorpion(1), 554);
+		assertEquals("2006:NONE,2103:EARTH,3025:FIRE", storedWeaknesses);
+	}
+
+	@Test
+	public void aCreditOnTheSameTickAsTheFirstLoadSurvivesTheLoad() throws Exception
+	{
+		storedWeaknesses = "2103:EARTH";
+		plugin = newPlugin();
+		plugin.begin();
+		Npc s = scorpion(1);
+		varp(554);
+		engage(s);
+		graphic(s.npc);
+		tick(); // load, then credit
+		assertEquals("2103:EARTH,3025:FIRE", storedWeaknesses);
+		assertEquals(FIRE, shownElement(plugin.getSnapshot()));
+		engage(hillGiant(2));
+		assertEquals("and the loaded one is there too", EARTH, shownElement(tick()));
+	}
+
+	// The load comes first on the tick: a credit made on that same tick must be applied to the loaded cache, not
+	// replaced by it. With the store unwritable the saved value cannot bring it back, so the order is what keeps it.
+	@Test
+	public void aCreditOnTheFirstTickSurvivesTheLoadEvenWhenItCannotBeSaved() throws Exception
+	{
+		storedWeaknesses = "2103:EARTH";
+		configWriteFails = true;
+		plugin = newPlugin();
+		plugin.begin();
+		Npc s = scorpion(1);
+		varp(554);
+		engage(s);
+		graphic(s.npc);
+		assertEquals(FIRE, shownElement(tick()));
+		engage(hillGiant(2));
+		assertEquals("and the loaded one", EARTH, shownElement(tick()));
+	}
+
+	// begin() is startUp without the overlay and the config cleanup, and it is the second place the fight state is
+	// dropped (F4): a hitsplat already running on the client thread can land after stop().
+	@Test
+	public void aHitThatLandsAfterStopIsNotCountedAfterTheRestart()
+	{
+		Npc giant = giant85(7);
+		engage(giant);
+		plugin.stop();
+		hit(giant.npc, HitsplatID.DAMAGE_OTHER, 21); // in flight when the plugin stopped
+		plugin.begin();
+		engage(giant);
+		giant.bar(22, 30);
+		assertEquals("the count started over at the restart", 63, tick().getHp());
+	}
+
+	@Test
+	public void aStoredValueThatIsGarbageIsIgnoredNotFatal()
+	{
+		storedWeaknesses = "garbage,,2103:EARTH,x:y,3025:PLASMA,-4:FIRE";
+		plugin.begin();
+		engage(hillGiant(1));
+		assertEquals(EARTH, shownElement(tick()));
 		engage(scorpion(2));
 		assertNull(tick().getWeakness());
+	}
+
+	@Test
+	public void aStoreThatCannotBeReadLeavesThePanelWorkingAndIsNotRetriedEveryTick()
+	{
+		configReadFails = true;
+		plugin.begin();
+		engage(hillGiant(1));
+		assertNotNull("the panel is drawn", tick());
+		tick();
+		assertEquals("one attempt, not one per tick", 1, configReads);
+		learn(scorpion(2), 554);
+		assertEquals("still learns in memory", FIRE, shownElement(plugin.getSnapshot()));
+	}
+
+	@Test
+	public void aStoreThatCannotBeWrittenDoesNotBreakTheTickOrTheCredit()
+	{
+		configWriteFails = true;
+		Npc s = scorpion(1);
+		varp(554);
+		engage(s);
+		graphic(s.npc);
+		TargetSnapshot snap = tick();
+		assertNotNull("the tick still produced a snapshot", snap);
+		assertEquals("and the credit is in memory for this session", FIRE, shownElement(snap));
+		assertNull(storedWeaknesses);
 	}
 
 	// ---- clock ----

@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -28,7 +29,10 @@ import java.util.function.Predicate;
  *
  * <p>Entries are kept per type, by the key the caller's {@code creditKey} gives (the transformed composition id, see
  * FoePlugin), for as long as this object lives: a type's weakness does not change between fights, logouts or hops.
- * The caller clears it when the plugin stops. Nothing is written to disk.
+ * This class does not touch the disk. It tells its {@code onLearned} callback whenever a credit adds or changes an
+ * entry (FoePlugin saves it through {@link WeaknessStore}), and {@link #load} replaces the cache with what was saved
+ * (FoePlugin calls it on the first tick after the plugin starts). Both run on the client thread, the same thread as
+ * {@link #tick}, so a load can never interleave with a credit.
  *
  * <p>Known limits, none of which can show a false weakness:
  * <ul>
@@ -38,9 +42,9 @@ import java.util.function.Predicate;
  * <li>One AoE that hits two fought NPCs is dropped, even when both are the same type and the credit would be safe.
  * </ul>
  *
- * <p>The cache is a ConcurrentHashMap because the plugin clears it from the thread that stops the plugin while the
- * client thread may still be reading. The per-tick buffers are touched by the client thread and, on stop/start, by the
- * Swing thread; an overlap there can at worst drop or misplace one tick's buffer, and startUp clears the cache again.
+ * <p>The cache is a ConcurrentHashMap out of caution only: every reader and writer of it is the client thread. The
+ * per-tick buffers are touched by the client thread and, on stop/start, by the Swing thread (FoePlugin discards them);
+ * an overlap there can at worst drop or misplace one tick's buffer.
  *
  * @param <T> the NPC type; compared by identity, never by equals
  */
@@ -69,6 +73,25 @@ final class WeaknessLearner<T>
 	}
 
 	private final Map<Integer, Weakness> known = new ConcurrentHashMap<>();
+	private final BiConsumer<Integer, Weakness> onLearned;
+
+	/** A learner that remembers nothing beyond this object's life. */
+	WeaknessLearner()
+	{
+		this((key, w) ->
+		{
+		});
+	}
+
+	/**
+	 * @param onLearned told the type key and the weakness whenever a credit adds an entry or changes one, never for a
+	 *                  credit that leaves the entry as it was, and never for {@link #load}. It runs inside {@link #tick}
+	 *                  before the buffers are emptied, so it must not throw; FoePlugin's does not
+	 */
+	WeaknessLearner(BiConsumer<Integer, Weakness> onLearned)
+	{
+		this.onLearned = onLearned;
+	}
 
 	private boolean changed;
 	private int value;
@@ -159,7 +182,10 @@ final class WeaknessLearner<T>
 			{
 				return Outcome.NOT_CREDITABLE;
 			}
-			known.put(key, decoded);
+			if (!decoded.equals(known.put(key, decoded)))
+			{
+				onLearned.accept(key, decoded);
+			}
 			return Outcome.CREDITED;
 		}
 		finally
@@ -184,10 +210,13 @@ final class WeaknessLearner<T>
 		anims.clear();
 	}
 
-	/** Forget everything, including what was learned: the plugin stopped. */
-	void clear()
+	/**
+	 * Replace what is known with what was saved. Not a credit, so nothing is reported to {@code onLearned}, and this
+	 * tick's buffers are left alone.
+	 */
+	void load(Map<Integer, Weakness> stored)
 	{
 		known.clear();
-		discardTick();
+		known.putAll(stored);
 	}
 }

@@ -38,6 +38,8 @@ public class WeaknessLearnerTest
 	}
 
 	private WeaknessLearner<Mob> learner;
+	/** Every (type, weakness) the learner said it had just learned, in order. */
+	private final java.util.List<String> learned = new java.util.ArrayList<>();
 
 	private static Mob fought(int type)
 	{
@@ -52,7 +54,7 @@ public class WeaknessLearnerTest
 	@Before
 	public void setUp()
 	{
-		learner = new WeaknessLearner<>();
+		learner = new WeaknessLearner<>((key, w) -> learned.add(key + ":" + (w.getElement() == null ? "NONE" : w.getElement())));
 	}
 
 	private Outcome tick()
@@ -374,17 +376,98 @@ public class WeaknessLearnerTest
 		assertElement(Weakness.Element.FIRE, SCORPION);
 	}
 
+	// ---- persistence hooks (spec addendum 5) ----
+
 	@Test
-	public void clearForgetsEverythingLearnedAndEverythingBuffered()
+	public void aCreditSaysWhatItLearned()
+	{
+		learner.varpChanged(557);
+		learner.impact(fought(HILL_GIANT));
+		assertEquals(Outcome.CREDITED, tick());
+		assertEquals(java.util.Collections.singletonList("2103:EARTH"), learned);
+	}
+
+	@Test
+	public void aCreditThatChangesNothingSaysNothing()
+	{
+		learner.varpChanged(557);
+		learner.impact(fought(HILL_GIANT));
+		tick();
+		learner.varpChanged(557);
+		learner.impact(fought(HILL_GIANT));
+		assertEquals(Outcome.CREDITED, tick());
+		assertEquals("the same value for the same type is not news", 1, learned.size());
+	}
+
+	@Test
+	public void aChangedEntryAndANoneAreSaidToo()
+	{
+		learner.varpChanged(557);
+		learner.impact(fought(HILL_GIANT));
+		tick();
+		learner.varpChanged(554);
+		learner.impact(fought(HILL_GIANT));
+		tick();
+		learner.varpChanged(-1);
+		learner.impact(fought(HILL_GIANT));
+		tick();
+		assertEquals(java.util.Arrays.asList("2103:EARTH", "2103:FIRE", "2103:NONE"), learned);
+	}
+
+	@Test
+	public void aDroppedChangeSaysNothing()
+	{
+		learner.varpChanged(557);
+		assertEquals(Outcome.NO_CANDIDATE, tick());
+		learner.varpChanged(0);
+		learner.impact(fought(HILL_GIANT));
+		assertEquals(Outcome.UNKNOWN_VALUE, tick());
+		learner.varpChanged(557);
+		learner.impact(fought(HILL_GIANT));
+		learner.impact(fought(SCORPION));
+		assertEquals(Outcome.SEVERAL_CANDIDATES, tick());
+		learner.varpChanged(557);
+		learner.impact(new Mob(HILL_GIANT, true, false));
+		assertEquals(Outcome.NOT_CREDITABLE, tick());
+		assertEquals(java.util.Collections.<String>emptyList(), learned);
+	}
+
+	@Test
+	public void loadReplacesWhatWasKnownAndSaysNothing()
 	{
 		learner.varpChanged(554);
 		learner.impact(fought(SCORPION));
 		tick();
+		learned.clear();
+
+		java.util.Map<Integer, Weakness> stored = new java.util.HashMap<>();
+		stored.put(HILL_GIANT, new Weakness(Weakness.Element.EARTH));
+		stored.put(7, Weakness.NONE);
+		learner.load(stored);
+
+		assertNull("the memory mirrors the store: the scorpion was not in it", learner.weaknessFor(SCORPION));
+		assertElement(Weakness.Element.EARTH, HILL_GIANT);
+		assertNull("a loaded NONE is a known none, shown as nothing", learner.weaknessFor(7));
+		assertEquals("loading is not learning", java.util.Collections.<String>emptyList(), learned);
+	}
+
+	@Test
+	public void loadLeavesThisTicksBuffersAlone()
+	{
 		learner.varpChanged(557);
 		learner.impact(fought(HILL_GIANT));
-		learner.clear();
-		assertNull(learner.weaknessFor(SCORPION));
-		assertEquals(Outcome.NO_CHANGE, tick());
-		assertNull(learner.weaknessFor(HILL_GIANT));
+		learner.load(new java.util.HashMap<>());
+		assertEquals("the change buffered before the load is still credited by the tick", Outcome.CREDITED, tick());
+		assertElement(Weakness.Element.EARTH, HILL_GIANT);
+	}
+
+	@Test
+	public void aLearnerBuiltWithNoSinkStillLearns()
+	{
+		WeaknessLearner<Mob> plain = new WeaknessLearner<>();
+		plain.varpChanged(557);
+		plain.impact(fought(HILL_GIANT));
+		assertEquals(Outcome.CREDITED, plain.tick(m -> m.fought, m -> m.creditable ? m.type : null));
+		assertNotNull(plain.weaknessFor(HILL_GIANT));
 	}
 }

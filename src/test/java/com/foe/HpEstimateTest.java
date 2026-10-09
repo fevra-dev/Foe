@@ -1,6 +1,8 @@
 package com.foe;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
@@ -131,5 +133,79 @@ public class HpEstimateTest
 		// (30,30): min=30000, max=min(899999/29=31034, 30000)=30000 -> 30000; (15,30): 14483, 15517 -> 15000
 		assertEquals(30_000, HpEstimate.estimate(30, 30, 30_000));
 		assertEquals(15_000, HpEstimate.estimate(15, 30, 30_000));
+	}
+
+	// ---- range(): the bounds estimate() takes the midpoint of, exposed for HpTracker (spec addendum 5) ----
+
+	@Test
+	public void theRangeOfRatio22OfScale30OnMaxHp85IsSixtyTwoToSixtyFour()
+	{
+		// The case that prompted addendum 5: Foe showed 63 where another plugin showed 64. Both are inside 62-64.
+		// min=(85*21+28)/29=1813/29=62, max=min((85*22-1)/29=1869/29=64, 85)=64
+		HpEstimate.Range r = HpEstimate.range(22, 30, 85);
+		assertEquals(62, r.getMin());
+		assertEquals(64, r.getMax());
+		assertFalse(r.isExact());
+		assertTrue(r.contains(62) && r.contains(63) && r.contains(64));
+		assertFalse(r.contains(61));
+		assertFalse(r.contains(65));
+		assertEquals(63, r.midpoint());
+		assertEquals(HpEstimate.estimate(22, 30, 85), r.midpoint());
+	}
+
+	@Test
+	public void aFullBarAndAnEmptyBarAreExact()
+	{
+		assertTrue(HpEstimate.range(30, 30, 70).isExact());
+		assertEquals(70, HpEstimate.range(30, 30, 70).getMin());
+		assertTrue(HpEstimate.range(0, 30, 70).isExact());
+		assertEquals(0, HpEstimate.range(0, 30, 70).getMax());
+	}
+
+	@Test
+	public void aSmallMonstersBarIsExactAtMostReadings()
+	{
+		// maxHp 20 on a scale of 30: ratio = 1 + 29 * 7 / 20 = 11 -> min = ceil(20*10/29) = 7, max = (20*11-1)/29 = 7
+		HpEstimate.Range r = HpEstimate.range(11, 30, 20);
+		assertTrue(r.isExact());
+		assertEquals(7, r.getMin());
+	}
+
+	@Test
+	public void noRangeWhereThereIsNoEstimate()
+	{
+		assertNull(HpEstimate.range(-1, 30, 70));
+		assertNull(HpEstimate.range(15, 0, 70));
+		assertNull(HpEstimate.range(15, -1, 70));
+		assertNull(HpEstimate.range(15, 30, 0));
+		assertNull(HpEstimate.range(31, 30, 70));
+		assertNull(HpEstimate.range(-1, 0, 70));
+	}
+
+	@Test
+	public void estimateIsAlwaysTheMidpointOfTheRange()
+	{
+		int withRange = 0;
+		for (int scale : new int[]{0, 1, 2, 30, 120})
+		{
+			for (int maxHp : new int[]{0, 1, 5, 29, 30, 31, 70, 85, 1000})
+			{
+				for (int ratio = -2; ratio <= scale + 2; ratio++)
+				{
+					HpEstimate.Range r = HpEstimate.range(ratio, scale, maxHp);
+					String at = "ratio " + ratio + ", scale " + scale + ", maxHp " + maxHp;
+					if (r == null)
+					{
+						assertEquals(at, HpEstimate.UNKNOWN, HpEstimate.estimate(ratio, scale, maxHp));
+					}
+					else
+					{
+						withRange++;
+						assertEquals(at, HpEstimate.estimate(ratio, scale, maxHp), r.midpoint());
+					}
+				}
+			}
+		}
+		assertTrue("the loop reached real ranges, not only the null branch: " + withRange, withRange > 500);
 	}
 }

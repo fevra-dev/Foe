@@ -1,6 +1,7 @@
 package com.foe;
 
 import lombok.Value;
+import lombok.With;
 
 /** Everything the overlay draws, captured once per tick. 0 means a stat is unknown. */
 @Value
@@ -8,7 +9,12 @@ class TargetSnapshot
 {
 	String name;
 	int combatLevel;
-	/** Estimated current HP, or HpEstimate.UNKNOWN. Always UNKNOWN for an unhit target. */
+	/**
+	 * Current HP, or HpEstimate.UNKNOWN. Always UNKNOWN for an unhit target. Usually the midpoint of what the bar
+	 * allows (an estimate); the exact value instead when HpTracker has counted the hitsplats and the bar agrees.
+	 * {@code @With} so the plugin can swap it in without the factory knowing about the tracker.
+	 */
+	@With
 	int hp;
 	/** 0 when unknown: the overlay then shows the bar only (spec). */
 	int maxHp;
