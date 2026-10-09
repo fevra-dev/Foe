@@ -465,3 +465,14 @@ the same distinct rows. One offset walk over a live database can skip a row with
 
 **Still open `[assumed]`:** a weakness value transcluded into an infobox from another page would change the Bucket row
 without changing this page's edit time, which bypasses the hold. Not checked.
+
+## Addendum 11 — 2026-10-09: learned-vs-table check; heals indicator deferred (operator decisions)
+
+**Learned-vs-table check.** When the plugin starts, after the table and the learned store have both loaded, Foe
+logs at info level `weakness check: N learned, M agree with the table, K disagree` and lists each disagreement as
+`id learned=ELEMENT table=ELEMENT [percent]`. A learned NONE against a table weakness is listed too. There is no UI.
+Normal play then checks the table at no cost: a full in-game sweep was considered and rejected, because the varp never
+carries a percent and same-value silence stops a run of same-element casts from teaching anything.
+
+**A heal indicator (`+12` beside the HP) is a v2 idea.** Heal hitsplats already count into exact HP (addendum 5), so
+the HP number rises on the tick a heal lands. What v1 doesn't show is the heal as an event.
