@@ -402,3 +402,66 @@ rebalance update.
 
 **Still `[assumed]`:** wiki ids equal the transformed composition id for NPCs that transform by varbit. All 6 probe
 NPCs match, and none of them transforms. **Task 9 acceptance checks one transforming monster** before release.
+
+## Addendum 9 — 2026-10-09: conflict rule refined; a percent toggle (operator decisions)
+
+Appended, not edited in place. It supersedes addendum 8's **F4** rule and adds one setting.
+
+**Conflicts (replaces addendum 8 F4).** For each id, gather the rows that carry a weakness (an element or `None`).
+Rows with no weakness at all are ignored, since a blank tab is unfilled, not a claim.
+- **All rows agree on the element and the percent:** emit it.
+- **They agree on the element but not the percent:** emit the element with **no percent**. That element is true in
+  every phase, and the percent isn't.
+- **They name different elements** (counting `None` as an element): **no entry**.
+- Every id that hits either of the last two cases is listed in the report.
+
+Measured 2026-10-09 over the full pull: **0** ids name two different elements. Of the 15 former conflicts, the 14
+Deadman ids (a blank `Apocalypse` tab) now emit their value, e.g. Earth 35, and Maggot King 15742 emits `FIRE` with
+no percent (5 when Nearby, 80 when Far or Roaring). Case normalisation was never the cause: its rows are all `fire`.
+Picking the largest percent was considered and rejected. It would show Maggot King at 80% while it sits at 5%.
+
+**Setting: "Show weakness %"** (key `showWeaknessPercent`, default **On**), placed directly after "Show weakness".
+- On: `Fire 50%`.
+- Off: `Fire`.
+- It has no effect when "Show weakness" is off, or when the entry has no percent.
+
+## Addendum 10 — 2026-10-09: generator rules revised after the Task 8b review
+
+Appended, not edited in place. It supersedes addendum 8's F2, F7 and F8 where they differ, and addendum 7's "not a
+Gradle task".
+
+**The hold covers every difference (replaces addendum 8 F2's "an id whose value changed").** An id that is
+**added**, changed or **removed** relative to the previous table is accepted only when every page that gives it a
+weakness now, **or gave it one when the previous table was made**, was last edited at least 7 days ago. Otherwise the
+previous state is kept: the previous value, or no entry for an add. Measured: 2,400 numeric ids have no weakness row
+today, so filling one in was an add that shipped at once (grill F2's Vorkath case).
+- The previous table's pages come from the **previous raw file**, so a page that has since dropped an id still has to
+  be old.
+- An id with no known page, or a page with no known edit time, is not old.
+- A page the wiki reports as **missing** (deleted) counts as old. Deleting a page takes a wiki administrator, and
+  holding its ids for ever would be a refusal nobody could clear.
+- The 5% shrink check (F7) measures what the wiki says now, before the hold puts anything back.
+
+**Decisions are recorded in the raw file (replaces addendum 8 F8's mechanism).** The raw file's `_meta` line records
+the generation (`first` or `diffed`), the previous table's id count, whether `--accept-shrink` was used, and every
+held id with the value kept. So table = generator(raw) holds after a run that held something back, not only after a
+first generation. `WeaknessTableResourceTest` re-derives with those decisions. The table header gains a
+`# Generation:` line, so a run that diffed is distinguishable from one that never could.
+
+**No previous table is a refusal, not a first generation.** The generator refuses to run without a previous table
+unless given `--first-generation`, and refuses that flag when a table exists. So deleting the table doesn't switch
+the hold off. A previous table that its raw file doesn't re-derive is also a refusal.
+
+**Two walks.** The generator walks the Bucket twice (sorted by `page_name`) and writes nothing unless both walks saw
+the same distinct rows. One offset walk over a live database can skip a row without any error.
+
+**Smaller points.**
+- An element without a percent takes part in the addendum 9 conflict rule. An id is skipped under rule 3 only when
+  none of its rows has a percent, and it is counted once.
+- Trimming takes whitespace that isn't a control character.
+- The report is written to `data/weakness-report.txt` and committed beside the raw file.
+- The generator is a dev-only `JavaExec` task, `./gradlew generateWeaknessTable`, on the test classpath. Addendum 7
+  said "not a Gradle task". What it meant, and what holds, is that the build the Hub runs never fetches.
+
+**Still open `[assumed]`:** a weakness value transcluded into an infobox from another page would change the Bucket row
+without changing this page's edit time, which bypasses the hold. Not checked.

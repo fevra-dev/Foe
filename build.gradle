@@ -45,6 +45,16 @@ tasks.register('run', JavaExec) {
 	args "--developer-mode", "--debug"
 }
 
+// Dev only: regenerates the wiki weakness table (spec addenda 7 to 9). It fetches the live wiki, so it is never a
+// build step: the Plugin Hub's standard build replaces this file and never runs it, which is intended. Run it by hand
+// before a release: ./gradlew generateWeaknessTable   (or --args=--accept-shrink). It writes data/wiki-infobox-monster.jsonl,
+// src/main/resources/com/foe/weakness-table.tsv and build/weakness-report.txt, or exits non-zero and writes nothing.
+tasks.register('generateWeaknessTable', JavaExec) {
+	classpath = sourceSets.test.runtimeClasspath
+	mainClass = 'com.foe.tools.GenerateWeaknessTable'
+	workingDir = projectDir
+}
+
 tasks.register('shadowJar', Jar) {
 	dependsOn configurations.testRuntimeClasspath
 	manifest {
