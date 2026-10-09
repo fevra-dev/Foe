@@ -336,3 +336,69 @@ learning (addenda 4–6) stays, and wins where it has an answer.
 - `[assumed]` The wiki's `id` values match the transformed composition id the panel uses. For an NPC that transforms,
   the wiki may list the base id. To be checked against the probe trace before building.
 - A Jagex rebalance between releases is right only after a regeneration, or a credit, for that monster.
+
+## Addendum 8 — 2026-10-09: fixes for the addendum 7 grill
+
+Appended, not edited in place. It answers `docs/research/2026-10-09-addendum-7-grill.md` (F1–F10) and supersedes
+addendum 7 where they differ. Each rule below is a test. The generator **fails** (non-zero exit, nothing written)
+rather than skipping wherever a rule says "fails".
+
+**F1 — strict element parse.**
+- Generator: trim the field, lowercase it, then accept only `air`, `water`, `earth`, `fire` or `none`. Any other
+  value **fails** the run, listing page, tab and value.
+- Runtime loader: same set. A bad line is skipped and counted. The loader **never throws** out of `startUp`: any
+  failure leaves an empty table and logs a warning (see F6).
+
+**F2 — vandalism.**
+- A table is generated **against the previous committed table**. The generator writes a change report: ids added,
+  removed and changed, with page and tab. The reviewer reads that report, not the table.
+- **Quarantine:** an id whose value changed is accepted only if its wiki page's last edit is at least **7 days old**.
+  Otherwise the previous value is kept and the change is listed as pending. Last-edit time comes from
+  `action=query&prop=revisions` (50 titles per request). Measured 2026-10-09: 89 of 627 weakness pages were edited
+  within 7 days, and 241 within 30.
+- **The first generation has no previous table,** so nothing is quarantined. Its report lists every page edited
+  within 7 days, and those get a manual check against the in-game Monster Examine before the table is committed.
+- **Ceiling:** an edit that survives 7 days of wiki patrol ships. In-game learning corrects the element for anyone who
+  casts on that monster.
+
+**F3 — precedence, revised.** Addendum 7's rule stands except for one case:
+- **Learned NONE against a table weakness → show the table.** NONE is the weakest evidence the store holds: it is
+  never displayed, so a wrong one is invisible, and same-value silence can stop it being corrected.
+- **Learned element differing from the table** is still shown, with no percent. A disagreement is the only signal of
+  a rebalance the table hasn't caught. A wrong learned element is corrected by the next cast that changes the varp.
+
+**F4 — conflicts.** For each id, compare the normalised `(element, percent)` of every row. A row with no weakness
+compares as the value "unknown". Two or more distinct values → **no entry**, and the id appears in the report.
+Measured: 15 ids (14 Deadman ids, plus Maggot King).
+
+**F5 — agreeing phases.** Inherent; kept as a known limit. The report lists every id shared by two or more tabs of one
+page, even when they agree, so phase monsters get a look.
+
+**F6 — the table can't go missing silently.**
+- A unit test loads the **real resource** through `getResourceAsStream`. It asserts:
+  - a floor of 1,600 entries (measured 2026-10-09: 1,754 ids with a weakness after conflicts are dropped);
+  - known answers: Fire giant 2075 → WATER 100; Kraken 494 → EARTH 50; Whirlpool 496 → NONE; Spiritual mage (Zaros) 11292
+    → FIRE 200;
+  - Maggot King 15742 → no entry.
+- At startup Foe logs `weakness table: N entries` at info level. A failed or empty load logs a warning.
+
+**F7 — partial fetch.** The generator fails on any non-200 reply, a reply without a `bucket` key, or an `error` key.
+It walks until it gets an empty page, not just a short one, and drops duplicate rows. It **fails** if the id count
+falls more than 5% below the previous table's header count, unless run with `--accept-shrink`. The flag's use is
+written into the header.
+
+**F8 — reproducibility, stated honestly.** The wiki can't be re-fetched as it was. The generator saves the raw
+Bucket rows as `data/wiki-infobox-monster.jsonl`. That file is committed but **not shipped**: it lives outside
+`src/main`, is about 300 KB, and is CC BY-NC-SA. A test re-derives the table from it and asserts byte-equality with
+the committed resource. So a reviewer can verify table = generator(raw) offline, and spot-check raw against the wiki.
+Addendum 7's "re-run and diff" claim is withdrawn.
+
+**F9 — percent bound.** The generator **fails** on any percent outside 0–999 and lists the offending rows. Measured
+range: 0–200. Inside the bound, the percent is shown as given (operator decision, addendum 7).
+
+**F10 — stale percent behind a matching element.** Inherent: the varp carries no percent, so confirmation can't
+detect a percent-only rebalance. Kept as a known limit. The release checklist regenerates the table after any combat
+rebalance update.
+
+**Still `[assumed]`:** wiki ids equal the transformed composition id for NPCs that transform by varbit. All 6 probe
+NPCs match, and none of them transforms. **Task 9 acceptance checks one transforming monster** before release.
