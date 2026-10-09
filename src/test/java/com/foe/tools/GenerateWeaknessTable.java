@@ -178,7 +178,8 @@ public final class GenerateWeaknessTable
 			for (int i = 0; i < 3; i++)
 			{
 				Files.createDirectories(targets[i].getParent());
-				staged[i] = Files.createTempFile(targets[i].getParent(), targets[i].getFileName().toString(), ".tmp");
+				// not createTempFile: that makes the file owner-only (0600), and a table should look like any other
+				staged[i] = targets[i].resolveSibling(targets[i].getFileName() + ".tmp");
 				Files.write(staged[i], contents[i].getBytes(StandardCharsets.UTF_8));
 			}
 			for (int i = 0; i < 3; i++)

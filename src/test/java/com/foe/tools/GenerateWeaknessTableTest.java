@@ -179,6 +179,23 @@ public class GenerateWeaknessTableTest
 	}
 
 	@Test
+	public void theFilesGetTheSamePermissionsAsAnyOtherFileMadeInThatFolder() throws IOException
+	{
+		assertEquals(stderr(), 0, run(new FakeWiki(goodRows()), T0));
+		Path plain = folder.newFile("plain.txt").toPath();
+		if (!Files.getFileStore(plain).supportsFileAttributeView("posix"))
+		{
+			return;
+		}
+		// the staging files must not be owner-only temp files: a committed table should look like any other
+		for (String name : new String[] {GenerateWeaknessTable.RAW, GenerateWeaknessTable.TABLE,
+			GenerateWeaknessTable.REPORT})
+		{
+			assertEquals(name, Files.getPosixFilePermissions(plain), Files.getPosixFilePermissions(file(name)));
+		}
+	}
+
+	@Test
 	public void theTableIsExactlyWhatTheBuilderDerivesFromTheRawFileAlone() throws IOException
 	{
 		// the property WeaknessTableResourceTest asserts on the committed files: table = generator(raw)
