@@ -1933,7 +1933,7 @@ public class FoePluginWiringTest
 	}
 
 	@Test
-	public void theDefaultSeamReadsTheJarResource() throws Exception
+	public void theDefaultSeamReadsTheClasspathResource() throws Exception
 	{
 		try (InputStream in = new FoePlugin().weaknessTableStream())
 		{
@@ -1955,7 +1955,7 @@ public class FoePluginWiringTest
 		assertTrue("nothing is read or logged on the Swing thread", logs.all().stream().noneMatch(l -> l.startsWith("weakness check")));
 		tick();
 		assertEquals(java.util.Arrays.asList(
-			"weakness check: 4 learned, 2 agree with the table, 1 disagree",
+			"weakness check: 4 learned, 2 agree with the table, 1 disagree, 1 not in the table",
 			"weakness check: 2103 learned=FIRE table=EARTH 60"), checkLines());
 		assertTrue(logs.at(Level.WARN).isEmpty());
 	}
@@ -1981,7 +1981,7 @@ public class FoePluginWiringTest
 		plugin.begin();
 		tick();
 		assertEquals(java.util.Arrays.asList(
-			"weakness check: 1 learned, 0 agree with the table, 1 disagree",
+			"weakness check: 1 learned, 0 agree with the table, 1 disagree, 0 not in the table",
 			"weakness check: 3025 learned=NONE table=FIRE 50"), checkLines());
 	}
 
@@ -2037,7 +2037,8 @@ public class FoePluginWiringTest
 		engage(s);
 		graphic(s.npc);
 		tick(); // load, check, then credit
-		assertEquals("weakness check: 1 learned, 0 agree with the table, 1 disagree", checkLines().get(0));
+		assertEquals("weakness check: 1 learned, 0 agree with the table, 1 disagree, 0 not in the table",
+			checkLines().get(0));
 	}
 
 	@Test
@@ -2053,14 +2054,25 @@ public class FoePluginWiringTest
 	}
 
 	@Test
-	public void withNoTableTheCheckStillRunsAndFindsNothingToCompare()
+	public void withNoTableTheCheckSaysItWasSkippedRatherThanFindingNothing()
 	{
+		// review finding 1: "0 disagree" against a table that never loaded reads as a clean result
 		storedWeaknesses = STORED;
 		tableText = null;
 		plugin.begin();
 		tick();
-		assertEquals("weakness check: 4 learned, 0 agree with the table, 0 disagree", checkLines().get(0));
+		assertEquals("weakness check: skipped, the weakness table did not load (4 learned)", checkLines().get(0));
 		assertEquals(1, checkLines().size());
+	}
+
+	@Test
+	public void anEmptyTableIsSkippedToo()
+	{
+		storedWeaknesses = STORED;
+		tableText = "# header only\n";
+		plugin.begin();
+		tick();
+		assertEquals("weakness check: skipped, the weakness table did not load (4 learned)", checkLines().get(0));
 	}
 
 	// ---- clock ----

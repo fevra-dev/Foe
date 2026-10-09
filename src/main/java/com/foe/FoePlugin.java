@@ -137,6 +137,13 @@ public class FoePlugin extends Plugin
 		stop();
 	}
 
+	/** A RuneLite profile switch: the store is per profile, so reload it on the next tick, before any credit. */
+	@Subscribe
+	public void onProfileChanged(net.runelite.client.events.ProfileChanged e)
+	{
+		loadWeaknesses = true;
+	}
+
 	/**
 	 * Everything startUp does except the retired-setting cleanup and adding the overlay, so a test can reach it without
 	 * a live ConfigManager and OverlayManager.
@@ -156,19 +163,13 @@ public class FoePlugin extends Plugin
 	 * <p>It also loads the bundled wiki weakness table (spec addendum 7), which is static data and so is read here and
 	 * not on a tick; that never throws, whatever the resource is like ({@link #loadWeaknessTable}).
 	 */
-	/** A RuneLite profile switch: the store is per profile, so reload it on the next tick, before any credit. */
-	@Subscribe
-	public void onProfileChanged(net.runelite.client.events.ProfileChanged e)
-	{
-		loadWeaknesses = true;
-	}
-
 	void begin()
 	{
 		forgetEverything();
 		loadWeaknessTable();
-		loadWeaknesses = true;
+		// check first: a load that ran between the two lines would otherwise skip the check (review finding 4)
 		checkWeaknesses = true;
+		loadWeaknesses = true;
 	}
 
 	/**
@@ -384,6 +385,8 @@ public class FoePlugin extends Plugin
 	 * missing, empty, too big, unreadable or damaged leaves an empty table, or the lines that were good, and a warning.
 	 * The log carries counts and fixed reasons only, never text from the file (ADR-0006).
 	 */
+	// ponytail: Errors (OutOfMemoryError, LinkageError) are not caught here or in WeaknessTable.load; RuneLite then
+	// stops the plugin cleanly. The read is capped at 1 MiB, so catch Throwable only if one is ever seen.
 	private void loadWeaknessTable()
 	{
 		WeaknessTable.Loaded loaded;
@@ -435,7 +438,12 @@ public class FoePlugin extends Plugin
 			log.warn("Could not read the remembered weaknesses; starting with none", ex);
 			return;
 		}
-		if (check)
+		if (check && weaknessTable.isEmpty())
+		{
+			// a table that did not load is not a table that agrees: "0 disagree" would read as a clean result
+			log.info("weakness check: skipped, the weakness table did not load ({} learned)", stored.size());
+		}
+		else if (check)
 		{
 			WeaknessCheck result = WeaknessCheck.compare(stored, weaknessTable);
 			log.info("{}", result.summary());

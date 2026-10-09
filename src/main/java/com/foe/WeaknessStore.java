@@ -193,7 +193,7 @@ final class WeaknessStore
 	{
 		if (sameName(name, NONE))
 		{
-			return Weakness.NONE; // the shared instance: WeaknessLearner.weaknessFor tests it by identity
+			return Weakness.NONE;
 		}
 		for (Weakness.Element e : Weakness.Element.values())
 		{

@@ -69,10 +69,11 @@ final class WeaknessCheck
 		return new WeaknessCheck(learned.size(), agree, lines.size(), notInTable, lines);
 	}
 
-	/** {@code weakness check: N learned, M agree with the table, K disagree} */
+	/** {@code weakness check: N learned, M agree with the table, K disagree, L not in the table}; N = M + K + L. */
 	String summary()
 	{
-		return "weakness check: " + learned + " learned, " + agree + " agree with the table, " + disagree + " disagree";
+		return "weakness check: " + learned + " learned, " + agree + " agree with the table, " + disagree + " disagree, "
+			+ notInTable + " not in the table";
 	}
 
 	private static String name(Weakness w)

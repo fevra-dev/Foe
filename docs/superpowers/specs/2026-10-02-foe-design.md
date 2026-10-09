@@ -476,3 +476,13 @@ carries a percent and same-value silence stops a run of same-element casts from 
 
 **A heal indicator (`+12` beside the HP) is a v2 idea.** Heal hitsplats already count into exact HP (addendum 5), so
 the HP number rises on the tick a heal lands. What v1 doesn't show is the heal as an event.
+
+## Addendum 12 — 2026-10-09: Task 8c review corrections
+
+- **The learned-vs-table check is skipped when the table didn't load** (missing, unreadable or empty). Foe then
+  logs `weakness check: skipped, the weakness table did not load (N learned)` instead of a summary whose `0 disagree`
+  would read as a clean result.
+- **The summary gains its fourth count:** `N learned, M agree with the table, K disagree, L not in the table`, so
+  N = M + K + L and a gap is visible. This supersedes addendum 11's three-count format.
+- **"Never throws" means exceptions.** An `Error` from the loader (OutOfMemoryError, LinkageError) is not caught.
+  RuneLite then stops the plugin cleanly, and the read is capped at 1 MiB. Marked in code as a deliberate ceiling.

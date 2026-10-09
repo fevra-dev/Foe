@@ -13,9 +13,9 @@ import lombok.Value;
  * lists 200 for some monsters, and nothing here assumes otherwise.
  *
  * <p><b>Equality includes the percent</b> (Lombok's {@code @Value}), so a learned FIRE and a table FIRE 50 are
- * different values. Nothing compares one with the other: {@link WeaknessTable#resolve} compares elements, and the
- * two places that compare whole values ({@link WeaknessLearner#tick}, {@link WeaknessStore#put}) only ever see
- * learned ones.
+ * different values. Nothing compares one with the other: {@link WeaknessTable#resolve} and
+ * {@link WeaknessStore#put} compare elements, and the one place that compares whole values
+ * ({@link WeaknessLearner#tick}) only ever sees learned ones.
  */
 @Value
 @AllArgsConstructor

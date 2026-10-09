@@ -60,7 +60,7 @@ public class WeaknessCheckTest
 			"2 learned=WATER table=FIRE 100",
 			"3 learned=NONE table=EARTH 60",
 			"6 learned=FIRE table=NONE"), c.lines);
-		assertEquals("weakness check: 6 learned, 2 agree with the table, 3 disagree", c.summary());
+		assertEquals("weakness check: 6 learned, 2 agree with the table, 3 disagree, 1 not in the table", c.summary());
 	}
 
 	@Test
@@ -122,7 +122,7 @@ public class WeaknessCheckTest
 	public void nothingLearnedSaysSoAndListsNothing()
 	{
 		WeaknessCheck c = WeaknessCheck.compare(Collections.<Integer, Weakness>emptyMap(), map(1, new Weakness(Element.FIRE, 50)));
-		assertEquals("weakness check: 0 learned, 0 agree with the table, 0 disagree", c.summary());
+		assertEquals("weakness check: 0 learned, 0 agree with the table, 0 disagree, 0 not in the table", c.summary());
 		assertTrue(c.lines.isEmpty());
 	}
 
@@ -135,7 +135,7 @@ public class WeaknessCheckTest
 		assertEquals(0, c.disagree);
 		assertEquals(2, c.notInTable);
 		assertTrue(c.lines.isEmpty());
-		assertEquals("weakness check: 2 learned, 0 agree with the table, 0 disagree", c.summary());
+		assertEquals("weakness check: 2 learned, 0 agree with the table, 0 disagree, 2 not in the table", c.summary());
 	}
 
 	@Test

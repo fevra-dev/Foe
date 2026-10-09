@@ -52,7 +52,7 @@ public class WeaknessTableTest
 		assertEquals(Element.FIRE, t.entries.get(3).getElement());
 		assertNull("an element-only line has no percent", t.entries.get(4).getPercent());
 		assertEquals(Element.FIRE, t.entries.get(4).getElement());
-		assertSame("NONE is the one shared instance, which the rest of the plugin tests", Weakness.NONE, t.entries.get(5));
+		assertEquals("a positive no-weakness", Weakness.NONE, t.entries.get(5));
 		assertEquals(new Weakness(Element.WATER, 999), t.entries.get(999999999));
 	}
 
@@ -279,7 +279,7 @@ public class WeaknessTableTest
 		Loaded t = WeaknessTable.load(endless);
 		assertTrue(t.entries.isEmpty());
 		assertNotNull(t.problem);
-		assertTrue("read " + served[0] + " bytes: the shipped file is about 15 KB", served[0] <= 2L * WeaknessTable.MAX_BYTES);
+		assertTrue("read " + served[0] + " bytes: the shipped file is about 24 KB", served[0] <= 2L * WeaknessTable.MAX_BYTES);
 	}
 
 	@Test

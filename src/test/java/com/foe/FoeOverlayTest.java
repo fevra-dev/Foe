@@ -487,6 +487,28 @@ public class FoeOverlayTest
 			maxAlpha(p.img, p.dim.width - FoeOverlay.PAD - fm.stringWidth("0%"), p.dim.width - FoeOverlay.PAD) > 0);
 	}
 
+	// review finding 6: every other percent test uses One line/Full, and the default layout is Stacked
+	@Test
+	public void twoHundredPercentFitsInEveryLayoutAndDetail()
+	{
+		for (FoeConfig.Layout layout : FoeConfig.Layout.values())
+		{
+			for (FoeConfig.Detail detail : FoeConfig.Detail.values())
+			{
+				Cfg c = new Cfg();
+				c.layout = layout;
+				c.detail = detail;
+				String at = layout + "/" + detail;
+				TargetSnapshot s = withWeakness(new Weakness(Weakness.Element.FIRE, 200));
+				assertTrue(at, texts(s, c).contains("Fire 200%"));
+				int plain = frame(withWeakness(new Weakness(Weakness.Element.FIRE)), c).width;
+				Painted p = paint(s, c);
+				assertTrue(at + ": the frame does not shrink for a longer cell", p.dim.width >= plain);
+				assertEquals(at + ": nothing drawn past the frame", 0, maxAlpha(p.img, p.dim.width, p.img.getWidth()));
+			}
+		}
+	}
+
 	@Test
 	public void thePercentIsPartOfTheOneWeaknessCellNotACellOfItsOwn()
 	{

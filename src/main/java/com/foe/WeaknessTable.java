@@ -31,7 +31,7 @@ final class WeaknessTable
 	static final String RESOURCE = "/com/foe/weakness-table.tsv";
 
 	/**
-	 * The most that is read. The shipped file is about 15 KB; this is 64 times that, so a table that grows still
+	 * The most that is read. The shipped file is about 24 KB (24,349 bytes on 2026-10-09); this is about 43 times that, so a table that grows still
 	 * loads and a stream that never ends does not exhaust memory.
 	 */
 	static final int MAX_BYTES = 1 << 20;
@@ -167,7 +167,7 @@ final class WeaknessTable
 	{
 		if (name.equals("NONE"))
 		{
-			return percent.isEmpty() ? Weakness.NONE : null; // the shared instance: callers test it by identity
+			return percent.isEmpty() ? Weakness.NONE : null;
 		}
 		return new Weakness(Weakness.Element.valueOf(name), percent.isEmpty() ? null : Integer.valueOf(percent));
 	}
