@@ -1,8 +1,11 @@
 package com.foe;
 
 import com.google.inject.Provides;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import javax.inject.Inject;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -96,6 +99,13 @@ public class FoePlugin extends Plugin
 	private final WeaknessStore weaknessStore = new WeaknessStore(this::storedWeaknesses, this::storeWeaknesses);
 	/** Set when the plugin starts, taken by the first GameTick: the cache is loaded on the client thread. */
 	private volatile boolean loadWeaknesses;
+	/**
+	 * The bundled wiki table (spec addendum 7), read once in {@link #begin} and never changed after: the learner combines
+	 * it with what was learned, and the startup check compares the two. Empty when it could not be loaded.
+	 */
+	private volatile Map<Integer, Weakness> weaknessTable = Collections.emptyMap();
+	/** Set when the plugin starts, taken by the first load with it: the learned-vs-table check runs once (addendum 11). */
+	private volatile boolean checkWeaknesses;
 
 	/** The one snapshot FoeOverlay draws. Written on the client thread, read on the render thread. */
 	@Getter(AccessLevel.PACKAGE)
@@ -142,6 +152,9 @@ public class FoePlugin extends Plugin
 	 * <li>a credit can never wipe the saved value, whatever the cache holds, because saving merges one entry into the
 	 *     saved value ({@link WeaknessStore#put}) instead of writing the cache out.
 	 * </ul>
+	 *
+	 * <p>It also loads the bundled wiki weakness table (spec addendum 7), which is static data and so is read here and
+	 * not on a tick; that never throws, whatever the resource is like ({@link #loadWeaknessTable}).
 	 */
 	/** A RuneLite profile switch: the store is per profile, so reload it on the next tick, before any credit. */
 	@Subscribe
@@ -153,7 +166,9 @@ public class FoePlugin extends Plugin
 	void begin()
 	{
 		forgetEverything();
+		loadWeaknessTable();
 		loadWeaknesses = true;
+		checkWeaknesses = true;
 	}
 
 	/**
@@ -355,16 +370,79 @@ public class FoePlugin extends Plugin
 		configManager.setConfiguration(FoeConfig.GROUP, WeaknessStore.KEY, value);
 	}
 
-	/** Never throws: a config that cannot be read means a session that starts with nothing learned, not a dead panel. */
-	private void loadLearnedWeaknesses()
+	/**
+	 * The table's resource, or null when the jar does not have it. {@code getResourceAsStream}, never {@code getResource}:
+	 * the Plugin Hub's jar is not unpacked (spec addendum 7). Package-private so a test can stand in for the jar.
+	 */
+	InputStream weaknessTableStream()
 	{
+		return FoePlugin.class.getResourceAsStream(WeaknessTable.RESOURCE);
+	}
+
+	/**
+	 * Reads the bundled table once. Never throws, so startUp cannot fail on it (addendum 8 F1, F6): a resource that is
+	 * missing, empty, too big, unreadable or damaged leaves an empty table, or the lines that were good, and a warning.
+	 * The log carries counts and fixed reasons only, never text from the file (ADR-0006).
+	 */
+	private void loadWeaknessTable()
+	{
+		WeaknessTable.Loaded loaded;
 		try
 		{
-			weakness.load(weaknessStore.load());
+			loaded = WeaknessTable.load(weaknessTableStream());
+		}
+		catch (RuntimeException ex)
+		{
+			loaded = WeaknessTable.Loaded.failed("the resource could not be opened (" + ex.getClass().getSimpleName() + ")");
+		}
+		weaknessTable = loaded.entries;
+		weakness.useTable(loaded.entries);
+		if (loaded.problem != null)
+		{
+			log.warn("weakness table: {}; no weakness will come from it", loaded.problem);
+		}
+		else if (loaded.entries.isEmpty())
+		{
+			log.warn("weakness table: no entries; no weakness will come from it");
+		}
+		else
+		{
+			log.info("weakness table: {} entries", loaded.entries.size());
+		}
+		if (loaded.skipped > 0)
+		{
+			log.warn("weakness table: skipped {} malformed lines", loaded.skipped);
+		}
+	}
+
+	/**
+	 * Never throws: a config that cannot be read means a session that starts with nothing learned, not a dead panel.
+	 * The first load after the plugin starts also runs the learned-vs-table check (addendum 11), the one moment both
+	 * have loaded; a profile switch reloads the store without it.
+	 */
+	private void loadLearnedWeaknesses()
+	{
+		boolean check = checkWeaknesses;
+		checkWeaknesses = false;
+		Map<Integer, Weakness> stored;
+		try
+		{
+			stored = weaknessStore.load();
+			weakness.load(stored);
 		}
 		catch (RuntimeException ex)
 		{
 			log.warn("Could not read the remembered weaknesses; starting with none", ex);
+			return;
+		}
+		if (check)
+		{
+			WeaknessCheck result = WeaknessCheck.compare(stored, weaknessTable);
+			log.info("{}", result.summary());
+			for (String line : result.lines)
+			{
+				log.info("weakness check: {}", line);
+			}
 		}
 	}
 

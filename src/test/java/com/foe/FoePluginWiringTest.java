@@ -7,6 +7,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import ch.qos.logback.classic.Level;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -38,6 +41,7 @@ import net.runelite.api.events.InteractingChanged;
 import net.runelite.api.events.NpcDespawned;
 import net.runelite.api.events.VarbitChanged;
 import net.runelite.client.eventbus.Subscribe;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -72,6 +76,15 @@ public class FoePluginWiringTest
 	private int configReads;
 	private boolean configReadFails;
 	private boolean configWriteFails;
+	/**
+	 * What the plugin's weakness-table resource holds; null is "not in the jar". Empty by default, so the tests written
+	 * before the table existed see no table weaknesses and keep their meaning; the real one is {@link #useRealTable}.
+	 */
+	private String tableText;
+	private boolean tableStreamFails;
+	private boolean useRealTable;
+	private int tableOpens;
+	private LogCapture logs;
 
 	/** A Proxy that answers from a map and throws on anything else. */
 	private static <T> T fake(Class<T> type, Map<String, Object> values)
@@ -164,6 +177,11 @@ public class FoePluginWiringTest
 		configReads = 0;
 		configReadFails = false;
 		configWriteFails = false;
+		tableText = "";
+		tableStreamFails = false;
+		useRealTable = false;
+		tableOpens = 0;
+		logs = new LogCapture(FoePlugin.class);
 		world.clear();
 		meValues.clear();
 
@@ -190,6 +208,12 @@ public class FoePluginWiringTest
 		clientValues.put("getLocalPlayer", me);
 
 		plugin = newPlugin();
+	}
+
+	@After
+	public void closeLogs()
+	{
+		logs.close();
 	}
 
 	/**
@@ -227,6 +251,21 @@ public class FoePluginWiringTest
 					throw new IllegalStateException("config unavailable");
 				}
 				return storedWeaknesses;
+			}
+
+			@Override
+			InputStream weaknessTableStream()
+			{
+				tableOpens++;
+				if (tableStreamFails)
+				{
+					throw new IllegalStateException("jar unavailable");
+				}
+				if (useRealTable)
+				{
+					return super.weaknessTableStream();
+				}
+				return tableText == null ? null : new ByteArrayInputStream(tableText.getBytes(java.nio.charset.StandardCharsets.UTF_8));
 			}
 
 			@Override
@@ -1646,6 +1685,382 @@ public class FoePluginWiringTest
 		assertNotNull("the tick still produced a snapshot", snap);
 		assertEquals("and the credit is in memory for this session", FIRE, shownElement(snap));
 		assertNull(storedWeaknesses);
+	}
+
+	// ---- the bundled wiki table (spec addenda 7 to 9, plan Task 8c) ----
+	//
+	// WeaknessTableTest owns the file format and the precedence rule, WeaknessCheckTest the check. These check the
+	// wiring: that the table is loaded when the plugin starts (begin() is startUp without the overlay and the config
+	// cleanup, see its comment: startUp itself needs OverlayManager and ConfigManager, which are concrete classes that
+	// need a live client), that a table which is missing or damaged costs only the table, and that what is logged is
+	// what the spec says.
+
+	private static final String TABLE = "# header\n2103\tEARTH\t60\n3025\tFIRE\t50\n2006\tNONE\t\n5000\tWATER\t200\n5001\tAIR\t\n";
+
+	/** What the loader logged about the table at this level. The startup check logs at INFO too, under its own prefix. */
+	private java.util.List<String> tableLog(Level level)
+	{
+		java.util.List<String> out = new java.util.ArrayList<>();
+		for (String l : logs.at(level))
+		{
+			if (l.startsWith("weakness table"))
+			{
+				out.add(l);
+			}
+		}
+		return out;
+	}
+
+	private Npc typed(int index, int compositionId)
+	{
+		return new Npc(index, "Monster " + index, 28, ICE_GIANT).type(compositionId);
+	}
+
+	/** The weakness on the panel after engaging this NPC, or null; fails with a message when there is no panel. */
+	private Weakness shown(Npc n)
+	{
+		engage(n);
+		TargetSnapshot s = tick();
+		assertNotNull("the panel is drawn", s);
+		return s.getWeakness();
+	}
+
+	@Test
+	public void theTableShowsItsWeaknessWithThePercentBeforeAnySpell()
+	{
+		tableText = TABLE;
+		plugin.begin();
+		assertEquals(new Weakness(EARTH, 60), shown(hillGiant(1)));
+		assertEquals(new Weakness(FIRE, 50), shown(scorpion(2)));
+	}
+
+	@Test
+	public void aPercentOverOneHundredAndAnElementOnlyEntryReachThePanelAsGiven()
+	{
+		tableText = TABLE;
+		plugin.begin();
+		assertEquals(new Weakness(Weakness.Element.WATER, 200), shown(typed(1, 5000)));
+		assertEquals(new Weakness(Weakness.Element.AIR, null), shown(typed(2, 5001)));
+	}
+
+	@Test
+	public void aTableNoneAndATypeNotInTheTableShowNothing()
+	{
+		tableText = TABLE;
+		plugin.begin();
+		assertNull(shown(typed(1, 2006)));
+		assertNull(shown(typed(2, 424242)));
+	}
+
+	// The key is the transformed composition id, the same one the learned store uses: the NPC's own getId() is the
+	// untransformed form, and is deliberately a different number in these fakes (1000 + index vs 2000 + index).
+	@Test
+	public void theTableIsKeyedByTheCompositionIdNotTheNpcId()
+	{
+		tableText = "1001\tFIRE\t50\n2001\tWATER\t100\n";
+		plugin.begin();
+		assertEquals("the composition id 2001, not NPC.getId() 1001", new Weakness(Weakness.Element.WATER, 100), shown(iceGiant(1)));
+	}
+
+	@Test
+	public void aLearnedElementThatMatchesTheTableShowsTheTablesPercent()
+	{
+		tableText = TABLE;
+		plugin.begin();
+		learn(scorpion(1), 554);
+		assertEquals(new Weakness(FIRE, 50), plugin.getSnapshot().getWeakness());
+		assertEquals("and what is saved is the element alone", "3025:FIRE", storedWeaknesses);
+	}
+
+	@Test
+	public void aLearnedElementThatDiffersFromTheTableShowsWithoutAPercent()
+	{
+		tableText = TABLE;
+		plugin.begin();
+		learn(scorpion(1), 557);
+		assertEquals(new Weakness(EARTH, null), plugin.getSnapshot().getWeakness());
+		assertEquals("3025:EARTH", storedWeaknesses);
+	}
+
+	@Test
+	public void aLearnedNoneYieldsToATableWeaknessButIsStillSaved()
+	{
+		tableText = TABLE;
+		plugin.begin();
+		learn(scorpion(1), -1);
+		assertEquals("addendum 8 F3", new Weakness(FIRE, 50), plugin.getSnapshot().getWeakness());
+		assertEquals("the game's none is remembered as before", "3025:NONE", storedWeaknesses);
+		learn(typed(2, 2006), -1);
+		assertNull("the table says none as well", plugin.getSnapshot().getWeakness());
+	}
+
+	@Test
+	public void aLoadedLearnedNoneAlsoYieldsToTheTable() throws Exception
+	{
+		storedWeaknesses = "3025:NONE,2006:NONE";
+		tableText = TABLE;
+		plugin.begin();
+		assertEquals(new Weakness(FIRE, 50), shown(scorpion(1)));
+		assertNull(shown(typed(2, 2006)));
+	}
+
+	@Test
+	public void theTableIsOpenedOncePerStartNotPerTick()
+	{
+		tableText = TABLE;
+		assertEquals("nothing is opened until the plugin starts", 0, tableOpens);
+		plugin.begin();
+		assertEquals(1, tableOpens);
+		engage(hillGiant(1));
+		tick();
+		tick();
+		tick();
+		assertEquals(1, tableOpens);
+		plugin.stop();
+		assertEquals("stopping reads nothing", 1, tableOpens);
+		plugin.begin();
+		assertEquals("and the next start reads it again", 2, tableOpens);
+	}
+
+	@Test
+	public void theTableSurvivesLogoutAndHopLikeEverythingElseThatIsStaticData()
+	{
+		tableText = TABLE;
+		plugin.begin();
+		gameState(GameState.LOGIN_SCREEN);
+		gameState(GameState.LOGGED_IN);
+		assertEquals(new Weakness(EARTH, 60), shown(hillGiant(1)));
+		assertEquals("and was not read again", 1, tableOpens);
+	}
+
+	// ---- startUp survives a table that is not there (addendum 8 F1, F6) ----
+
+	private void assertThePluginStillWorksWithoutATable()
+	{
+		plugin.begin(); // must not throw
+		assertNull("no table weakness", shown(hillGiant(1)));
+		learn(scorpion(2), 554);
+		assertEquals("in-game learning is untouched", new Weakness(FIRE, null), plugin.getSnapshot().getWeakness());
+		engage(hillGiant(3));
+		assertNotNull("the panel is drawn", tick());
+	}
+
+	@Test
+	public void startUpSurvivesATableThatIsMissingFromTheJar()
+	{
+		tableText = null;
+		assertThePluginStillWorksWithoutATable();
+		assertEquals("one warning, and it names the table", 1, logs.at(Level.WARN).size());
+		assertTrue(logs.at(Level.WARN).get(0), logs.at(Level.WARN).get(0).startsWith("weakness table: "));
+		assertTrue("not an info line saying all is well", tableLog(Level.INFO).isEmpty());
+	}
+
+	@Test
+	public void startUpSurvivesATableThatCannotBeOpened()
+	{
+		tableStreamFails = true;
+		assertThePluginStillWorksWithoutATable();
+		assertEquals(1, logs.at(Level.WARN).size());
+		assertTrue(logs.at(Level.WARN).get(0), logs.at(Level.WARN).get(0).startsWith("weakness table: "));
+	}
+
+	@Test
+	public void startUpSurvivesAnEmptyTable()
+	{
+		tableText = "";
+		assertThePluginStillWorksWithoutATable();
+		assertEquals("an empty table is a warning, not 'weakness table: 0 entries' at info", 1, logs.at(Level.WARN).size());
+		assertTrue(tableLog(Level.INFO).isEmpty());
+	}
+
+	@Test
+	public void startUpSurvivesATableOfNothingButGarbage()
+	{
+		tableText = "this is not a table\n\u0000\u0001\u0002\n7\tPLASMA\t50\n";
+		assertThePluginStillWorksWithoutATable();
+		assertTrue("a warning counts the lines it skipped: " + logs.at(Level.WARN),
+			logs.at(Level.WARN).stream().anyMatch(l -> l.contains("skipped 3")));
+	}
+
+	@Test
+	public void theTextOfABadLineNeverReachesTheLog()
+	{
+		tableText = "2103\tEARTH\t60\nforged\tINJECTED\tline\n";
+		plugin.begin();
+		for (String line : logs.all())
+		{
+			assertFalse(line, line.contains("forged"));
+			assertFalse(line, line.contains("INJECTED"));
+		}
+	}
+
+	@Test
+	public void aTableWithSomeBadLinesKeepsTheGoodOnesAndSaysHowManyWereSkipped()
+	{
+		tableText = "2103\tEARTH\t60\nbad\n3025\tFIRE\t50\n7\tPLASMA\t1\n";
+		plugin.begin();
+		assertEquals(new Weakness(EARTH, 60), shown(hillGiant(1)));
+		assertEquals(new Weakness(FIRE, 50), shown(scorpion(2)));
+		assertEquals(java.util.Collections.singletonList("weakness table: 2 entries"), tableLog(Level.INFO));
+		assertEquals(1, logs.at(Level.WARN).size());
+		assertTrue(logs.at(Level.WARN).get(0), logs.at(Level.WARN).get(0).contains("skipped 2"));
+	}
+
+	@Test
+	public void aTableThatLoadsLogsItsEntryCountAtInfoAndNothingAtWarn()
+	{
+		tableText = TABLE;
+		plugin.begin();
+		assertEquals(java.util.Collections.singletonList("weakness table: 5 entries"), tableLog(Level.INFO));
+		assertTrue(logs.at(Level.WARN).isEmpty());
+	}
+
+	// ---- the real resource, read the way the plugin reads it ----
+
+	@Test
+	public void theShippedTableGivesAFireGiantItsWaterWeaknessBeforeAnySpell()
+	{
+		useRealTable = true;
+		plugin.begin();
+		assertEquals("Fire giant", new Weakness(Weakness.Element.WATER, 100), shown(typed(1, 2075)));
+		assertEquals("Kraken", new Weakness(Weakness.Element.EARTH, 50), shown(typed(2, 494)));
+		assertNull("Whirlpool: none", shown(typed(3, 496)));
+		assertEquals("Spiritual mage (Zaros): 200 reaches the panel", new Weakness(FIRE, 200), shown(typed(4, 11292)));
+		assertEquals("Maggot King: element only", new Weakness(FIRE, null), shown(typed(5, 15742)));
+		assertEquals(1, tableLog(Level.INFO).size());
+		assertTrue(tableLog(Level.INFO).get(0), tableLog(Level.INFO).get(0).matches("weakness table: 1[0-9]{3} entries"));
+		assertTrue("nothing wrong with the real file", logs.at(Level.WARN).isEmpty());
+	}
+
+	@Test
+	public void theDefaultSeamReadsTheJarResource() throws Exception
+	{
+		try (InputStream in = new FoePlugin().weaknessTableStream())
+		{
+			assertNotNull("getResourceAsStream found the table on the classpath", in);
+			assertTrue(in.read() > 0);
+		}
+	}
+
+	// ---- the learned-vs-table check (spec addendum 11) ----
+
+	private static final String STORED = "99:AIR,2006:NONE,2103:FIRE,3025:FIRE";
+
+	@Test
+	public void theCheckIsLoggedOnceAfterBothHaveLoadedWithItsDisagreements()
+	{
+		storedWeaknesses = STORED;
+		tableText = TABLE;
+		plugin.begin();
+		assertTrue("nothing is read or logged on the Swing thread", logs.all().stream().noneMatch(l -> l.startsWith("weakness check")));
+		tick();
+		assertEquals(java.util.Arrays.asList(
+			"weakness check: 4 learned, 2 agree with the table, 1 disagree",
+			"weakness check: 2103 learned=FIRE table=EARTH 60"), checkLines());
+		assertTrue(logs.at(Level.WARN).isEmpty());
+	}
+
+	private java.util.List<String> checkLines()
+	{
+		java.util.List<String> out = new java.util.ArrayList<>();
+		for (String l : logs.at(Level.INFO))
+		{
+			if (l.startsWith("weakness check"))
+			{
+				out.add(l);
+			}
+		}
+		return out;
+	}
+
+	@Test
+	public void aLearnedNoneAgainstATableWeaknessIsListed()
+	{
+		storedWeaknesses = "3025:NONE";
+		tableText = TABLE;
+		plugin.begin();
+		tick();
+		assertEquals(java.util.Arrays.asList(
+			"weakness check: 1 learned, 0 agree with the table, 1 disagree",
+			"weakness check: 3025 learned=NONE table=FIRE 50"), checkLines());
+	}
+
+	@Test
+	public void theCheckIsLoggedOnceNotEveryTick()
+	{
+		storedWeaknesses = STORED;
+		tableText = TABLE;
+		plugin.begin();
+		tick();
+		int first = checkLines().size();
+		assertTrue(first > 0);
+		tick();
+		tick();
+		assertEquals(first, checkLines().size());
+	}
+
+	@Test
+	public void aProfileSwitchReloadsTheStoreButIsNotAStartupSoItIsNotChecked()
+	{
+		storedWeaknesses = STORED;
+		tableText = TABLE;
+		plugin.begin();
+		tick();
+		int first = checkLines().size();
+		plugin.onProfileChanged(new net.runelite.client.events.ProfileChanged());
+		tick();
+		assertEquals(first, checkLines().size());
+	}
+
+	@Test
+	public void aRestartChecksAgain()
+	{
+		storedWeaknesses = STORED;
+		tableText = TABLE;
+		plugin.begin();
+		tick();
+		logs.clear();
+		plugin.stop();
+		plugin.begin();
+		tick();
+		assertEquals(2, checkLines().size());
+	}
+
+	@Test
+	public void theCheckSeesTheTableEvenWhenTheFirstTickAlsoCredits() throws Exception
+	{
+		storedWeaknesses = "2103:FIRE";
+		tableText = TABLE;
+		plugin.begin();
+		Npc s = scorpion(1);
+		varp(554);
+		engage(s);
+		graphic(s.npc);
+		tick(); // load, check, then credit
+		assertEquals("weakness check: 1 learned, 0 agree with the table, 1 disagree", checkLines().get(0));
+	}
+
+	@Test
+	public void aStoreThatCannotBeReadLogsNoCheckAndDoesNotRetryIt()
+	{
+		configReadFails = true;
+		tableText = TABLE;
+		plugin.begin();
+		tick();
+		tick();
+		assertTrue(checkLines().isEmpty());
+		assertFalse("the failure is the one warning the store already logs", logs.at(Level.WARN).isEmpty());
+	}
+
+	@Test
+	public void withNoTableTheCheckStillRunsAndFindsNothingToCompare()
+	{
+		storedWeaknesses = STORED;
+		tableText = null;
+		plugin.begin();
+		tick();
+		assertEquals("weakness check: 4 learned, 0 agree with the table, 0 disagree", checkLines().get(0));
+		assertEquals(1, checkLines().size());
 	}
 
 	// ---- clock ----
