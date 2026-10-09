@@ -6,6 +6,7 @@ import java.util.List;
 import javax.inject.Inject;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Actor;
 import net.runelite.api.ActorSpotAnim;
 import net.runelite.api.Client;
@@ -26,7 +27,6 @@ import net.runelite.api.events.VarbitChanged;
 import net.runelite.api.gameval.VarPlayerID;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
-import net.runelite.client.config.ConfigManager;
 import net.runelite.client.game.NPCManager;
 import net.runelite.client.game.NpcUtil;
 import net.runelite.client.plugins.Plugin;
@@ -38,8 +38,10 @@ import net.runelite.client.ui.overlay.OverlayManager;
  * {@link HpMemory} and {@link WeaknessLearner} (which hold every decision and are unit tested), and builds one
  * {@link TargetSnapshot} per GameTick. Event handlers run on the client thread; startUp/shutDown run on the Swing
  * thread (PluginManager). EventBus.post is not synchronized, so a client-thread handler already running can overlap
- * shutDown: the overlay is removed first, and startUp clears the learned weaknesses and resets everything else again,
- * so nothing from a stopped run survives a restart. FoeOverlay reads the volatile snapshot when it renders.
+ * shutDown: the overlay is removed first, and startUp resets everything else again, so no fight state from a stopped
+ * run survives a restart. What was learned does survive, on purpose, and a credit that lands late is safe: see
+ * {@link WeaknessStore} (the saved value is only ever merged into) and {@link #begin} (the cache is reloaded on the
+ * client thread). FoeOverlay reads the volatile snapshot when it renders.
  *
  * <p>Known limits (the first is a decision, the rest are the client's):
  * <ul>
@@ -48,6 +50,10 @@ import net.runelite.client.ui.overlay.OverlayManager;
  * <li>Only NPCs in the local player's own world view are considered as hitters, so an NPC on another world view (a
  *     boat) that hits you is not adopted by that path.
  * <li>The remembered HP of a target is not time-limited; it is always drawn as stale (see {@link HpMemory}).
+ * <li>Exact HP is the damage counted from the hitsplats Foe saw, shown only when the bar allows it (see
+ *     {@link HpTracker}). The one thing it assumes and nothing here has measured: that the bar already shows a hit
+ *     when the tick that carries its hitsplat is read. If the bar lagged by a tick the count would be rejected after
+ *     the first hit and the midpoint shown, as before, until an exact reading.
  * <li>A weakness is learned only from a confirmed spell impact (see {@link WeaknessLearner}), so it is missing, never
  *     false, for a type whose spell left the varp unchanged, or whose impact could not be tied to one NPC. One
  *     coincidence is not caught: our write on a tick where the only fought NPC with a spell graphic got it from
@@ -56,6 +62,7 @@ import net.runelite.client.ui.overlay.OverlayManager;
  *     cast corrects it.
  * </ul>
  */
+@Slf4j
 @PluginDescriptor(
 	name = "Foe",
 	description = "Live HP, combat levels and elemental weakness of the monster you're fighting",
@@ -80,8 +87,15 @@ public class FoePlugin extends Plugin
 
 	private final TargetFeed<NPC> feed = new TargetFeed<>(NPC::getIndex);
 	private final HpMemory hpMemory = new HpMemory();
-	/** What each monster type is weak to, learned in this session. Survives logout; cleared by {@link #stop}. */
-	private final WeaknessLearner<NPC> weakness = new WeaknessLearner<>();
+	private final HpTracker hpTracker = new HpTracker();
+	/**
+	 * What each monster type is weak to. Survives logout and hop, and plugin restarts: every credit is saved through
+	 * {@link #weaknessStore}, and {@link #begin} has the first tick reload the cache from it.
+	 */
+	private final WeaknessLearner<NPC> weakness = new WeaknessLearner<>(this::saveWeakness);
+	private final WeaknessStore weaknessStore = new WeaknessStore(this::storedWeaknesses, this::storeWeaknesses);
+	/** Set when the plugin starts, taken by the first GameTick: the cache is loaded on the client thread. */
+	private volatile boolean loadWeaknesses;
 
 	/** The one snapshot FoeOverlay draws. Written on the client thread, read on the render thread. */
 	@Getter(AccessLevel.PACKAGE)
@@ -102,10 +116,7 @@ public class FoePlugin extends Plugin
 		{
 			configManager.unsetConfiguration(FoeConfig.GROUP, "staleHpStyle");
 		}
-		// Also cleared here, not only in stop(): stop() runs on the Swing thread and a client-thread credit already
-		// in flight can land after its clear (Task 8 review F4). A learned entry must not survive a plugin restart.
-		weakness.clear();
-		forgetEverything();
+		begin();
 		overlayManager.add(overlay);
 	}
 
@@ -117,14 +128,42 @@ public class FoePlugin extends Plugin
 	}
 
 	/**
-	 * Everything shutDown does except removing the overlay, so a test can reach it without a live OverlayManager. This
-	 * is the one place the learned weaknesses are forgotten: logout and hop keep them, because a type's weakness does
-	 * not change between sessions.
+	 * Everything startUp does except the retired-setting cleanup and adding the overlay, so a test can reach it without
+	 * a live ConfigManager and OverlayManager.
+	 *
+	 * <p>The fight state is reset here as well as in {@link #stop}, as before: stop() runs on the Swing thread and a
+	 * client-thread handler already in flight can write after it (Task 8 review F4). The learned weaknesses are not
+	 * forgotten any more (spec addendum 5): they are reloaded, and the reload is left to the first GameTick so that it
+	 * runs on the client thread, the only thread that credits. That is what reconciles F4 with remembering:
+	 * <ul>
+	 * <li>a late credit after stop() lands in the cache and in the saved value, both correct, and the reload then
+	 *     replaces the cache with the saved value, which holds it;
+	 * <li>a load can never run between a credit's cache write and its save, as both are on one thread;
+	 * <li>a credit can never wipe the saved value, whatever the cache holds, because saving merges one entry into the
+	 *     saved value ({@link WeaknessStore#put}) instead of writing the cache out.
+	 * </ul>
+	 */
+	/** A RuneLite profile switch: the store is per profile, so reload it on the next tick, before any credit. */
+	@Subscribe
+	public void onProfileChanged(net.runelite.client.events.ProfileChanged e)
+	{
+		loadWeaknesses = true;
+	}
+
+	void begin()
+	{
+		forgetEverything();
+		loadWeaknesses = true;
+	}
+
+	/**
+	 * Everything shutDown does except removing the overlay. Logout and hop keep what was learned, because a type's
+	 * weakness does not change between sessions, and so does a stop: it is saved, and the next start reloads it.
+	 * Nothing is written to the config here.
 	 */
 	void stop()
 	{
 		forgetEverything();
-		weakness.clear();
 	}
 
 	@Subscribe
@@ -154,6 +193,9 @@ public class FoePlugin extends Plugin
 		Actor victim = e.getActor();
 		if (victim instanceof NPC)
 		{
+			// Every hitsplat on every NPC counts towards its exact HP, yours or not, damage or heal (HpTracker). This runs
+			// before the isMine() test below, which only decides whether the fight is ours.
+			hpTracker.hit(victim, e.getHitsplat().getHitsplatType(), e.getHitsplat().getAmount());
 			// Your own hit: raw.log shows mine=true on the hits the player landed, and mine=false on other players'.
 			// A hit by someone else is not our fight.
 			if (e.getHitsplat().isMine())
@@ -239,6 +281,11 @@ public class FoePlugin extends Plugin
 	@Subscribe
 	public void onGameTick(GameTick e)
 	{
+		if (loadWeaknesses)
+		{
+			loadWeaknesses = false;
+			loadLearnedWeaknesses();
+		}
 		NPC npc = feed.tick(now(), lingerMs(), this::fighting);
 		learnWeakness(npc);
 		snapshot = npc == null ? null : snapshotOf(npc);
@@ -293,6 +340,47 @@ public class FoePlugin extends Plugin
 		return ids.stream().mapToInt(Integer::intValue).toArray();
 	}
 
+	/**
+	 * The saved weaknesses (spec addendum 5): one value under a key of the plugin's own group that no {@code @ConfigItem}
+	 * declares. The active config profile, not the RuneScape profile: a type's weakness is game data. Package-private
+	 * so a test can stand in for ConfigManager, which is a concrete class that needs a live client.
+	 */
+	String storedWeaknesses()
+	{
+		return configManager.getConfiguration(FoeConfig.GROUP, WeaknessStore.KEY);
+	}
+
+	void storeWeaknesses(String value)
+	{
+		configManager.setConfiguration(FoeConfig.GROUP, WeaknessStore.KEY, value);
+	}
+
+	/** Never throws: a config that cannot be read means a session that starts with nothing learned, not a dead panel. */
+	private void loadLearnedWeaknesses()
+	{
+		try
+		{
+			weakness.load(weaknessStore.load());
+		}
+		catch (RuntimeException ex)
+		{
+			log.warn("Could not read the remembered weaknesses; starting with none", ex);
+		}
+	}
+
+	/** Never throws: it runs inside WeaknessLearner.tick, and a save that fails must not cost the tick its snapshot. */
+	private void saveWeakness(int typeKey, Weakness w)
+	{
+		try
+		{
+			weaknessStore.put(typeKey, w);
+		}
+		catch (RuntimeException ex)
+		{
+			log.warn("Could not save the weakness learned for type {}; it is kept for this session only", typeKey, ex);
+		}
+	}
+
 	/** Package-private so a test can stand in for NPCManager, which is a concrete class that needs a live client. */
 	Integer fallbackMaxHp(int npcId)
 	{
@@ -307,14 +395,23 @@ public class FoePlugin extends Plugin
 			return null;
 		}
 		HpMemory.Reading hp = hpMemory.read(npc, npc.getHealthRatio(), npc.getHealthScale());
-		return SnapshotFactory.build(npc.getName(), c.getCombatLevel(), c.getStats(),
+		TargetSnapshot s = SnapshotFactory.build(npc.getName(), c.getCombatLevel(), c.getStats(),
 			hp.getRatio(), hp.getScale(), hp.isStale(), fallbackMaxHp(npc.getId()),
 			weakness.weaknessFor(weaknessKey(c)));
+		if (s == null)
+		{
+			return null;
+		}
+		// Judged against the snapshot's own max HP and bar reading, so the tracker and the panel cannot disagree on
+		// either. UNKNOWN (no bar, no max HP, or the bar rejects the count) leaves the midpoint the factory chose.
+		int exact = hpTracker.read(npc, s.getHpRatio(), s.getHpScale(), s.isHpStale(), s.getMaxHp());
+		return exact == HpEstimate.UNKNOWN ? s : s.withHp(exact);
 	}
 
 	private void forget(NPC npc)
 	{
 		hpMemory.forget(npc); // any NPC that died or left: its memory must not outlive it
+		hpTracker.forget(npc);
 		if (feed.gone(npc))
 		{
 			snapshot = null; // the panel clears now, not on the next tick
@@ -326,6 +423,7 @@ public class FoePlugin extends Plugin
 	{
 		feed.reset();
 		hpMemory.clear();
+		hpTracker.clear();
 		weakness.discardTick();
 		snapshot = null;
 	}

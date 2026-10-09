@@ -48,6 +48,19 @@ public class FoeConfigTest
 		assertEquals("keyNames are unique", keys.size(), new HashSet<>(keys).size());
 	}
 
+	// Spec addendum 5: what was learned is saved under one key of the foe group that is not a setting. A declared item
+	// would show in the panel (or, hidden, be wiped by its Reset button, which unsets every declared key).
+	@Test
+	public void theLearnedWeaknessesKeyIsNotASetting()
+	{
+		for (Method m : items())
+		{
+			assertNotEquals(WeaknessStore.KEY, m.getAnnotation(ConfigItem.class).keyName());
+			assertNotEquals(WeaknessStore.KEY, m.getName());
+		}
+		assertEquals(FoeConfig.GROUP, "foe");
+	}
+
 	@Test
 	public void retiredSettingsAreGoneAndTheirKeysAreNotReused()
 	{
