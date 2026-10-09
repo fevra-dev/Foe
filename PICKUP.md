@@ -2,7 +2,7 @@
 
 ## START HERE
 
-**State (2026-10-08):** Tasks 1–8 plus the settings redesign are done and merged (PRs #1–#10; `main` at `ac956d4`). Foe works in game: target panel, HP, levels, and weakness (a Lesser demon showed Water). There are 287 tests. **Resume at "Next actions" below.**
+**State (2026-10-09):** Tasks 1–8, the settings redesign, exact HP and remembered weaknesses are done and merged (PRs #1–#11; `main` at `92556ad`). There are 386 tests. **Next is the wiki weakness table, in v1. Resume at "Next actions" below.**
 
 - **Spec:** `docs/superpowers/specs/2026-10-02-foe-design.md`. Read addenda 1–4 at the end; each later one overrides the earlier ones.
 - **Plan:** `docs/superpowers/plans/2026-10-02-foe-v1.md`. Task 8's addendum and its "Revision — 2026-10-08" record the weakness design.
@@ -20,14 +20,23 @@
 
 **Next actions, in order:**
 
-1. **Operator decisions pending (2026-10-08):**
-   - (a) **Exact HP from hitsplats:** track max HP minus all hitsplats on the NPC, and use it when it falls inside the bar's [min, max] range, else the midpoint. Prompted by Foe showing 63/85 where another plugin showed 64.
-   - (b) **Persist learned weaknesses across sessions** in RuneLite's ConfigManager, so each type is taught once, ever. The alternative, a bundled wiki weakness table, stays v2.
+1. **Wiki weakness table (operator decision 2026-10-09: in v1).**
+   - **Goal:** every monster shows its weakness, with the percentage, from the first attack.
+   - **Shape:** a table generated from the OSRS wiki **at build time**, keyed by **NPC id** (so variants come out right), shipped as a resource. No network at runtime.
+   - **Precedence:** an in-game confirmed credit overrides the table, which handles rebalances. Regenerate the table each release.
+   - **Do first, before any code:**
+     - (i) the wiki content licence and the attribution it requires;
+     - (ii) a structured data source (a wiki API or export) rather than page scraping;
+     - (iii) a spec addendum, because addendum 1-era v1 said "no bundled monster tables";
+     - (iv) a grill of the design;
+     - (v) how Plugin Hub reviewers treat bundled data files and build-time generators.
+   - **Settled already:** `WeaknessStore`/`WeaknessLearner` handle in-game learning, spec addenda 4–6 and plan Task 8 cover it, and exact HP is in `HpTracker`.
+   - **Rejected (2026-10-09):** a same-name fallback (a confident guess, wrong on exactly the variants that matter), and reading other plugins' data (fragile, and inherits their errors).
 2. **Task 9: in-game acceptance.** Run through every setting value with screenshots. Most of it was already exercised on 2026-10-08.
 3. **Task 10: portrait spike.** Optional and time-boxed. The portrait setting is added only if it works.
 4. **Task 11:** a fresh-context review, then the release PR and the Plugin Hub.
 
-**v2 ideas (not v1):** a multi-target "Foe list" for multi-combat, a bundled wiki weakness table with percentages, and the `first-peasant-view` HUD reusing `HpEstimate`/`HpMemory`.
+**v2 ideas (not v1):** a multi-target "Foe list" for multi-combat, and the `first-peasant-view` HUD reusing `HpEstimate`/`HpMemory`.
 
 ## Decisions already made (don't re-litigate)
 
