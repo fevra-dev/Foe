@@ -114,6 +114,8 @@ public class WeaknessTableResourceTest
 		Result derived = WeaknessTableBuilder.build(parsed.rows, parsed.fetchedDate, null, Collections.emptyMap(),
 			Instant.parse("2000-01-01T00:00:00Z"), false);
 		assertTrue("the committed raw rows fail a generator rule: " + derived.failures, derived.failures.isEmpty());
+		assertEquals("the raw file is exactly what the generator writes: sorted, escaped, no duplicates, no hand edits",
+			raw, RawRows.write(parsed.rows, parsed.fetchedDate));
 		String committed = resource();
 		if (!derived.table.equals(committed))
 		{

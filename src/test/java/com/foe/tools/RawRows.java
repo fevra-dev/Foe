@@ -39,10 +39,11 @@ final class RawRows
 		meta.addProperty("fetched", fetchedDate);
 		JsonObject first = new JsonObject();
 		first.add("_meta", meta);
-		StringBuilder sb = new StringBuilder(first.toString()).append('\n');
+		// ADR-0006: the file is a sink for wiki text. Escaping keeps it a lossless copy that cannot act when cat-ed.
+		StringBuilder sb = new StringBuilder(Text.escapeJson(first.toString())).append('\n');
 		for (WikiRow row : new TreeSet<>(rows))
 		{
-			sb.append(row.toJson()).append('\n');
+			sb.append(Text.escapeJson(row.toJson().toString())).append('\n');
 		}
 		return sb.toString();
 	}
@@ -71,12 +72,12 @@ final class RawRows
 		{
 			if (!LocalDate.parse(date).toString().equals(date))
 			{
-				throw new IllegalArgumentException("the fetched date is not YYYY-MM-DD: " + date);
+				throw new IllegalArgumentException("the fetched date is not YYYY-MM-DD: " + Text.safe(date));
 			}
 		}
 		catch (DateTimeParseException e)
 		{
-			throw new IllegalArgumentException("the fetched date is not a date: " + date, e);
+			throw new IllegalArgumentException("the fetched date is not a date: " + Text.safe(date), e);
 		}
 		List<WikiRow> rows = new ArrayList<>();
 		for (int i = 1; i < lines.length; i++)

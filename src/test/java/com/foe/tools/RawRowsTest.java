@@ -163,6 +163,17 @@ public class RawRowsTest
 	}
 
 	@Test
+	public void hostileWikiTextIsWrittenAsEscapesAndReadsBackTheSame()
+	{
+		// ADR-0006: the file is a sink. The wiki's own text must survive, and must not act when the file is cat-ed.
+		WikiRow evil = WikiRow.of("Evil\u001b[2J\u009b\u202e", "Tab\u2028", "Fire\u00a0", 5L, "1\u000b");
+		String text = RawRows.write(Arrays.asList(evil), "2026-10-09");
+		assertTrue(text, !TextTest.isHostileToPrint(text.replace("\n", "")));
+		RawRows.Parsed back = RawRows.read(text);
+		assertEquals(Collections.singletonList(evil), back.rows);
+	}
+
+	@Test
 	public void aFileTheGeneratorDidNotWriteIsRefused()
 	{
 		String row = WikiRow.of("A", null, "Fire", 5L, "1").toJson().toString();

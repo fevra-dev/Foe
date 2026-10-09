@@ -241,6 +241,17 @@ public class GenerateWeaknessTableTest
 	}
 
 	@Test
+	public void whatItPrintsAboutAHostileRowCannotActOnTheTerminal() throws IOException
+	{
+		List<WikiRow> rows = goodRows();
+		rows.add(WikiRow.of("Evil\u001b[2J\u009b", "Tab\u202e", "Dragonfire\u001b[31m", 50L, "900"));
+		assertEquals(1, run(new FakeWiki(rows), T0));
+		String shown = stderr() + new String(outBytes.toByteArray(), StandardCharsets.UTF_8);
+		assertFalse(shown, TextTest.isHostileToPrint(shown.replace("\n", "").replace("\r", "")));
+		assertTrue(shown, shown.contains("Dragonfire"));
+	}
+
+	@Test
 	public void aFetchFailureWritesNothingAndLeavesThePreviousTableAlone() throws IOException
 	{
 		assertEquals(0, run(new FakeWiki(goodRows()), T0));

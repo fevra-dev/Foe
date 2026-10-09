@@ -115,6 +115,47 @@ public class WikiFetchTest
 		return null;
 	}
 
+	// ---- ADR-0006 ----
+
+	private static void assertSafe(String message)
+	{
+		assertFalse(message, TextTest.isHostileToPrint(message));
+	}
+
+	@Test
+	public void aReplyBodyIsNeverEchoedRawInAFailure()
+	{
+		String evil = "\u001b[2J\u009b<html>\nFake: all good\u202e</html>";
+		assertSafe(assertFetchFails(new Canned().reply(503, evil), 500));
+		assertSafe(assertFetchFails(new Canned().ok(evil), 500));
+		assertSafe(assertFetchFails(new Canned().ok("{\"error\":{\"info\":\"" + "\\u001b[2J\\u009b" + "\"}}"), 500));
+		assertSafe(assertFetchFails(new Canned().ok(bucket("{\"page_name\":\"\\u001b[2J\\u009b\",\"id\":\"7\"}")), 500));
+	}
+
+	@Test
+	public void aTitleOrTimestampIsNeverEchoedRawInAFailure()
+	{
+		String evil = "\\u001b[2J\\u009b\\u202e";
+		try
+		{
+			new Canned().ok(revisions(page("Kraken", evil))).fetch(500).fetchLastEdits(Arrays.asList("Kraken"));
+			fail("should have failed");
+		}
+		catch (IOException expected)
+		{
+			assertSafe(expected.getMessage());
+		}
+		try
+		{
+			new Canned().fetch(500).fetchLastEdits(Arrays.asList("A|\u001b[2J\u009b"));
+			fail("should have refused");
+		}
+		catch (IOException expected)
+		{
+			assertSafe(expected.getMessage());
+		}
+	}
+
 	// ---- the bucket walk ----
 
 	@Test

@@ -114,7 +114,7 @@ final class WeaknessTableBuilder
 				Matcher m = DATA.matcher(line);
 				if (!m.matches())
 				{
-					throw new IllegalArgumentException(at + "not a table line: '" + line + "'");
+					throw new IllegalArgumentException(at + "not a table line: '" + Text.safe(line) + "'");
 				}
 				int id = Integer.parseInt(m.group(1));
 				if (id <= last)
@@ -163,6 +163,13 @@ final class WeaknessTableBuilder
 			UNKNOWN_EDIT, PENDING, CHANGED, ADDED, REMOVED, SKIPPED};
 
 		private final Map<String, List<String>> sections = new LinkedHashMap<>();
+		private final Map<String, String> whenEmpty = new LinkedHashMap<>();
+
+		/** What an empty section says instead of "(none)", for a list that is empty because it cannot apply. */
+		void whenEmpty(String section, String text)
+		{
+			whenEmpty.put(section, text);
+		}
 
 		void add(String section, String line)
 		{
@@ -183,7 +190,7 @@ final class WeaknessTableBuilder
 				sb.append("== ").append(section).append(" (").append(lines.size()).append(") ==\n");
 				if (lines.isEmpty())
 				{
-					sb.append("(none)\n");
+					sb.append(whenEmpty.getOrDefault(section, "(none)")).append('\n');
 				}
 				for (String line : lines)
 				{
@@ -313,7 +320,7 @@ final class WeaknessTableBuilder
 			if (row.percent != null && (row.percent < 0 || row.percent > MAX_PERCENT))
 			{
 				r.failures.add(row.label() + ": percent " + row.percent + " is outside 0 to " + MAX_PERCENT
-					+ " (ids " + row.ids + ")");
+					+ " (ids " + row.idsText() + ")");
 				bad = true;
 			}
 			Element element = null;
@@ -322,7 +329,8 @@ final class WeaknessTableBuilder
 				element = parseElement(row.element);
 				if (element == null)
 				{
-					r.failures.add(row.label() + ": unknown element '" + row.element + "' (ids " + row.ids + ")");
+					r.failures.add(row.label() + ": unknown element '" + Text.safe(row.element) + "' (ids "
+						+ row.idsText() + ")");
 					bad = true;
 				}
 			}
@@ -354,19 +362,19 @@ final class WeaknessTableBuilder
 			if (element == Element.NONE && row.percent != null)
 			{
 				r.failures.add(row.label() + ": 'None' with a percent of " + row.percent
-					+ " contradicts itself (ids " + row.ids + ")");
+					+ " contradicts itself (ids " + row.idsText() + ")");
 				continue;
 			}
 			if (row.ids.isEmpty())
 			{
 				r.skippedNoIdRows++;
-				r.report.add(Report.SKIPPED, "no ids: " + row.label() + " " + row.element + " " + row.percent);
+				r.report.add(Report.SKIPPED, "no ids: " + row.label() + " " + Text.safe(row.element) + " " + row.percent);
 				continue;
 			}
 			for (String id : nonNumeric)
 			{
 				r.skippedNonNumericIds++;
-				r.report.add(Report.SKIPPED, "non-numeric id " + id + ": " + row.label() + " "
+				r.report.add(Report.SKIPPED, "non-numeric id " + Text.safe(id) + ": " + row.label() + " "
 					+ valueText(new Entry(element, row.percent == null ? null : row.percent.intValue())));
 			}
 			if (element != Element.NONE && row.percent == null)
@@ -387,10 +395,13 @@ final class WeaknessTableBuilder
 		}
 	}
 
-	/** F1: trim, lowercase, then one of five words. Anything else is null and fails the run. */
+	/**
+	 * F1: trim, lowercase, then one of five words. Anything else is null and fails the run. "Trim" is strip(), which
+	 * takes whitespace only: String.trim() also removes ESC and NUL, so a hostile value would pass as an element.
+	 */
 	private static Element parseElement(String raw)
 	{
-		switch (raw.trim().toLowerCase(Locale.ROOT))
+		switch (raw.strip().toLowerCase(Locale.ROOT))
 		{
 			case "air":
 				return Element.AIR;
@@ -465,10 +476,10 @@ final class WeaknessTableBuilder
 				List<String> tabs = new ArrayList<>();
 				for (WikiRow row : page.getValue())
 				{
-					tabs.add(row.versionAnchor == null ? "(no tab name)" : row.versionAnchor);
+					tabs.add(row.versionAnchor == null ? "(no tab name)" : Text.safe(row.versionAnchor));
 				}
 				Entry value = resolved.get(id);
-				report.add(Report.SHARED_TABS, id + ": " + page.getKey() + " tabs " + tabs + " -> "
+				report.add(Report.SHARED_TABS, id + ": " + Text.safe(page.getKey()) + " tabs " + tabs + " -> "
 					+ (value == null ? "no entry" : valueText(value)));
 			}
 		}
@@ -489,6 +500,11 @@ final class WeaknessTableBuilder
 		TreeMap<Integer, Entry> table = new TreeMap<>(resolved);
 		if (previous == null)
 		{
+			// an empty list here is not "nothing changed": there was nothing to compare with
+			for (String section : new String[] {Report.ADDED, Report.REMOVED, Report.CHANGED, Report.PENDING})
+			{
+				r.report.whenEmpty(section, "(not applicable: first generation, there is no previous table)");
+			}
 			return table;
 		}
 		for (Map.Entry<Integer, Entry> e : resolved.entrySet())
@@ -508,7 +524,7 @@ final class WeaknessTableBuilder
 				{
 					Instant t = lastEdit.get(page);
 					old &= oldEnough(t, now);
-					edited.append(edited.length() == 0 ? "" : ", ").append(page).append(" edited ")
+					edited.append(edited.length() == 0 ? "" : ", ").append(Text.safe(page)).append(" edited ")
 						.append(t == null ? "at an unknown time" : t.toString());
 				}
 				if (old)
@@ -585,7 +601,8 @@ final class WeaknessTableBuilder
 			WikiRow row = e.getKey();
 			String value = valueText(valueByRow.get(row));
 			tabsByPage.computeIfAbsent(row.pageName, k -> new ArrayList<>()).add(
-				(row.versionAnchor == null ? "(no tab name)" : row.versionAnchor) + ": ids " + idSummary(e.getValue())
+				(row.versionAnchor == null ? "(no tab name)" : Text.safe(row.versionAnchor)) + ": ids "
+					+ idSummary(e.getValue())
 					+ " -> " + value);
 		}
 		for (Map.Entry<String, List<String>> page : tabsByPage.entrySet())
@@ -593,11 +610,11 @@ final class WeaknessTableBuilder
 			Instant t = lastEdit.get(page.getKey());
 			if (t == null)
 			{
-				report.add(Report.UNKNOWN_EDIT, page.getKey() + ": " + String.join(" | ", page.getValue()));
+				report.add(Report.UNKNOWN_EDIT, Text.safe(page.getKey()) + ": " + String.join(" | ", page.getValue()));
 			}
 			else if (!oldEnough(t, now))
 			{
-				report.add(Report.RECENT, page.getKey() + " (last edit " + t + "): "
+				report.add(Report.RECENT, Text.safe(page.getKey()) + " (last edit " + t + "): "
 					+ String.join(" | ", page.getValue()));
 			}
 		}

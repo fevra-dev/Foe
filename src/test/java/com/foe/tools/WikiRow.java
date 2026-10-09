@@ -61,7 +61,7 @@ final class WikiRow implements Comparable<WikiRow>
 		}
 		catch (JsonParseException e)
 		{
-			throw new IllegalArgumentException("not a JSON object: " + e.getMessage(), e);
+			throw new IllegalArgumentException("not a JSON object: " + Text.safe(e.getMessage()), e);
 		}
 	}
 
@@ -77,13 +77,13 @@ final class WikiRow implements Comparable<WikiRow>
 		{
 			if (!KEYS.contains(key))
 			{
-				throw new IllegalArgumentException("unexpected field '" + key + "' in " + o);
+				throw bad("unexpected field '" + Text.safe(key) + "'", o);
 			}
 		}
 		String page = stringOrNull(o, "page_name");
 		if (page == null)
 		{
-			throw new IllegalArgumentException("no page_name in " + o);
+			throw bad("no page_name", o);
 		}
 		List<String> ids = new ArrayList<>();
 		JsonElement idField = o.get("id");
@@ -91,13 +91,13 @@ final class WikiRow implements Comparable<WikiRow>
 		{
 			if (!idField.isJsonArray())
 			{
-				throw new IllegalArgumentException("id is not an array in " + o);
+				throw bad("id is not an array", o);
 			}
 			for (JsonElement e : idField.getAsJsonArray())
 			{
 				if (!e.isJsonPrimitive() || !e.getAsJsonPrimitive().isString())
 				{
-					throw new IllegalArgumentException("an id is not a string in " + o);
+					throw bad("an id is not a string", o);
 				}
 				ids.add(e.getAsString());
 			}
@@ -108,7 +108,7 @@ final class WikiRow implements Comparable<WikiRow>
 		{
 			if (!pct.isJsonPrimitive() || !pct.getAsJsonPrimitive().isNumber())
 			{
-				throw new IllegalArgumentException("the percent is not a number in " + o);
+				throw bad("the percent is not a number", o);
 			}
 			try
 			{
@@ -116,11 +116,17 @@ final class WikiRow implements Comparable<WikiRow>
 			}
 			catch (ArithmeticException e)
 			{
-				throw new IllegalArgumentException("the percent is not an integer in " + o, e);
+				throw bad("the percent is not an integer", o);
 			}
 		}
 		return new WikiRow(page, stringOrNull(o, "version_anchor"), ids, stringOrNull(o, "elemental_weakness"),
 			percent);
+	}
+
+	/** ADR-0006: the row is the wiki's text, so it is shown through {@link Text}. */
+	private static IllegalArgumentException bad(String what, JsonObject o)
+	{
+		return new IllegalArgumentException(what + " in " + Text.safe(o.toString(), 300));
 	}
 
 	private static String stringOrNull(JsonObject o, String key)
@@ -132,7 +138,7 @@ final class WikiRow implements Comparable<WikiRow>
 		}
 		if (!e.isJsonPrimitive() || !e.getAsJsonPrimitive().isString())
 		{
-			throw new IllegalArgumentException(key + " is not a string in " + o);
+			throw bad(key + " is not a string", o);
 		}
 		return e.getAsString();
 	}
@@ -163,10 +169,16 @@ final class WikiRow implements Comparable<WikiRow>
 		return o;
 	}
 
-	/** {@code Page} or {@code Page [Tab]}, for messages. */
+	/** {@code Page} or {@code Page [Tab]}, for messages. Safe to print (ADR-0006). */
 	String label()
 	{
-		return versionAnchor == null ? pageName : pageName + " [" + versionAnchor + "]";
+		return versionAnchor == null ? Text.safe(pageName) : Text.safe(pageName) + " [" + Text.safe(versionAnchor) + "]";
+	}
+
+	/** The ids as {@code [1, 2]}, for messages. Safe to print (ADR-0006). */
+	String idsText()
+	{
+		return "[" + Text.safe(String.join(", ", ids), 300) + "]";
 	}
 
 	@Override
@@ -212,6 +224,6 @@ final class WikiRow implements Comparable<WikiRow>
 	@Override
 	public String toString()
 	{
-		return label() + " " + ids + " " + element + " " + percent;
+		return label() + " " + idsText() + " " + Text.safe(element) + " " + percent;
 	}
 }

@@ -142,6 +142,21 @@ public class WeaknessTableBuilderTest
 		assertEquals(entry(Element.FIRE, 50), r.entries.get(700));
 	}
 
+	@Test
+	public void onlyWhitespaceIsTrimmedNotControlCharacters()
+	{
+		// String.trim() also strips ESC and NUL (everything up to U+0020), which would let a hostile value through as
+		// a valid element and then into the report. strip() takes whitespace only.
+		Result padded = build(row("Some boss", null, " \t Fire\n", 50, "700"));
+		assertOk(padded);
+		assertEquals(entry(Element.FIRE, 50), padded.entries.get(700));
+		for (String bad : new String[] {"\u001bFire", "Fire\u0000", "Fire\u009b", "\u001b[2JFire\u001bc"})
+		{
+			Result r = build(row("Some boss", null, bad, 50, "700"));
+			assertFalse("must fail: " + bad.replace("\u001b", "ESC"), r.failures.isEmpty());
+		}
+	}
+
 	// ---- rule 2: the literal None ----
 
 	@Test
@@ -656,6 +671,101 @@ public class WeaknessTableBuilderTest
 		String text = r.report.render();
 		assertTrue(text, text.contains(Report.PERCENT_CONFLICTS));
 		assertTrue(text, text.contains("Maggot King"));
+	}
+
+	// ---- ADR-0006: wiki text is untrusted ----
+
+	private static final String EVIL = "Evil\u001b[2J\nFake line\u202e\u009b";
+
+	private static void assertSafeToPrint(String what, String text)
+	{
+		assertFalse(what + " has a character that does something when printed: " + text.codePoints()
+			.filter(cp -> TextTest.isHostileToPrint(new String(Character.toChars(cp)))).boxed().collect(
+				java.util.stream.Collectors.toList()), TextTest.isHostileToPrint(text.replace("\n", "")));
+	}
+
+	@Test
+	public void aFailureMessageNeverCarriesWikiTextThatWouldActOnATerminal()
+	{
+		Result r = build(
+			row(EVIL, "Tab" + EVIL, "Dragonfire" + EVIL, 50, "900"),
+			row("Other", null, "Fire", 5000, "beta" + EVIL, "901"));
+		assertFalse(r.failures.isEmpty());
+		for (String f : r.failures)
+		{
+			assertSafeToPrint("failure", f);
+			assertFalse("no forged second line", f.contains("\n"));
+			assertTrue(f, f.contains("\\u001b"));
+		}
+	}
+
+	@Test
+	public void noReportLineCarriesWikiTextThatWouldActOnATerminalOrForgeALine()
+	{
+		PreviousTable previous = previous("1\tFIRE\t50", "2\tFIRE\t50", "3\tWATER\t50");
+		Result r = build(previous, edits(EVIL, ago(Duration.ofDays(1))), false,
+			// an element conflict, a percent conflict, shared tabs, a recent page, a held-back change
+			row(EVIL, "A" + EVIL, "Fire", 50, "10"),
+			row(EVIL, "B" + EVIL, "Water", 50, "10"),
+			row(EVIL, "C" + EVIL, "Fire", 5, "11"),
+			row(EVIL, "D" + EVIL, "Fire", 80, "11"),
+			row(EVIL, "E" + EVIL, "Air", 30, "1"),
+			// a non-numeric id, a row without ids, an element without percent
+			row("Skipped" + EVIL, null, "Fire", 50, "override" + EVIL),
+			// whitespace padding is allowed by the element parse, so it can reach this line and must not forge one
+			row("NoIds" + EVIL, null, "\u2028\nFire\n", 50),
+			row("NoPct" + EVIL, "T" + EVIL, "Fire", null, "12"),
+			// page with no known edit time, and a removed id still in the data
+			row("Unknown" + EVIL, "U" + EVIL, "Earth", 5, "13"),
+			row("Removed" + EVIL, "V" + EVIL, null, null, "3"));
+		assertOk(r);
+		int lines = 0;
+		for (String section : new String[] {Report.ELEMENT_CONFLICTS, Report.PERCENT_CONFLICTS, Report.SHARED_TABS,
+			Report.RECENT, Report.UNKNOWN_EDIT, Report.PENDING, Report.CHANGED, Report.ADDED, Report.REMOVED,
+			Report.SKIPPED})
+		{
+			for (String line : r.report.lines(section))
+			{
+				lines++;
+				assertSafeToPrint(section, line);
+				assertFalse("a forged line break in: " + line, line.contains("\n") || line.contains("\r"));
+			}
+		}
+		assertTrue("the fixture must reach most sections: " + lines, lines >= 9);
+		assertSafeToPrint("rendered report", r.report.render());
+	}
+
+	@Test
+	public void aPreviousTableErrorNeverEchoesTheLineRaw()
+	{
+		try
+		{
+			PreviousTable.parse("# Ids written: 1\n\u001b[31mevil\u009b\n");
+			fail("should have refused");
+		}
+		catch (IllegalArgumentException expected)
+		{
+			assertSafeToPrint("message", expected.getMessage());
+		}
+	}
+
+	@Test
+	public void aFirstGenerationSaysSoInsteadOfClaimingNothingChanged()
+	{
+		// "Ids added (0)" would read as "nothing was added", which is false: every id is new. Say why it is empty.
+		String first = build(row("Fire giant", "Level 86", "Water", 100, "2075")).report.render();
+		for (String section : new String[] {Report.ADDED, Report.REMOVED, Report.CHANGED, Report.PENDING})
+		{
+			int at = first.indexOf("== " + section);
+			assertTrue(section, at >= 0);
+			String body = first.substring(at, first.indexOf("\n\n", at));
+			assertTrue(body, body.contains("not applicable: first generation"));
+			assertFalse(body, body.contains("(none)"));
+		}
+		String second = build(previousWaterGiant(), Collections.emptyMap(), false,
+			row("Fire giant", "Level 86", "Water", 100, "2075")).report.render();
+		assertFalse(second, second.contains("not applicable"));
+		assertTrue(second, second.contains("(none)"));
 	}
 
 	// ---- reading the previous table back ----

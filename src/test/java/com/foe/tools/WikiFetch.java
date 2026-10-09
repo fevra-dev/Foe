@@ -156,7 +156,7 @@ final class WikiFetch
 		{
 			if (title.indexOf('|') >= 0)
 			{
-				throw new IOException("a title with '|' cannot be sent in a batch: " + title);
+				throw new IOException("a title with '|' cannot be sent in a batch: " + Text.safe(title));
 			}
 		}
 		Map<String, Instant> edits = new TreeMap<>();
@@ -215,7 +215,7 @@ final class WikiFetch
 				}
 				catch (DateTimeParseException e)
 				{
-					throw new IOException("not a timestamp: '" + stamp + "' for " + o.get("title"), e);
+					throw new IOException("not a timestamp: '" + Text.safe(stamp) + "' for " + Text.safe(o.get("title").toString()), e);
 				}
 			}
 		}
@@ -270,10 +270,9 @@ final class WikiFetch
 		return URLEncoder.encode(s, StandardCharsets.UTF_8);
 	}
 
-	/** The start of a reply on one line, for a message. */
+	/** The start of a reply on one line, for a message. ADR-0006: a reply is the wiki's text, so it goes through Text. */
 	private static String snippet(String body)
 	{
-		String flat = body.replaceAll("\\s+", " ").trim();
-		return flat.length() <= 300 ? flat : flat.substring(0, 300) + "...";
+		return Text.safe(body.replaceAll("\\s+", " ").trim(), 300);
 	}
 }
