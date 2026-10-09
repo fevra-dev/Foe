@@ -3,6 +3,7 @@ package com.foe;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Method;
@@ -14,7 +15,7 @@ import java.util.Set;
 import net.runelite.client.config.ConfigItem;
 import org.junit.Test;
 
-/** Spec addendum 3: eight settings, in this order, with these keys and defaults. */
+/** Spec addenda 3 and 9: nine settings, in this order, with these keys and defaults. */
 public class FoeConfigTest
 {
 	private static List<Method> items()
@@ -33,7 +34,7 @@ public class FoeConfigTest
 	}
 
 	@Test
-	public void eightSettingsAtPositionsZeroToSevenInTheSpecOrder()
+	public void nineSettingsAtPositionsZeroToEightInTheSpecOrder()
 	{
 		List<String> keys = new ArrayList<>();
 		List<Integer> positions = new ArrayList<>();
@@ -43,8 +44,8 @@ public class FoeConfigTest
 			positions.add(m.getAnnotation(ConfigItem.class).position());
 		}
 		assertEquals(Arrays.asList("layout", "hpText", "hpTextPosition", "detail", "staleHpStyle", "showWeakness",
-			"lingerSeconds", "backgroundOpacity"), keys);
-		assertEquals(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7), positions);
+			"showWeaknessPercent", "lingerSeconds", "backgroundOpacity"), keys);
+		assertEquals(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8), positions);
 		assertEquals("keyNames are unique", keys.size(), new HashSet<>(keys).size());
 	}
 
@@ -59,6 +60,32 @@ public class FoeConfigTest
 			assertNotEquals(WeaknessStore.KEY, m.getName());
 		}
 		assertEquals(FoeConfig.GROUP, "foe");
+	}
+
+	// Spec addendum 9: "Show weakness %" sits directly after "Show weakness", and the settings after it moved down one.
+	@Test
+	public void showWeaknessPercentIsRightAfterShowWeaknessAndItsKeyIsTheOneInTheSpec()
+	{
+		ConfigItem percent = null;
+		int showWeaknessPosition = -1;
+		for (Method m : items())
+		{
+			ConfigItem item = m.getAnnotation(ConfigItem.class);
+			if (item.keyName().equals("showWeaknessPercent"))
+			{
+				percent = item;
+				assertEquals("the method is named like its key", "showWeaknessPercent", m.getName());
+				assertEquals(boolean.class, m.getReturnType());
+			}
+			if (item.keyName().equals("showWeakness"))
+			{
+				showWeaknessPosition = item.position();
+			}
+		}
+		assertNotNull(percent);
+		assertEquals("Show weakness %", percent.name());
+		assertEquals(showWeaknessPosition + 1, percent.position());
+		assertFalse("the description says what the setting does", percent.description().isEmpty());
 	}
 
 	@Test
@@ -94,6 +121,7 @@ public class FoeConfigTest
 		assertEquals(FoeConfig.Detail.FULL, d.detail());
 		assertEquals(FoeConfig.StaleHpStyle.FADED, d.staleHpStyle());
 		assertTrue(d.showWeakness());
+		assertTrue("addendum 9: on by default", d.showWeaknessPercent());
 		assertEquals(10, d.lingerSeconds());
 		assertEquals(61, d.backgroundOpacity());
 		for (Class<?> e : new Class<?>[] {FoeConfig.Layout.class, FoeConfig.HpText.class,

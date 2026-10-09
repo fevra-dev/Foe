@@ -470,4 +470,132 @@ public class WeaknessLearnerTest
 		assertEquals(Outcome.CREDITED, plain.tick(m -> m.fought, m -> m.creditable ? m.type : null));
 		assertNotNull(plain.weaknessFor(HILL_GIANT));
 	}
+
+	// ---- the bundled wiki table (spec addenda 7 to 9): weaknessFor combines it with what was learned ----
+
+	private static java.util.Map<Integer, Weakness> table(Object... keyValue)
+	{
+		java.util.Map<Integer, Weakness> m = new java.util.HashMap<>();
+		for (int i = 0; i < keyValue.length; i += 2)
+		{
+			m.put((Integer) keyValue[i], (Weakness) keyValue[i + 1]);
+		}
+		return m;
+	}
+
+	private void learn(int type, int varp)
+	{
+		learner.varpChanged(varp);
+		learner.impact(fought(type));
+		assertEquals(Outcome.CREDITED, tick());
+	}
+
+	private void assertShown(Weakness.Element element, Integer percent, int type)
+	{
+		Weakness w = learner.weaknessFor(type);
+		assertNotNull("type " + type, w);
+		assertEquals(element, w.getElement());
+		assertEquals("percent of type " + type, percent, w.getPercent());
+	}
+
+	@Test
+	public void withNothingLearnedTheTableAnswersWithItsPercent()
+	{
+		learner.useTable(table(HILL_GIANT, new Weakness(Weakness.Element.EARTH, 60)));
+		assertShown(Weakness.Element.EARTH, 60, HILL_GIANT);
+		assertNull("a type the table does not have", learner.weaknessFor(SCORPION));
+	}
+
+	@Test
+	public void aTableNoneShowsNothing()
+	{
+		learner.useTable(table(HILL_GIANT, Weakness.NONE));
+		assertNull(learner.weaknessFor(HILL_GIANT));
+	}
+
+	@Test
+	public void aLearnedNoneYieldsToATableWeaknessButNotToNoEntryOrATableNone()
+	{
+		learner.useTable(table(HILL_GIANT, new Weakness(Weakness.Element.EARTH, 60), 7, Weakness.NONE));
+		learn(HILL_GIANT, -1);
+		assertShown(Weakness.Element.EARTH, 60, HILL_GIANT);
+		learn(SCORPION, -1);
+		assertNull("no table entry: the game's none stands, and shows nothing", learner.weaknessFor(SCORPION));
+		learn(7, -1);
+		assertNull("the table says none as well", learner.weaknessFor(7));
+	}
+
+	@Test
+	public void aLearnedElementThatMatchesTheTableTakesItsPercent()
+	{
+		learner.useTable(table(SCORPION, new Weakness(Weakness.Element.FIRE, 50)));
+		learn(SCORPION, 554);
+		assertShown(Weakness.Element.FIRE, 50, SCORPION);
+	}
+
+	@Test
+	public void aLearnedElementThatDiffersFromTheTableShowsWithNoPercent()
+	{
+		learner.useTable(table(SCORPION, new Weakness(Weakness.Element.WATER, 100)));
+		learn(SCORPION, 554);
+		assertShown(Weakness.Element.FIRE, null, SCORPION);
+	}
+
+	@Test
+	public void aLearnedElementWithNoTableEntryShowsAsBefore()
+	{
+		learner.useTable(table(HILL_GIANT, new Weakness(Weakness.Element.EARTH, 60)));
+		learn(SCORPION, 554);
+		assertShown(Weakness.Element.FIRE, null, SCORPION);
+	}
+
+	@Test
+	public void theTableCanBeSetAfterTheLearningHasStartedAndLearningSurvivesIt()
+	{
+		learn(SCORPION, 554);
+		assertShown(Weakness.Element.FIRE, null, SCORPION);
+		learner.useTable(table(SCORPION, new Weakness(Weakness.Element.FIRE, 50)));
+		assertShown(Weakness.Element.FIRE, 50, SCORPION);
+		learner.load(new java.util.HashMap<>());
+		assertShown(Weakness.Element.FIRE, 50, SCORPION); // the table is not what load() replaces
+		assertNull(learner.weaknessFor(HILL_GIANT));
+	}
+
+	@Test
+	public void noTableAtAllIsTheSameAsAnEmptyOne()
+	{
+		learner.useTable(null);
+		assertNull(learner.weaknessFor(HILL_GIANT));
+		learn(HILL_GIANT, 557);
+		assertShown(Weakness.Element.EARTH, null, HILL_GIANT);
+	}
+
+	// A learned FIRE and a table FIRE 50 are no longer equal Weakness values. Credits compare learned with learned, so a
+	// table percent must not make every repeated credit look like a change (and be saved again).
+	@Test
+	public void aTablePercentDoesNotMakeARepeatedCreditLookNewOrSaveAPercent()
+	{
+		learner.useTable(table(SCORPION, new Weakness(Weakness.Element.FIRE, 50)));
+		learn(SCORPION, 554);
+		learn(SCORPION, 554);
+		learn(SCORPION, 554);
+		assertEquals("saved once, as the element alone", java.util.Collections.singletonList(SCORPION + ":FIRE"), learned);
+		learn(SCORPION, 557);
+		assertEquals("a real change is still reported", java.util.Arrays.asList(SCORPION + ":FIRE", SCORPION + ":EARTH"),
+			learned);
+	}
+
+	@Test
+	public void whatIsReportedAsLearnedNeverCarriesAPercent()
+	{
+		java.util.List<Weakness> reported = new java.util.ArrayList<>();
+		WeaknessLearner<Mob> l = new WeaknessLearner<>((key, w) -> reported.add(w));
+		l.useTable(table(SCORPION, new Weakness(Weakness.Element.FIRE, 50)));
+		l.varpChanged(554);
+		l.impact(fought(SCORPION));
+		assertEquals(Outcome.CREDITED, l.tick(m -> m.fought, m -> m.type));
+		assertEquals(1, reported.size());
+		assertNull(reported.get(0).getPercent());
+		assertEquals(Weakness.Element.FIRE, reported.get(0).getElement());
+	}
 }

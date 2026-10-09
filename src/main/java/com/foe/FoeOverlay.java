@@ -18,8 +18,8 @@ import net.runelite.client.ui.overlay.components.ComponentConstants;
  * Draws the plugin's snapshot, in one of two layouts (spec addendum 3).
  *
  * <pre>
- * ONE_LINE:  Ice giant  53 | [bar] 52/70 | Att 40  Str 40  Def 40 | Fire
- * STACKED:   Ice giant  53 | Att 40  Str 40  Def 40 | Fire
+ * ONE_LINE:  Ice giant  53 | [bar] 52/70 | Att 40  Str 40  Def 40 | Fire 50%
+ * STACKED:   Ice giant  53 | Att 40  Str 40  Def 40 | Fire 50%
  *            [bar stretched to the line above] 52/70
  * </pre>
  *
@@ -362,7 +362,7 @@ class FoeOverlay extends Overlay
 		return Math.round(p * 255 / 100f);
 	}
 
-	/** The cells in order: name, HP, levels, weakness. */
+	/** The cells in order: name, HP, levels, weakness (with its percent, when there is one and the setting is on). */
 	static List<Cell> cells(TargetSnapshot s, FoeConfig c)
 	{
 		List<Cell> out = new ArrayList<>(4);
@@ -380,9 +380,20 @@ class FoeOverlay extends Overlay
 		Weakness wk = s.getWeakness();
 		if (c.showWeakness() && wk != null && wk.getElement() != null)
 		{
-			addIfAny(out, cap(wk.getElement().name()));
+			addIfAny(out, weaknessText(wk, c.showWeaknessPercent()));
 		}
 		return out;
+	}
+
+	/**
+	 * {@code Fire}, or {@code Fire 50%} when the weakness has a percent and the percent setting is on (spec addendum
+	 * 9). The percent is drawn as given, 0 and values over 100 included (the wiki lists 200 for some monsters): nothing
+	 * here bounds it, and {@link #frame} measures the finished text, so the cell is as wide as it needs to be.
+	 */
+	static String weaknessText(Weakness wk, boolean showPercent)
+	{
+		String element = cap(wk.getElement().name());
+		return showPercent && wk.getPercent() != null ? element + " " + wk.getPercent() + "%" : element;
 	}
 
 	private static void addIfAny(List<Cell> out, String text)
