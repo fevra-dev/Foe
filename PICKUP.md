@@ -24,11 +24,11 @@
    - **Goal:** every monster shows its weakness, with the percentage, from the first attack.
    - **Shape:** a table generated from the OSRS wiki **at build time**, keyed by **NPC id** (so variants come out right), shipped as a resource. No network at runtime.
    - **Precedence:** an in-game confirmed credit overrides the table, which handles rebalances. Regenerate the table each release.
-   - **Status 2026-10-09:** (i), (ii), (iii) and (v) are done, on branch `docs/wiki-weakness-research`. See
+   - **Status 2026-10-09:** (i), (ii), (iii) and (v) are done (PR #13). See
      `docs/research/2026-10-09-wiki-weakness-table.md` and spec **addendum 7**, which supersedes the list below
      where they differ. The shape changed: the table comes from a **dev-run script whose output is committed**, not
-     a Gradle task, because the Hub's standard build replaces `build.gradle`. **Next is (iv), the grill of
-     addendum 7.** Its open `[assumed]`: do wiki ids equal the transformed composition id?
+     a Gradle task, because the Hub's standard build replaces `build.gradle`. **(iv) grilled 2026-10-09: 10 findings in `docs/research/2026-10-09-addendum-7-grill.md`; next is the fix pass (addendum 8), then the plan task.**
+     Its open `[assumed]` (wiki ids = transformed composition id) holds for all 6 probe NPCs, none of which transforms.
    - **Do first, before any code:**
      - (i) the wiki content licence and the attribution it requires;
      - (ii) a structured data source (a wiki API or export) rather than page scraping;
