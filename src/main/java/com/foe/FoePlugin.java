@@ -143,6 +143,13 @@ public class FoePlugin extends Plugin
 	 *     saved value ({@link WeaknessStore#put}) instead of writing the cache out.
 	 * </ul>
 	 */
+	/** A RuneLite profile switch: the store is per profile, so reload it on the next tick, before any credit. */
+	@Subscribe
+	public void onProfileChanged(net.runelite.client.events.ProfileChanged e)
+	{
+		loadWeaknesses = true;
+	}
+
 	void begin()
 	{
 		forgetEverything();

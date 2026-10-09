@@ -118,13 +118,36 @@ final class WeaknessStore
 		{
 			return;
 		}
-		Map<Integer, Weakness> stored = parse(read.get());
+		String raw = read.get();
+		if (atCap(raw))
+		{
+			return; // rewriting from a capped parse would delete every entry past the cap (review of 77ccc4e, F5)
+		}
+		Map<Integer, Weakness> stored = parse(raw);
 		if (w.equals(stored.get(key)))
 		{
 			return;
 		}
 		stored.put(key, w);
 		write.accept(format(stored));
+	}
+
+	/** True when the value has at least {@link #MAX_ENTRIES} tokens, so {@link #parse} did not read all of it. */
+	static boolean atCap(String raw)
+	{
+		if (raw == null)
+		{
+			return false;
+		}
+		int commas = 0;
+		for (int i = 0; i < raw.length(); i++)
+		{
+			if (raw.charAt(i) == ',' && ++commas >= MAX_ENTRIES)
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private static void entry(String token, Map<Integer, Weakness> out)

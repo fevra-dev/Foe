@@ -210,6 +210,23 @@ public class WeaknessStoreTest
 		assertEquals(WeaknessStore.MAX_ENTRIES, WeaknessStore.parse(sb.toString()).size());
 	}
 
+	// Review of 77ccc4e, finding 5: a value past the cap was rewritten from what was parsed, deleting the entries
+	// beyond it for good. A capped value is never rewritten.
+	@Test
+	public void aValueAtTheCapIsNeverRewrittenSoEntriesPastItAreNotLost()
+	{
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < WeaknessStore.MAX_ENTRIES; i++)
+		{
+			sb.append("junk,");
+		}
+		sb.append("3025:FIRE");
+		stored = sb.toString();
+		store.put(2103, new Weakness(Weakness.Element.EARTH));
+		assertEquals(0, writes);
+		assertTrue(stored.endsWith("3025:FIRE"));
+	}
+
 	// ---- load ----
 
 	@Test

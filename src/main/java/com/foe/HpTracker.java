@@ -71,11 +71,18 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 final class HpTracker
 {
+	/** The most drift a current bar may correct by resync: one or two unseen regenerations. Beyond it, the count
+	 * is treated as wrong rather than nudged (2026-10-08: all six measured mismatches were exactly 1). */
+	static final int MAX_DRIFT = 2;
+
 	private static final class Track
 	{
 		/** Damage taken minus heals, never below 0. A long, so a pathological amount cannot wrap into a believable one. */
 		long damage;
-		/** False once a live bar contradicted the count; true again only after an exact live reading. */
+		/** A hitsplat landed since the last live read: the bar may not have caught up yet (a client-side delay). */
+		boolean hitSinceRead;
+		/** False once a current live bar contradicted the count by more than regeneration explains; true again only
+		 * after an exact live reading. */
 		boolean valid = true;
 	}
 
@@ -84,6 +91,7 @@ final class HpTracker
 	/** A hitsplat landed on this NPC. Any hitsplat on any NPC, whoever dealt it. */
 	void hit(Object npc, int hitsplatType, int amount)
 	{
+		track(npc).hitSinceRead = true; // any hitsplat, even a 0: its bar update may lag behind it
 		if (amount <= 0)
 		{
 			return;
@@ -133,6 +141,11 @@ final class HpTracker
 			}
 			t = track(npc); // first seen: assumed to be at full health
 		}
+		boolean hitThisTick = t.hitSinceRead;
+		if (!stale)
+		{
+			t.hitSinceRead = false;
+		}
 		if (!stale && range.isExact())
 		{
 			t.damage = maxHp - range.getMin();
@@ -148,13 +161,28 @@ final class HpTracker
 		{
 			return (int) hp;
 		}
-		if (!stale)
+		if (stale || hitThisTick)
 		{
-			t.valid = false;
-			log.debug("Tracked HP {} is outside the bar's {}-{}: using the midpoint until an exact reading",
-				hp, range.getMin(), range.getMax());
+			// A remembered bar can be out of date, and a live one may not reflect this tick's hit yet (the client can
+			// delay a bar update; HitsplatApplied is posted at once). Show the midpoint and keep the count as it is.
+			return HpEstimate.UNKNOWN;
 		}
-		return HpEstimate.UNKNOWN;
+		// A live bar with no hit since the last read is current, so the count has drifted.
+		long resynced = Math.max(range.getMin(), Math.min(range.getMax(), hp));
+		if (Math.abs(resynced - hp) > MAX_DRIFT)
+		{
+			// More than regeneration explains: damage Foe never saw (a relog, another player before Foe looked). The
+			// count is wrong by an unknown amount, so show the midpoint until an exact reading re-anchors it.
+			t.valid = false;
+			log.debug("Tracked HP {} is {} outside the bar's {}-{}: midpoint until an exact reading", hp,
+				Math.abs(resynced - hp), range.getMin(), range.getMax());
+			return HpEstimate.UNKNOWN;
+		}
+		// Unseen regeneration (1 HP about once a minute; measured 2026-10-08 as six mismatches of exactly -1). Move
+		// the count to the nearest value the bar allows, which after one regeneration is the true value.
+		log.debug("Tracked HP {} outside the bar's {}-{}: resynced to {}", hp, range.getMin(), range.getMax(), resynced);
+		t.damage = maxHp - resynced;
+		return (int) resynced;
 	}
 
 	/** This NPC died or despawned: its object will not come back, and its index may be reused. */

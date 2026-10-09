@@ -386,7 +386,7 @@ public class FoePluginWiringTest
 		}
 		assertEquals("every event the plugin listens to, none more", new TreeSet<>(java.util.Arrays.asList(
 			"ActorDeath", "GameStateChanged", "GameTick", "GraphicChanged", "HitsplatApplied", "InteractingChanged",
-			"NpcDespawned", "VarbitChanged")), events);
+			"NpcDespawned", "ProfileChanged", "VarbitChanged")), events);
 	}
 
 	// ---- engagement ----
@@ -1418,6 +1418,21 @@ public class FoePluginWiringTest
 	// What was learned is saved as one string under one key of the plugin's own config group (WeaknessStore) and
 	// loaded again when the plugin starts. WeaknessStoreTest owns the format and WeaknessLearnerTest the credit; these
 	// check the wiring and the ordering questions the Task 8 review (F4) raised about stop and start.
+
+	// Review of 77ccc4e, finding 4: a RuneLite profile switch kept the old profile's entries and never loaded the new
+	// one's. The switch now reloads on the next tick, on the client thread, before any credit.
+	@Test
+	public void aProfileSwitchReloadsTheSavedWeaknessesOnTheNextTick()
+	{
+		learn(scorpion(1), 554);
+		storedWeaknesses = "2103:EARTH"; // the new profile's value
+		plugin.onProfileChanged(new net.runelite.client.events.ProfileChanged());
+		Npc giant = hillGiant(9);
+		engage(giant);
+		assertNotNull(tick().getWeakness());
+		engage(scorpion(2));
+		assertNull("the old profile's entry is gone", tick().getWeakness());
+	}
 
 	@Test
 	public void aCreditIsSavedAtOnceUnderTheTypeNotTheNpcId()

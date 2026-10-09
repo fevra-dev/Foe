@@ -145,20 +145,65 @@ public class HpTrackerTest
 		assertEquals(UNKNOWN, live(45));
 	}
 
+	// Review of 77ccc4e, finding 2: the bar may lag the hitsplat. On a read right after a hit a mismatch shows the
+	// midpoint and leaves the count alone; the next read with no hit in between resyncs it to the bar.
 	@Test
-	public void onceRejectedTheTrackedValueStaysRejectedEvenWhenItLaterFitsTheBar()
+	public void aBigMismatchShowsTheMidpointOnTheHitTickAndAfterIt()
 	{
-		damage(10);
-		assertEquals(UNKNOWN, live(45)); // rejected: tracked 75, bar 44-46
-		assertEquals("75 now lies in the bar's range, but the tracking was already shown to be wrong", UNKNOWN, live(75));
+		damage(10); // the 30 before it were not seen: true 45, tracked 75
+		assertEquals("a hit just landed: midpoint, count kept", UNKNOWN, live(45));
+		assertEquals("no hit since and 29 off: more than regeneration, so midpoint until an exact reading", UNKNOWN,
+			live(45));
+		assertEquals("75 would fit this bar, but the count was shown to be wrong", UNKNOWN, live(75));
 	}
 
 	@Test
-	public void regenerationBeyondTheBarsResolutionIsRejected()
+	public void aLaggingBarDoesNotCorruptTheCount()
 	{
 		damage(20);
 		assertEquals(65, live(65));
-		assertEquals("regenerated 10 unseen: the bar now reads 75", UNKNOWN, live(75));
+		damage(17); // true 48; the bar has not caught up and still reads 65
+		assertEquals("lagging bar on the hit tick: midpoint, count untouched", UNKNOWN, live(65));
+		assertEquals("the bar catches up: the untouched count is exact", 48, live(48));
+	}
+
+	// The in-game case (2026-10-08): six mismatches of exactly -1, an unseen 1 HP regeneration each time.
+	@Test
+	public void oneUnseenRegenerationIsCorrectedExactly()
+	{
+		// a true HP t at the top edge of its bar, so t + 1 (one regeneration) starts the next bar. Start mid-range:
+		// near full, t + 1 is the full bar, an exact reading that anchors and would not exercise the resync at all.
+		int t = MAX / 2;
+		while (HpEstimate.range(ratioFor(t + 1, MAX, SCALE), SCALE, MAX).contains(t))
+		{
+			t--;
+		}
+		damage(MAX - t);
+		assertEquals("watched from full: exact", t, live(t));
+		assertEquals("regenerated 1 HP unseen, no hit since: resynced, and exact again", t + 1, live(t + 1));
+	}
+
+	@Test
+	public void driftBeyondRegenerationIsNotNudgedButShownAsTheMidpoint()
+	{
+		damage(20);
+		assertEquals(65, live(65));
+		assertEquals("10 unseen HP is not regeneration: midpoint", UNKNOWN, live(75));
+	}
+
+	@Test
+	public void aOneHpDriftAtTheBarEdgeIsResyncedToThatEdge()
+	{
+		// a true HP t at the top edge of its bar, so one regeneration crosses into the next bar
+		int t = MAX - HpTracker.MAX_DRIFT - 2;
+		while (HpEstimate.range(ratioFor(t + 1, MAX, SCALE), SCALE, MAX).contains(t))
+		{
+			t--;
+		}
+		HpEstimate.Range next = HpEstimate.range(ratioFor(t + 1, MAX, SCALE), SCALE, MAX);
+		damage(MAX - t);
+		assertEquals(t, live(t));
+		assertEquals("gap 1 at the bar edge: resynced", next.getMin(), live(t + 1));
 	}
 
 	// The known limit, pinned so it is a decision rather than a surprise: a drift smaller than the bar's resolution
@@ -423,7 +468,7 @@ public class HpTrackerTest
 		t.hit(npc, DAMAGE_ME, 10); // tracked 75
 		assertEquals(UNKNOWN, t.read(npc, ratioFor(45, MAX, SCALE), SCALE, false, MAX)); // rejected
 		assertEquals("an exact but remembered reading is not an anchor", UNKNOWN, t.read(npc, SCALE, SCALE, true, MAX));
-		assertEquals("still rejected: 75 fits this bar but tracking was not re-anchored", UNKNOWN,
+		assertEquals("the hit-tick mismatch did not reject it: 75 fits this bar and shows", 75,
 			t.read(npc, ratioFor(75, MAX, SCALE), SCALE, false, MAX));
 	}
 
