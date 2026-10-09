@@ -56,7 +56,11 @@ The generator has to handle these quirks, and each one is a test case:
    id**, and in-game learning covers it. The generator should print the conflict list so it gets
    reviewed rather than silently resolved.
 
-## (i) Licence — CC BY-NC-SA 3.0, which is a decision for the operator
+## (i) Licence — CC BY-NC-SA 3.0
+
+**Operator decision 2026-10-09:** take the conservative path (a separate CC BY-NC-SA 3.0 notice for the
+data file plus a wiki credit in the README), and show percents exactly as the wiki gives them, including above 100.
+Recorded in spec addendum 7.
 
 `[documented]` *"Content on this site is licensed under CC BY-NC-SA 3.0; additional terms apply"*
 (RuneScape:Copyrights → meta.weirdgloop.org/w/Licensing). Attribution is *"a hyperlink (where possible)
