@@ -7,6 +7,10 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.TreeSet;
 
 /**
@@ -19,24 +23,113 @@ final class RawRows
 	{
 		final String fetchedDate;
 		final List<WikiRow> rows;
+		final WeaknessTableBuilder.Decisions decisions;
 
-		Parsed(String fetchedDate, List<WikiRow> rows)
+		Parsed(String fetchedDate, List<WikiRow> rows, WeaknessTableBuilder.Decisions decisions)
 		{
 			this.fetchedDate = fetchedDate;
 			this.rows = rows;
+			this.decisions = decisions;
 		}
 	}
+
+	/** A held value for an id the previous table did not have: the add waits, so the id stays out. */
+	private static final String ABSENT = "absent";
+	private static final Pattern HELD_VALUE = Pattern.compile("(AIR|WATER|EARTH|FIRE)( (0|[1-9][0-9]{0,2}))?|NONE");
+	private static final Pattern ID = Pattern.compile("0|[1-9][0-9]{0,8}");
 
 	private RawRows()
 	{
 	}
 
-	/** The whole file: the metadata line, then the distinct rows in a fixed order, each line ending in a newline. */
+	/** @throws IllegalArgumentException for decisions the generator would not have written */
+	private static WeaknessTableBuilder.Decisions decisions(JsonObject meta)
+	{
+		String generation = string(meta, "generation");
+		if (generation.equals("first"))
+		{
+			if (meta.has("previousIds") || meta.has("acceptShrink") || meta.has("held"))
+			{
+				throw new IllegalArgumentException("a first generation records no previous table and holds nothing");
+			}
+			return WeaknessTableBuilder.Decisions.first();
+		}
+		if (!generation.equals("diffed"))
+		{
+			throw new IllegalArgumentException("generation is neither 'first' nor 'diffed': " + Text.safe(generation));
+		}
+		JsonElement previousIds = meta.get("previousIds");
+		JsonElement acceptShrink = meta.get("acceptShrink");
+		JsonElement held = meta.get("held");
+		if (previousIds == null || !previousIds.isJsonPrimitive() || !previousIds.getAsJsonPrimitive().isNumber()
+			|| acceptShrink == null || !acceptShrink.isJsonPrimitive() || !acceptShrink.getAsJsonPrimitive().isBoolean()
+			|| held == null || !held.isJsonObject())
+		{
+			throw new IllegalArgumentException("a diffed generation needs previousIds, acceptShrink and held");
+		}
+		TreeMap<Integer, WeaknessTableBuilder.Entry> map = new TreeMap<>();
+		for (Map.Entry<String, JsonElement> h : held.getAsJsonObject().entrySet())
+		{
+			if (!ID.matcher(h.getKey()).matches() || !h.getValue().isJsonPrimitive()
+				|| !h.getValue().getAsJsonPrimitive().isString())
+			{
+				throw new IllegalArgumentException("a held entry that is not id -> value: " + Text.safe(h.getKey()));
+			}
+			String v = h.getValue().getAsString();
+			WeaknessTableBuilder.Entry entry = null;
+			if (!v.equals(ABSENT))
+			{
+				Matcher m = HELD_VALUE.matcher(v);
+				if (!m.matches())
+				{
+					throw new IllegalArgumentException("a held value that is not a table value: " + Text.safe(v));
+				}
+				entry = v.equals("NONE") ? new WeaknessTableBuilder.Entry(WeaknessTableBuilder.Element.NONE, null)
+					: new WeaknessTableBuilder.Entry(WeaknessTableBuilder.Element.valueOf(m.group(1)),
+						m.group(3) == null ? null : Integer.valueOf(m.group(3)));
+			}
+			map.put(Integer.valueOf(h.getKey()), entry);
+		}
+		return new WeaknessTableBuilder.Decisions(false, previousIds.getAsInt(), acceptShrink.getAsBoolean(), map);
+	}
+
+	private static String string(JsonObject o, String key)
+	{
+		JsonElement e = o.get(key);
+		if (e == null || !e.isJsonPrimitive() || !e.getAsJsonPrimitive().isString())
+		{
+			throw new IllegalArgumentException("the _meta line has no '" + key + "'");
+		}
+		return e.getAsString();
+	}
+
+	/** A first generation's file. */
 	static String write(Collection<WikiRow> rows, String fetchedDate)
+	{
+		return write(rows, fetchedDate, WeaknessTableBuilder.Decisions.first());
+	}
+
+	/**
+	 * The whole file: the metadata line (where, when, and what the run decided beyond the rows), then the distinct
+	 * rows in a fixed order, each line ending in a newline.
+	 */
+	static String write(Collection<WikiRow> rows, String fetchedDate, WeaknessTableBuilder.Decisions decisions)
 	{
 		JsonObject meta = new JsonObject();
 		meta.addProperty("source", WeaknessTableBuilder.SOURCE);
 		meta.addProperty("fetched", fetchedDate);
+		meta.addProperty("generation", decisions.firstGeneration ? "first" : "diffed");
+		if (!decisions.firstGeneration)
+		{
+			meta.addProperty("previousIds", decisions.previousIds);
+			meta.addProperty("acceptShrink", decisions.acceptShrinkUsed);
+			JsonObject held = new JsonObject();
+			for (Map.Entry<Integer, WeaknessTableBuilder.Entry> h : decisions.held.entrySet())
+			{
+				held.addProperty(h.getKey().toString(), h.getValue() == null ? ABSENT : h.getValue().toString());
+			}
+			meta.add("held", held);
+		}
 		JsonObject first = new JsonObject();
 		first.add("_meta", meta);
 		// ADR-0006: the file is a sink for wiki text. Escaping keeps it a lossless copy that cannot act when cat-ed.
@@ -96,6 +189,6 @@ final class RawRows
 				throw new IllegalArgumentException("line " + (i + 1) + ": " + e.getMessage(), e);
 			}
 		}
-		return new Parsed(date, rows);
+		return new Parsed(date, rows, decisions(metaField.getAsJsonObject()));
 	}
 }

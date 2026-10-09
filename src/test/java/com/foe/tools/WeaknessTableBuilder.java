@@ -152,7 +152,7 @@ final class WeaknessTableBuilder
 		static final String SHARED_TABS = "Ids shared by two or more tabs of one page";
 		static final String RECENT = "Pages edited within 7 days (check in game before committing)";
 		static final String UNKNOWN_EDIT = "Pages with no known edit time (treated as edited within 7 days)";
-		static final String PENDING = "Held back: changed, page edited within 7 days (previous value kept)";
+		static final String PENDING = "Held back: added, changed or removed, a page edited within 7 days (previous state kept)";
 		static final String ADDED = "Ids added";
 		static final String REMOVED = "Ids removed";
 		static final String CHANGED = "Ids changed (accepted)";
@@ -217,6 +217,8 @@ final class WeaknessTableBuilder
 		int skippedNoPercentIds;
 		int skippedConflictIds;
 		int heldBack;
+		/** What to write beside the raw rows; set by every run that gets as far as the hold. */
+		Decisions decisions = Decisions.first();
 	}
 
 	/** The wiki's own address, for the table header and the raw file. */
@@ -256,34 +258,61 @@ final class WeaknessTableBuilder
 	 * @param previous the table of the last release, or null for the first generation
 	 * @param lastEdit page title to the time of its last wiki edit; a page the wiki did not answer for has no entry
 	 */
+	/**
+	 * What a diffed run decided beyond the raw rows: which ids the hold kept at their previous value, and what the
+	 * header says about the run. It is written into the raw file, so the table stays a function of that file alone
+	 * (F8) after a run that held something back, not only after a first generation.
+	 */
+	static final class Decisions
+	{
+		final boolean firstGeneration;
+		/** The previous table's id count; null for a first generation. */
+		final Integer previousIds;
+		final boolean acceptShrinkUsed;
+		/** Id to the value kept; a null value keeps the id absent (an add that waits). */
+		final SortedMap<Integer, Entry> held;
+
+		Decisions(boolean firstGeneration, Integer previousIds, boolean acceptShrinkUsed, SortedMap<Integer, Entry> held)
+		{
+			this.firstGeneration = firstGeneration;
+			this.previousIds = previousIds;
+			this.acceptShrinkUsed = acceptShrinkUsed;
+			this.held = held;
+		}
+
+		static Decisions first()
+		{
+			return new Decisions(true, null, false, new TreeMap<>());
+		}
+	}
+
+	/** As {@link #build(Collection, String, PreviousTable, Map, Map, Instant, boolean)}, knowing no previous pages. */
 	static Result build(Collection<WikiRow> rows, String fetchedDate, PreviousTable previous,
 		Map<String, Instant> lastEdit, Instant now, boolean acceptShrink)
 	{
-		Result r = new Result();
+		return build(rows, fetchedDate, previous, new HashMap<>(), lastEdit, now, acceptShrink);
+	}
 
-		// F7: the walk can return a row twice. The raw file and the header count the distinct rows.
-		TreeSet<WikiRow> distinct = new TreeSet<>(rows);
-		r.rowsRead = distinct.size();
-		r.duplicateRowsDropped = rows.size() - distinct.size();
+	/**
+	 * @param previousPages id to the pages that gave it a weakness when the previous table was made (from the previous
+	 * raw file), so a page that has since dropped the id still has to be old before the change is accepted
+	 */
+	static Result build(Collection<WikiRow> rows, String fetchedDate, PreviousTable previous,
+		Map<Integer, Set<String>> previousPages, Map<String, Instant> lastEdit, Instant now, boolean acceptShrink)
+	{
+		Core c = core(rows);
+		Result r = c.result;
 
-		TreeMap<Integer, List<Claim>> claims = new TreeMap<>();
-		TreeMap<Integer, List<WikiRow>> rowsById = new TreeMap<>();
-		readRows(distinct, r, claims, rowsById);
+		// F2: every difference from the previous table waits for its pages to be a week old
+		TreeMap<Integer, Entry> table = quarantine(previous, previousPages, c, lastEdit, now);
+		listRecentPages(c.claims, lastEdit, now, r.report);
 
-		// addendum 9: one answer per id, or a stated reason for none
-		TreeMap<Integer, Entry> resolved = new TreeMap<>();
-		resolve(claims, r, resolved);
-
-		// shared tabs (F5), then the diff against the previous table (F2)
-		listSharedTabs(claims, rowsById, resolved, r.report);
-		TreeMap<Integer, Entry> table = quarantine(previous, resolved, claims, rowsById, lastEdit, now, r);
-		listRecentPages(claims, lastEdit, now, r.report);
-
+		// F7: measured on what the wiki says now, before the hold puts anything back
 		boolean shrinkUsed = false;
 		if (previous != null && r.failures.isEmpty())
 		{
 			int before = previous.headerCount;
-			int after = table.size();
+			int after = c.resolved.size();
 			if ((long) (before - after) * 100 > (long) SHRINK_LIMIT_PERCENT * before)
 			{
 				if (acceptShrink)
@@ -298,15 +327,96 @@ final class WeaknessTableBuilder
 				}
 			}
 		}
+		r.decisions = previous == null ? Decisions.first()
+			: new Decisions(false, previous.headerCount, shrinkUsed, r.decisions.held);
 
 		if (!r.failures.isEmpty())
 		{
 			return r;
 		}
-		r.entries.putAll(table);
-		r.table = header(r, fetchedDate, shrinkUsed ? previous : null) + body(table);
-		summarise(r, shrinkUsed);
+		finish(r, fetchedDate, table);
 		return r;
+	}
+
+	/**
+	 * Re-derives a table from raw rows plus the decisions recorded beside them: no previous table, no clock, no edit
+	 * times. The generator checks its own output with this, and so does the resource test.
+	 */
+	static Result rebuild(Collection<WikiRow> rows, String fetchedDate, Decisions decisions)
+	{
+		Core c = core(rows);
+		Result r = c.result;
+		r.decisions = decisions;
+		if (!r.failures.isEmpty())
+		{
+			return r;
+		}
+		TreeMap<Integer, Entry> table = new TreeMap<>(c.resolved);
+		for (Map.Entry<Integer, Entry> h : decisions.held.entrySet())
+		{
+			if (h.getValue() == null)
+			{
+				table.remove(h.getKey());
+			}
+			else
+			{
+				table.put(h.getKey(), h.getValue());
+			}
+		}
+		r.heldBack = decisions.held.size();
+		finish(r, fetchedDate, table);
+		return r;
+	}
+
+	/** Id to every page with a weakness row for it: what the generator reads from the previous raw file. */
+	static Map<Integer, Set<String>> pagesById(Collection<WikiRow> rows)
+	{
+		Map<Integer, Set<String>> pages = new HashMap<>();
+		for (WikiRow row : rows)
+		{
+			if (row.element == null)
+			{
+				continue;
+			}
+			for (String id : row.ids)
+			{
+				if (NUMERIC_ID.matcher(id).matches())
+				{
+					pages.computeIfAbsent(Integer.valueOf(id), k -> new TreeSet<>()).add(row.pageName);
+				}
+			}
+		}
+		return pages;
+	}
+
+	/** The part of a run that depends on the rows alone. */
+	private static final class Core
+	{
+		final Result result = new Result();
+		final TreeMap<Integer, List<Claim>> claims = new TreeMap<>();
+		final TreeMap<Integer, List<WikiRow>> rowsById = new TreeMap<>();
+		final TreeMap<Integer, Entry> resolved = new TreeMap<>();
+	}
+
+	private static Core core(Collection<WikiRow> rows)
+	{
+		Core c = new Core();
+		// F7: the walk can return a row twice. The raw file and the header count the distinct rows.
+		TreeSet<WikiRow> distinct = new TreeSet<>(rows);
+		c.result.rowsRead = distinct.size();
+		c.result.duplicateRowsDropped = rows.size() - distinct.size();
+		readRows(distinct, c.result, c.claims, c.rowsById);
+		// addendum 9: one answer per id, or a stated reason for none; then the shared tabs (F5)
+		resolve(c.claims, c.result, c.resolved);
+		listSharedTabs(c.claims, c.rowsById, c.resolved, c.result.report);
+		return c;
+	}
+
+	private static void finish(Result r, String fetchedDate, TreeMap<Integer, Entry> table)
+	{
+		r.entries.putAll(table);
+		r.table = header(r, fetchedDate) + body(table);
+		summarise(r);
 	}
 
 	// ---- reading rows: F1, rules 1 to 4 ----
@@ -377,16 +487,8 @@ final class WeaknessTableBuilder
 				r.report.add(Report.SKIPPED, "non-numeric id " + Text.safe(id) + ": " + row.label() + " "
 					+ valueText(new Entry(element, row.percent == null ? null : row.percent.intValue())));
 			}
-			if (element != Element.NONE && row.percent == null)
-			{
-				if (!numeric.isEmpty())
-				{
-					r.skippedNoPercentIds += numeric.size();
-					r.report.add(Report.SKIPPED, "element without percent: " + row.label() + " " + element
-						+ ", ids " + idSummary(numeric));
-				}
-				continue;
-			}
+			// An element without a percent is still a claim about the element (addendum 9), so it takes part in the
+			// conflict rule; resolve() skips an id only when none of its rows has a percent (rule 3).
 			Entry value = new Entry(element, row.percent == null ? null : row.percent.intValue());
 			for (Integer id : numeric)
 			{
@@ -396,12 +498,23 @@ final class WeaknessTableBuilder
 	}
 
 	/**
-	 * F1: trim, lowercase, then one of five words. Anything else is null and fails the run. "Trim" is strip(), which
-	 * takes whitespace only: String.trim() also removes ESC and NUL, so a hostile value would pass as an element.
+	 * F1: trim, lowercase, then one of five words. Anything else is null and fails the run. "Trim" takes whitespace
+	 * that is not a control character: String.trim() removes ESC and NUL, and strip() removes U+000B and U+001C to
+	 * U+001F, so either would let a hostile value pass as an element.
 	 */
 	private static Element parseElement(String raw)
 	{
-		switch (raw.strip().toLowerCase(Locale.ROOT))
+		int from = 0;
+		int to = raw.length();
+		while (from < to && trimmable(raw.charAt(from)))
+		{
+			from++;
+		}
+		while (to > from && trimmable(raw.charAt(to - 1)))
+		{
+			to--;
+		}
+		switch (raw.substring(from, to).toLowerCase(Locale.ROOT))
 		{
 			case "air":
 				return Element.AIR;
@@ -416,6 +529,13 @@ final class WeaknessTableBuilder
 			default:
 				return null;
 		}
+	}
+
+	/** Space, tab and newline are both whitespace and controls; the other controls are never trimmed. */
+	private static boolean trimmable(char c)
+	{
+		return c == ' ' || c == '\t' || c == '\n' || c == '\r'
+			|| (Character.isWhitespace(c) && !Character.isISOControl(c));
 	}
 
 	// ---- addendum 9: conflicts ----
@@ -433,10 +553,17 @@ final class WeaknessTableBuilder
 				elements.add(c.value.element);
 				percents.add(c.value.percent);
 			}
+			Element element = list.get(0).value.element;
 			if (elements.size() > 1)
 			{
 				r.skippedConflictIds++;
 				r.report.add(Report.ELEMENT_CONFLICTS, id + ": " + claimsText(list));
+			}
+			else if (element != Element.NONE && percents.size() == 1 && percents.contains(null))
+			{
+				// rule 3: no row gives a percent for this element. Counted once per id, however many rows say so.
+				r.skippedNoPercentIds++;
+				r.report.add(Report.SKIPPED, "element without percent: " + id + ": " + claimsText(list));
 			}
 			else if (percents.size() > 1)
 			{
@@ -492,12 +619,17 @@ final class WeaknessTableBuilder
 		return edit != null && !edit.plus(QUARANTINE).isAfter(now);
 	}
 
-	/** Applies the previous table: a changed value waits for its page to be a week old. Returns the table to write. */
-	private static TreeMap<Integer, Entry> quarantine(PreviousTable previous, Map<Integer, Entry> resolved,
-		Map<Integer, List<Claim>> claims, Map<Integer, List<WikiRow>> rowsById, Map<String, Instant> lastEdit,
-		Instant now, Result r)
+	/**
+	 * Applies the previous table. Any difference (an id added, changed or removed) is accepted only when every page
+	 * that gives the id a weakness now, or gave it one for the previous table, was last edited at least a week ago; a
+	 * page with no known edit time, or an id with no known page, is not old. Otherwise the previous state is kept and
+	 * recorded in the run's decisions. Returns the table to write.
+	 */
+	private static TreeMap<Integer, Entry> quarantine(PreviousTable previous, Map<Integer, Set<String>> previousPages,
+		Core c, Map<String, Instant> lastEdit, Instant now)
 	{
-		TreeMap<Integer, Entry> table = new TreeMap<>(resolved);
+		Result r = c.result;
+		TreeMap<Integer, Entry> table = new TreeMap<>(c.resolved);
 		if (previous == null)
 		{
 			// an empty list here is not "nothing changed": there was nothing to compare with
@@ -507,78 +639,80 @@ final class WeaknessTableBuilder
 			}
 			return table;
 		}
-		for (Map.Entry<Integer, Entry> e : resolved.entrySet())
+		TreeSet<Integer> ids = new TreeSet<>(c.resolved.keySet());
+		ids.addAll(previous.entries.keySet());
+		for (int id : ids)
 		{
-			int id = e.getKey();
 			Entry before = previous.entries.get(id);
-			Entry after = e.getValue();
-			if (before == null)
-			{
-				r.report.add(Report.ADDED, id + ": " + valueText(after) + " <- " + claimsText(claims.get(id)));
-			}
-			else if (!before.equals(after))
-			{
-				boolean old = true;
-				StringBuilder edited = new StringBuilder();
-				for (String page : pagesOf(claims.get(id)))
-				{
-					Instant t = lastEdit.get(page);
-					old &= oldEnough(t, now);
-					edited.append(edited.length() == 0 ? "" : ", ").append(Text.safe(page)).append(" edited ")
-						.append(t == null ? "at an unknown time" : t.toString());
-				}
-				if (old)
-				{
-					r.report.add(Report.CHANGED, id + ": " + valueText(before) + " -> " + valueText(after) + " <- "
-						+ claimsText(claims.get(id)));
-				}
-				else
-				{
-					table.put(id, before);
-					r.heldBack++;
-					r.report.add(Report.PENDING, id + ": kept " + valueText(before) + ", the wiki now says "
-						+ claimsText(claims.get(id)) + " (" + edited + ")");
-				}
-			}
-		}
-		for (Map.Entry<Integer, Entry> e : previous.entries.entrySet())
-		{
-			int id = e.getKey();
-			if (resolved.containsKey(id))
+			Entry after = c.resolved.get(id);
+			if (Objects.equals(before, after))
 			{
 				continue;
 			}
-			String why;
-			if (claims.containsKey(id))
+			String kind = before == null ? "added" : after == null ? "removed" : "changed";
+			String now_ = after == null ? whyAbsent(id, c) : valueText(after) + " <- " + claimsText(c.claims.get(id));
+
+			TreeSet<String> pages = new TreeSet<>(previousPages.getOrDefault(id, new TreeSet<>()));
+			for (WikiRow row : c.rowsById.getOrDefault(id, new ArrayList<>()))
 			{
-				why = "element conflict now: " + claimsText(claims.get(id));
-			}
-			else if (rowsById.containsKey(id))
-			{
-				List<String> where = new ArrayList<>();
-				for (WikiRow row : rowsById.get(id))
+				if (row.element != null)
 				{
-					where.add(row.label());
+					pages.add(row.pageName);
 				}
-				why = "no row for it carries a weakness now: " + where;
+			}
+			boolean old = !pages.isEmpty();
+			StringBuilder edited = new StringBuilder();
+			for (String page : pages)
+			{
+				Instant t = lastEdit.get(page);
+				old &= oldEnough(t, now);
+				edited.append(edited.length() == 0 ? "" : ", ").append(Text.safe(page)).append(" edited ")
+					.append(t == null ? "at an unknown time" : t.toString());
+			}
+			if (pages.isEmpty())
+			{
+				edited.append("no page is known for this id");
+			}
+
+			if (old)
+			{
+				String was = before == null ? "" : "was " + valueText(before) + "; ";
+				r.report.add(before == null ? Report.ADDED : after == null ? Report.REMOVED : Report.CHANGED,
+					id + ": " + was + "now " + now_);
+				continue;
+			}
+			if (before == null)
+			{
+				table.remove(id);
 			}
 			else
 			{
-				why = "the id is not in the wiki data";
+				table.put(id, before);
 			}
-			r.report.add(Report.REMOVED, id + ": was " + valueText(e.getValue()) + "; " + why);
+			r.decisions.held.put(id, before);
+			r.heldBack++;
+			r.report.add(Report.PENDING, id + ": " + kind + ", kept " + (before == null ? "no entry" : valueText(before))
+				+ "; the wiki now says " + now_ + " (" + edited + ")");
 		}
 		return table;
 	}
 
-	private static TreeSet<String> pagesOf(List<Claim> list)
+	private static String whyAbsent(int id, Core c)
 	{
-		TreeSet<String> pages = new TreeSet<>();
-		for (Claim c : list)
+		if (c.claims.containsKey(id))
 		{
-			pages.add(c.row.pageName);
+			return "no entry: " + claimsText(c.claims.get(id));
 		}
-		return pages;
+		if (c.rowsById.containsKey(id))
+		{
+			List<String> where = new ArrayList<>();
+			for (WikiRow row : c.rowsById.get(id))
+			{
+				where.add(row.label());
+			}
+			return "no entry: no row for it carries a weakness: " + where;
+		}
+		return "no entry: the id is not in the wiki data";
 	}
 
 	/** Pages with a usable weakness row that were edited within 7 days, or whose edit time is not known. */
@@ -622,7 +756,7 @@ final class WeaknessTableBuilder
 
 	// ---- output ----
 
-	private static String header(Result r, String fetchedDate, PreviousTable shrunkFrom)
+	private static String header(Result r, String fetchedDate)
 	{
 		int elementOnly = 0;
 		for (Entry e : r.entries.values())
@@ -632,8 +766,9 @@ final class WeaknessTableBuilder
 				elementOnly++;
 			}
 		}
-		// Every number here is a function of the raw file alone (plus the previous table and the flag), so the table
-		// can be re-derived offline and compared byte for byte (F8).
+		// Every line here is a function of the raw file alone, its recorded decisions included, so the table can be
+		// re-derived offline and compared byte for byte (F8).
+		Decisions d = r.decisions;
 		return "# Foe elemental weakness table. Written by com.foe.tools.GenerateWeaknessTable; do not edit by hand.\n"
 			+ "# Source: " + SOURCE + "\n"
 			+ "# Licence: CC BY-NC-SA 3.0, see weakness-table.LICENSE\n"
@@ -645,9 +780,11 @@ final class WeaknessTableBuilder
 			+ "# Ids skipped, non-numeric id: " + r.skippedNonNumericIds + "\n"
 			+ "# Ids skipped, element conflict: " + r.skippedConflictIds + "\n"
 			+ "# Rows skipped, no ids: " + r.skippedNoIdRows + "\n"
+			+ "# Generation: " + (d.firstGeneration ? "first (no previous table, nothing held back)"
+				: "diffed against the previous table (" + d.previousIds + " ids)") + "\n"
 			+ "# Changes held back, page edited within 7 days: " + r.heldBack + "\n"
-			+ "# Accept-shrink: " + (shrunkFrom == null ? "no"
-				: "yes, the previous table had " + shrunkFrom.headerCount + " ids") + "\n"
+			+ "# Accept-shrink: " + (d.acceptShrinkUsed ? "yes, the previous table had " + d.previousIds + " ids"
+				: "no") + "\n"
 			+ "# Line format: id<TAB>ELEMENT<TAB>percent. The percent is empty for NONE, and where tabs disagree on it.\n";
 	}
 
@@ -663,7 +800,7 @@ final class WeaknessTableBuilder
 		return sb.toString();
 	}
 
-	private static void summarise(Result r, boolean shrinkUsed)
+	private static void summarise(Result r)
 	{
 		Report rep = r.report;
 		rep.add(Report.SUMMARY, "rows read: " + r.rowsRead + " (" + r.duplicateRowsDropped + " duplicate rows dropped)");
@@ -672,7 +809,7 @@ final class WeaknessTableBuilder
 			+ r.skippedNonNumericIds + " non-numeric id, " + r.skippedConflictIds + " element conflict; rows skipped: "
 			+ r.skippedNoIdRows + " with no ids");
 		rep.add(Report.SUMMARY, "changes held back: " + r.heldBack);
-		rep.add(Report.SUMMARY, "accept-shrink used: " + (shrinkUsed ? "yes" : "no"));
+		rep.add(Report.SUMMARY, "accept-shrink used: " + (r.decisions.acceptShrinkUsed ? "yes" : "no"));
 	}
 
 	static String valueText(Entry v)

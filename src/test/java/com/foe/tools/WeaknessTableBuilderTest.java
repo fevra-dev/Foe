@@ -2,6 +2,7 @@ package com.foe.tools;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -20,7 +21,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import org.junit.Test;
 
 /**
@@ -150,7 +153,9 @@ public class WeaknessTableBuilderTest
 		Result padded = build(row("Some boss", null, " \t Fire\n", 50, "700"));
 		assertOk(padded);
 		assertEquals(entry(Element.FIRE, 50), padded.entries.get(700));
-		for (String bad : new String[] {"\u001bFire", "Fire\u0000", "Fire\u009b", "\u001b[2JFire\u001bc"})
+		// strip() alone also takes U+000B and U+001C-U+001F, which are controls (the review's finding 7)
+		for (String bad : new String[] {"\u001bFire", "Fire\u0000", "Fire\u009b", "\u001b[2JFire\u001bc",
+			"\u001fFire\u001c", "\u000bFire"})
 		{
 			Result r = build(row("Some boss", null, bad, 50, "700"));
 			assertFalse("must fail: " + bad.replace("\u001b", "ESC"), r.failures.isEmpty());
@@ -225,6 +230,36 @@ public class WeaknessTableBuilderTest
 		assertFalse(r.entries.containsKey(701));
 		assertEquals("ids, not rows", 2, r.skippedNoPercentIds);
 		assertTrue(r.table.contains("# Ids skipped, element without percent: 2"));
+	}
+
+	// the review's finding 4: under addendum 9 an element without a percent is still a claim about the element
+	@Test
+	public void anElementWithNoPercentStillTakesPartInTheConflictRule()
+	{
+		Result a = build(row("P", "a", "Water", null, "700"), row("P", "b", "Fire", 50, "700"));
+		assertOk(a);
+		assertFalse("two elements: no entry", a.entries.containsKey(700));
+		lineWithPrefix(a.report.lines(Report.ELEMENT_CONFLICTS), "700");
+
+		Result b = build(row("P", "a", "Fire", null, "700"), row("P", "b", "Fire", 50, "700"));
+		assertEquals("the percent is not agreed", entry(Element.FIRE, null), b.entries.get(700));
+		lineWithPrefix(b.report.lines(Report.PERCENT_CONFLICTS), "700");
+
+		Result c = build(row("P", "a", "Fire", null, "700"), row("P", "b", "None", null, "700"));
+		assertFalse(c.entries.containsKey(700));
+
+		Result d = build(row("P", "a", "Water", null, "700"), row("P", "b", "Fire", 5, "700"),
+			row("P", "c", "Fire", 80, "700"));
+		assertFalse(d.entries.containsKey(700));
+	}
+
+	@Test
+	public void anIdWhoseOnlyRowsLackAPercentIsCountedOnce()
+	{
+		Result r = build(row("P", "a", "Fire", null, "700"), row("P", "b", "Fire", null, "700"));
+		assertOk(r);
+		assertFalse(r.entries.containsKey(700));
+		assertEquals(1, r.skippedNoPercentIds);
 	}
 
 	@Test
@@ -536,18 +571,130 @@ public class WeaknessTableBuilderTest
 	}
 
 	@Test
-	public void addedAndRemovedIdsAreListedAndAddedOnesAreNotQuarantined()
+	public void addedAndRemovedIdsOnOldPagesAreAcceptedAndListed()
 	{
 		PreviousTable previous = previous("494\tEARTH\t50", "2075\tWATER\t100");
-		Result r = build(previous, edits("Brand new", ago(Duration.ofDays(1)), "Fire giant", ago(Duration.ofDays(30))),
-			false,
+		Map<Integer, Set<String>> before = pages(494, "Kraken", 2075, "Fire giant");
+		Result r = WeaknessTableBuilder.build(Arrays.asList(
 			row("Fire giant", "Level 86", "Water", 100, "2075"),
-			row("Brand new", null, "Fire", 50, "9000"));
+			row("Brand new", null, "Fire", 50, "9000")), DATE, previous, before,
+			edits("Brand new", ago(Duration.ofDays(8)), "Fire giant", ago(Duration.ofDays(30)), "Kraken",
+				ago(Duration.ofDays(9))), NOW, false);
 		assertOk(r);
 		assertEquals(entry(Element.FIRE, 50), r.entries.get(9000));
 		lineWithPrefix(r.report.lines(Report.ADDED), "9000");
 		lineWithPrefix(r.report.lines(Report.REMOVED), "494");
 		assertFalse(r.entries.containsKey(494));
+		assertEquals(0, r.heldBack);
+	}
+
+	// grill F2, the review's finding 1: 2,400 ids have no weakness row today, so filling one in is an add
+	@Test
+	public void anAddedIdOnARecentPageIsHeldBackSoAVandalsFirstEntryWaits()
+	{
+		Result r = WeaknessTableBuilder.build(Arrays.asList(
+			row("Fire giant", "Level 86", "Water", 100, "2075"),
+			row("Vorkath", null, "Water", 100, "8061")), DATE, previousWaterGiant(), pages(2075, "Fire giant"),
+			edits("Fire giant", ago(Duration.ofDays(30)), "Vorkath", ago(Duration.ofHours(1))), NOW, false);
+		assertOk(r);
+		assertFalse("the add waits", r.entries.containsKey(8061));
+		assertEquals(1, r.heldBack);
+		assertTrue(lineWithPrefix(r.report.lines(Report.PENDING), "8061").contains("added"));
+		assertTrue(r.table.contains("# Changes held back, page edited within 7 days: 1\n"));
+	}
+
+	@Test
+	public void aRemovedIdOnARecentPageIsHeldBack()
+	{
+		// a recent edit adds a conflicting row: the id would drop out of the table at once
+		Result r = WeaknessTableBuilder.build(Arrays.asList(
+			row("Fire giant", "Level 86", "Water", 100, "2075"),
+			row("Fire giant", "Vandal tab", "Fire", 50, "2075")), DATE, previousWaterGiant(),
+			pages(2075, "Fire giant"), edits("Fire giant", ago(Duration.ofHours(1))), NOW, true);
+		assertOk(r);
+		assertEquals("the previous value is kept", entry(Element.WATER, 100), r.entries.get(2075));
+		assertTrue(lineWithPrefix(r.report.lines(Report.PENDING), "2075").contains("removed"));
+	}
+
+	// the review's finding 3: the page whose edit took the claim away is the one that must be old
+	@Test
+	public void aChangeIsHeldWhenThePageThatDroppedTheIdWasEditedRecently()
+	{
+		PreviousTable previous = previous("100\tFIRE\t");
+		Result r = WeaknessTableBuilder.build(Arrays.asList(
+			row("Page A", null, "Fire", 50, "100"),
+			row("Page C", null, "Fire", 80, "101")), DATE, previous, pages(100, "Page A", 100, "Page C"),
+			edits("Page A", ago(Duration.ofDays(30)), "Page C", ago(Duration.ofHours(1))), NOW, false);
+		assertOk(r);
+		assertEquals(entry(Element.FIRE, null), r.entries.get(100));
+		assertTrue(lineWithPrefix(r.report.lines(Report.PENDING), "100:").contains("Page C edited"));
+		// 101 is new on the recent page, so it waits as well
+		assertFalse(r.entries.containsKey(101));
+		assertEquals(2, r.heldBack);
+	}
+
+	@Test
+	public void anIdWhosePagesAreAllUnknownIsHeldBackNotAccepted()
+	{
+		Result r = WeaknessTableBuilder.build(Arrays.asList(row("Fire giant", "Level 86", "Water", 100, "2075")),
+			DATE, previous("2075\tWATER\t100", "3000\tFIRE\t50"), Collections.emptyMap(),
+			edits("Fire giant", ago(Duration.ofDays(30))), NOW, true);
+		assertOk(r);
+		assertEquals("no page is known for 3000, so nothing shows it is old", entry(Element.FIRE, 50),
+			r.entries.get(3000));
+	}
+
+	// ---- the review's finding 2: the hold's decisions are recorded, so table = generator(raw) always ----
+
+	@Test
+	public void aDiffedRunCanBeRebuiltByteForByteFromItsRecordedDecisions()
+	{
+		List<WikiRow> rows = Arrays.asList(
+			row("Fire giant", "Level 86", "Fire", 50, "2075"),
+			row("Vorkath", null, "Water", 100, "8061"),
+			row("Kraken", "Kraken", "Earth", 50, "494"));
+		Result r = WeaknessTableBuilder.build(rows, DATE, previous("494\tEARTH\t50", "2075\tWATER\t100"),
+			pages(494, "Kraken", 2075, "Fire giant"), edits("Fire giant", ago(Duration.ofHours(1)), "Vorkath",
+				ago(Duration.ofHours(1)), "Kraken", ago(Duration.ofDays(30))), NOW, false);
+		assertOk(r);
+		assertEquals(2, r.heldBack);
+		assertFalse(r.decisions.firstGeneration);
+		Result again = WeaknessTableBuilder.rebuild(rows, DATE, r.decisions);
+		assertOk(again);
+		assertEquals(r.table, again.table);
+		// control: the rows alone, as a first generation, are a different table
+		assertNotEquals(r.table, build(rows.toArray(new WikiRow[0])).table);
+	}
+
+	@Test
+	public void theHeaderSaysWhichGenerationItIs()
+	{
+		Result first = build(row("Fire giant", "Level 86", "Water", 100, "2075"));
+		assertTrue(first.table, first.table.contains("# Generation: first (no previous table, nothing held back)\n"));
+		Result second = build(previousWaterGiant(), Collections.emptyMap(), false,
+			row("Fire giant", "Level 86", "Water", 100, "2075"));
+		assertTrue(second.table, second.table.contains("# Generation: diffed against the previous table (1 ids)\n"));
+	}
+
+	private static Map<Integer, Set<String>> pages(Object... idAndPage)
+	{
+		Map<Integer, Set<String>> m = new HashMap<>();
+		for (int i = 0; i < idAndPage.length; i += 2)
+		{
+			m.computeIfAbsent((Integer) idAndPage[i], k -> new TreeSet<>()).add((String) idAndPage[i + 1]);
+		}
+		return m;
+	}
+
+	@Test
+	public void pagesByIdNamesEveryPageWithAWeaknessRowForTheId()
+	{
+		Map<Integer, Set<String>> m = WeaknessTableBuilder.pagesById(Arrays.asList(
+			row("Page A", null, "Fire", 50, "100"),
+			row("Page C", "x", "Fire", 80, "100", "101"),
+			row("Page D", null, null, null, "100")));
+		assertEquals(new TreeSet<>(Arrays.asList("Page A", "Page C")), m.get(100));
+		assertEquals(new TreeSet<>(Collections.singletonList("Page C")), m.get(101));
 	}
 
 	// ---- addendum 8 F7: shrink ----
@@ -595,7 +742,15 @@ public class WeaknessTableBuilderTest
 	@Test
 	public void acceptShrinkWritesTheSmallerTableAndTheHeaderSaysSo()
 	{
-		Result r = build(hundredIds(), Collections.emptyMap(), true, firstIds(94));
+		// the removed ids came from a page last edited a month ago (the previous raw file says so), so the hold lets
+		// the removals through
+		Map<Integer, Set<String>> before = new HashMap<>();
+		for (int id = 1; id <= 100; id++)
+		{
+			before.put(id, new TreeSet<>(Collections.singletonList("Big page")));
+		}
+		Result r = WeaknessTableBuilder.build(Collections.singletonList(firstIds(94)), DATE, hundredIds(), before,
+			edits("Big page", ago(Duration.ofDays(30))), NOW, true);
 		assertOk(r);
 		assertEquals(94, r.entries.size());
 		assertTrue(r.table, r.table.contains("# Accept-shrink: yes"));

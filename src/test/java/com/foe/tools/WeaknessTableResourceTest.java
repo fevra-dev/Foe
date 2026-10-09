@@ -12,9 +12,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -110,12 +108,12 @@ public class WeaknessTableResourceTest
 	{
 		String raw = new String(Files.readAllBytes(Paths.get(RAW_FILE)), StandardCharsets.UTF_8);
 		RawRows.Parsed parsed = RawRows.read(raw);
-		// no previous table and no edit times: the first generation, which is the only one this test can reproduce
-		Result derived = WeaknessTableBuilder.build(parsed.rows, parsed.fetchedDate, null, Collections.emptyMap(),
-			Instant.parse("2000-01-01T00:00:00Z"), false);
+		// the raw file records what the run decided beyond the rows (what the 7-day hold kept), so this holds for
+		// every generation, not only the first
+		Result derived = WeaknessTableBuilder.rebuild(parsed.rows, parsed.fetchedDate, parsed.decisions);
 		assertTrue("the committed raw rows fail a generator rule: " + derived.failures, derived.failures.isEmpty());
 		assertEquals("the raw file is exactly what the generator writes: sorted, escaped, no duplicates, no hand edits",
-			raw, RawRows.write(parsed.rows, parsed.fetchedDate));
+			raw, RawRows.write(parsed.rows, parsed.fetchedDate, parsed.decisions));
 		String committed = resource();
 		if (!derived.table.equals(committed))
 		{

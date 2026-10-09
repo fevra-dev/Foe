@@ -63,7 +63,7 @@ final class WikiFetch
 	private static final int MAX_PAGES = 100;
 	private static final String QUERY_TEMPLATE = "bucket(\"infobox_monster\")"
 		+ ".select(\"page_name\",\"version_anchor\",\"id\",\"elemental_weakness\",\"elemental_weakness_percent\")"
-		+ ".limit(%d).offset(%d).run()";
+		+ ".orderBy(\"page_name\",\"asc\").limit(%d).offset(%d).run()";
 
 	private final Transport transport;
 	private final Sleeper sleeper;
@@ -105,7 +105,8 @@ final class WikiFetch
 	 * of a hiccup, and stopping there is how a truncated table gets committed (F7). Each request starts where the
 	 * rows read so far end, so a short page cannot make the walk skip rows either.
 	 *
-	 * Every row read is returned, duplicates included: the builder counts and drops those.
+	 * Every row read is returned, duplicates included: the builder counts and drops those. One walk pages by offset
+	 * over a live database, so an edit during it can skip a row silently; the generator walks twice and compares.
 	 */
 	List<WikiRow> fetchRows() throws IOException
 	{
@@ -135,7 +136,7 @@ final class WikiFetch
 				{
 					if (!element.isJsonObject())
 					{
-						throw new IllegalArgumentException("a row that is not an object: " + element);
+						throw new IllegalArgumentException("a row that is not an object: " + Text.safe(element.toString()));
 					}
 					rows.add(WikiRow.fromJson(element.getAsJsonObject()));
 				}
@@ -179,6 +180,20 @@ final class WikiFetch
 
 	private void readEdits(List<String> batch, Map<String, Instant> edits) throws IOException
 	{
+		try
+		{
+			readEditsUnchecked(batch, edits);
+		}
+		catch (IllegalStateException | UnsupportedOperationException | NullPointerException | ClassCastException e)
+		{
+			// Gson's getAs* throw these on a reply of the wrong shape; their messages can quote the reply (ADR-0006)
+			throw new IOException("the edit-time reply is not the shape the API documents: "
+				+ Text.safe(String.valueOf(e.getMessage())), e);
+		}
+	}
+
+	private void readEditsUnchecked(List<String> batch, Map<String, Instant> edits) throws IOException
+	{
 		JsonObject reply = get("query", "action=query&format=json&prop=revisions&rvprop=timestamp&titles="
 			+ encode(String.join("|", batch)));
 		JsonElement query = reply.get("query");
@@ -203,6 +218,13 @@ final class WikiFetch
 			for (Map.Entry<String, JsonElement> page : pages.getAsJsonObject().entrySet())
 			{
 				JsonObject o = page.getValue().getAsJsonObject();
+				if (o.has("missing"))
+				{
+					// a deleted page: deleting one takes a wiki administrator, so it is not an anonymous edit to wait
+					// out, and holding its ids for ever would be a refusal nobody can clear
+					byTitle.put(o.get("title").getAsString(), Instant.EPOCH);
+					continue;
+				}
 				JsonElement revisions = o.get("revisions");
 				if (revisions == null || !revisions.isJsonArray() || revisions.getAsJsonArray().size() == 0)
 				{

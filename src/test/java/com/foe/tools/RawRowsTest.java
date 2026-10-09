@@ -1,6 +1,7 @@
 package com.foe.tools;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.TreeMap;
 import org.junit.Test;
 
 /**
@@ -163,6 +165,25 @@ public class RawRowsTest
 	}
 
 	@Test
+	public void theRecordedDecisionsReadBackExactly()
+	{
+		TreeMap<Integer, WeaknessTableBuilder.Entry> held = new TreeMap<>();
+		held.put(2075, new WeaknessTableBuilder.Entry(WeaknessTableBuilder.Element.WATER, 100));
+		held.put(15742, new WeaknessTableBuilder.Entry(WeaknessTableBuilder.Element.FIRE, null));
+		held.put(8061, null);
+		WeaknessTableBuilder.Decisions d = new WeaknessTableBuilder.Decisions(false, 1769, true, held);
+		List<WikiRow> rows = Collections.singletonList(WikiRow.of("Fire giant", "Level 86", "Water", 100L, "2075"));
+		String text = RawRows.write(rows, "2026-10-09", d);
+		RawRows.Parsed back = RawRows.read(text);
+		assertFalse(back.decisions.firstGeneration);
+		assertEquals(Integer.valueOf(1769), back.decisions.previousIds);
+		assertTrue(back.decisions.acceptShrinkUsed);
+		assertEquals(held, back.decisions.held);
+		assertEquals("and it is canonical", text, RawRows.write(back.rows, back.fetchedDate, back.decisions));
+		assertTrue(RawRows.read(RawRows.write(rows, "2026-10-09")).decisions.firstGeneration);
+	}
+
+	@Test
 	public void hostileWikiTextIsWrittenAsEscapesAndReadsBackTheSame()
 	{
 		// ADR-0006: the file is a sink. The wiki's own text must survive, and must not act when the file is cat-ed.
@@ -177,7 +198,7 @@ public class RawRowsTest
 	public void aFileTheGeneratorDidNotWriteIsRefused()
 	{
 		String row = WikiRow.of("A", null, "Fire", 5L, "1").toJson().toString();
-		String meta = "{\"_meta\":{\"source\":\"x\",\"fetched\":\"2026-10-09\"}}";
+		String meta = "{\"_meta\":{\"source\":\"x\",\"fetched\":\"2026-10-09\",\"generation\":\"first\"}}";
 		String[] bad = {
 			"",
 			row + "\n",
@@ -188,6 +209,12 @@ public class RawRowsTest
 			meta + "\nnot json\n",
 			meta + "\n" + meta + "\n",
 			"{\"_meta\":{\"source\":\"x\"}}\n" + row + "\n",
+			// the decisions are part of what the table is derived from, so they cannot be left out or half there
+			"{\"_meta\":{\"source\":\"x\",\"fetched\":\"2026-10-09\"}}\n" + row + "\n",
+			meta.replace("\"first\"", "\"diffed\"") + "\n" + row + "\n",
+			meta.replace("\"first\"", "\"diffed\",\"previousIds\":3,\"acceptShrink\":false,"
+				+ "\"held\":{\"7\":\"FIRE 101x\"}") + "\n" + row + "\n",
+			meta.replace("\"first\"", "\"later\"") + "\n" + row + "\n",
 		};
 		for (String text : bad)
 		{

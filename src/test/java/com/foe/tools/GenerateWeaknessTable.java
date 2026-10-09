@@ -10,6 +10,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,7 +25,8 @@ public final class GenerateWeaknessTable
 {
 	static final String RAW = "data/wiki-infobox-monster.jsonl";
 	static final String TABLE = "src/main/resources/com/foe/weakness-table.tsv";
-	static final String REPORT = "build/weakness-report.txt";
+	/** Committed beside the raw file: it is what a reviewer reads (addendum 8 F2), so `clean` must not wipe it. */
+	static final String REPORT = "data/weakness-report.txt";
 
 	private GenerateWeaknessTable()
 	{
@@ -43,40 +45,69 @@ public final class GenerateWeaknessTable
 	static int run(String[] args, Path root, WikiFetch fetch, Clock clock, PrintStream out, PrintStream err)
 	{
 		boolean acceptShrink = false;
+		boolean firstGeneration = false;
 		for (String arg : args)
 		{
 			if (arg.equals("--accept-shrink"))
 			{
 				acceptShrink = true;
 			}
+			else if (arg.equals("--first-generation"))
+			{
+				firstGeneration = true;
+			}
 			else
 			{
-				err.println("unknown argument '" + arg + "'. The only one is --accept-shrink: let a table that is more "
-					+ "than 5% smaller than the previous one be written.");
+				err.println("unknown argument '" + Text.safe(arg) + "'. Known: --accept-shrink (let a table more than "
+					+ "5% smaller than the previous one be written), --first-generation (there is no previous table).");
 				return 2;
 			}
 		}
 
-		// The previous table is what changes are measured against, so one we cannot read stops the run.
-		WeaknessTableBuilder.PreviousTable previous = null;
+		// The previous table is what changes are measured against, and the previous raw file says which pages gave
+		// each id its value. Without both there is no hold, so their absence is a refusal, not a first generation:
+		// deleting the table must not be the way to switch the hold off (review finding 2).
 		Path tablePath = root.resolve(TABLE);
-		try
+		Path rawPath = root.resolve(RAW);
+		boolean haveTable = Files.exists(tablePath);
+		if (firstGeneration != !haveTable)
 		{
-			if (Files.exists(tablePath))
+			err.println(haveTable
+				? "--first-generation, but " + TABLE + " exists: a first generation would skip the 7-day hold"
+				: "no previous table at " + TABLE + ". If this really is the first generation, run again with "
+					+ "--first-generation; otherwise restore the table and " + RAW + " from git");
+			return 1;
+		}
+		WeaknessTableBuilder.PreviousTable previous = null;
+		Map<Integer, Set<String>> previousPages = new HashMap<>();
+		if (haveTable)
+		{
+			try
 			{
-				previous = WeaknessTableBuilder.PreviousTable.parse(
-					new String(Files.readAllBytes(tablePath), StandardCharsets.UTF_8));
+				String previousText = new String(Files.readAllBytes(tablePath), StandardCharsets.UTF_8);
+				previous = WeaknessTableBuilder.PreviousTable.parse(previousText);
+				RawRows.Parsed previousRaw = RawRows.read(new String(Files.readAllBytes(rawPath), StandardCharsets.UTF_8));
+				// the pair must agree, or the hold would be measured against pages that did not make this table
+				WeaknessTableBuilder.Result again = WeaknessTableBuilder.rebuild(previousRaw.rows,
+					previousRaw.fetchedDate, previousRaw.decisions);
+				if (!previousText.equals(again.table))
+				{
+					err.println("the previous table is not what " + RAW + " derives; refusing to run");
+					return 1;
+				}
+				previousPages = WeaknessTableBuilder.pagesById(previousRaw.rows);
 				out.println("previous table: " + previous.entries.size() + " ids (" + TABLE + ")");
 			}
-			else
+			catch (IllegalArgumentException | IOException e)
 			{
-				out.println("no previous table: this is a first generation, so nothing is quarantined");
+				err.println("previous table or raw file unreadable, refusing to run: " + Text.safe(String.valueOf(
+					e.getMessage())));
+				return 1;
 			}
 		}
-		catch (IllegalArgumentException | IOException e)
+		else
 		{
-			err.println("previous table unreadable, refusing to run: " + e.getMessage());
-			return 1;
+			out.println("first generation: no previous table, so nothing is held back");
 		}
 
 		List<WikiRow> rows;
@@ -84,8 +115,26 @@ public final class GenerateWeaknessTable
 		try
 		{
 			rows = fetch.fetchRows();
-			out.println("fetched " + rows.size() + " rows");
-			lastEdit = fetch.fetchLastEdits(pagesWithAWeaknessRow(rows));
+			// F7 and review finding 6: one offset walk over a live database can skip a row without any error, so walk
+			// again and refuse unless both saw the same distinct rows
+			TreeSet<WikiRow> once = new TreeSet<>(rows);
+			TreeSet<WikiRow> twice = new TreeSet<>(fetch.fetchRows());
+			if (!once.equals(twice))
+			{
+				TreeSet<WikiRow> onlyFirst = new TreeSet<>(once);
+				onlyFirst.removeAll(twice);
+				twice.removeAll(once);
+				err.println("the wiki changed during the fetch: " + onlyFirst.size() + " rows only in the first walk, "
+					+ twice.size() + " only in the second. Nothing written; run again.");
+				return 1;
+			}
+			out.println("fetched " + rows.size() + " rows, twice, and both walks agree");
+			Set<String> pages = pagesWithAWeaknessRow(rows);
+			for (Set<String> before : previousPages.values())
+			{
+				pages.addAll(before);
+			}
+			lastEdit = fetch.fetchLastEdits(pages);
 			out.println("fetched last-edit times for " + lastEdit.size() + " pages");
 		}
 		catch (IOException e)
@@ -96,8 +145,8 @@ public final class GenerateWeaknessTable
 
 		Instant now = clock.instant();
 		String fetchedDate = LocalDate.ofInstant(now, ZoneOffset.UTC).toString();
-		WeaknessTableBuilder.Result result = WeaknessTableBuilder.build(rows, fetchedDate, previous, lastEdit, now,
-			acceptShrink);
+		WeaknessTableBuilder.Result result = WeaknessTableBuilder.build(rows, fetchedDate, previous, previousPages,
+			lastEdit, now, acceptShrink);
 		if (!result.failures.isEmpty())
 		{
 			err.println("FAILED, nothing written (" + result.failures.size() + "):");
@@ -108,13 +157,13 @@ public final class GenerateWeaknessTable
 			return 1;
 		}
 
-		String raw = RawRows.write(rows, fetchedDate);
+		String raw = RawRows.write(rows, fetchedDate, result.decisions);
 		try
 		{
-			// The raw file is what the table is re-derived from offline, so prove it round-trips before it is kept.
+			// The raw file is what the table is re-derived from offline, so prove it does before it is kept.
 			RawRows.Parsed back = RawRows.read(raw);
-			WeaknessTableBuilder.Result again = WeaknessTableBuilder.build(back.rows, back.fetchedDate, previous,
-				lastEdit, now, acceptShrink);
+			WeaknessTableBuilder.Result again = WeaknessTableBuilder.rebuild(back.rows, back.fetchedDate,
+				back.decisions);
 			if (!again.failures.isEmpty() || !result.table.equals(again.table))
 			{
 				err.println("the table built from the raw file differs from the table just built; nothing written");
@@ -166,7 +215,12 @@ public final class GenerateWeaknessTable
 		return pages;
 	}
 
-	/** Stages every file next to its target first, then moves them into place, so a failure part way leaves no half. */
+	/**
+	 * Stages every file next to its target first, then moves them into place. A failure while staging leaves the old
+	 * files untouched; a failure between two moves leaves a new raw file beside the old table, which the resource
+	 * test then fails on loudly.
+	 */
+	// ponytail: per-file moves, not one atomic swap; a directory-rename swap if a half-written pair ever matters
 	private static void writeAll(Path rawPath, String raw, Path tablePath, String table, Path reportPath, String report)
 		throws IOException
 	{

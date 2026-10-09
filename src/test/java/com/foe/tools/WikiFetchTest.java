@@ -195,7 +195,8 @@ public class WikiFetchTest
 		assertEquals("bucket", q.get("action"));
 		assertEquals("json", q.get("format"));
 		assertEquals("bucket(\"infobox_monster\").select(\"page_name\",\"version_anchor\",\"id\","
-			+ "\"elemental_weakness\",\"elemental_weakness_percent\").limit(500).offset(0).run()", q.get("query"));
+			+ "\"elemental_weakness\",\"elemental_weakness_percent\").orderBy(\"page_name\",\"asc\")"
+			+ ".limit(500).offset(0).run()", q.get("query"));
 		assertTrue(canned.uris.get(0).toString().startsWith("https://oldschool.runescape.wiki/api.php?"));
 	}
 
@@ -322,7 +323,7 @@ public class WikiFetchTest
 	}
 
 	@Test
-	public void itReadsTheLastEditOfEachTitleAndLeavesOutOnesTheWikiDoesNotKnow() throws IOException
+	public void itReadsTheLastEditOfEachTitleAndADeletedPageReadsAsOld() throws IOException
 	{
 		// real shape: a missing page is {"-1":{"ns":0,"title":"...","missing":""}}
 		Canned canned = new Canned().ok(revisions(
@@ -331,10 +332,47 @@ public class WikiFetchTest
 			"\"-1\":{\"ns\":0,\"title\":\"Nonexistent page xyz\",\"missing\":\"\"}"));
 		Map<String, Instant> edits = canned.fetch(500)
 			.fetchLastEdits(Arrays.asList("Fire giant", "Kraken", "Nonexistent page xyz"));
-		assertEquals(2, edits.size());
+		assertEquals(3, edits.size());
 		assertEquals(Instant.parse("2026-10-04T11:09:10Z"), edits.get("Fire giant"));
 		assertEquals(Instant.parse("2026-10-08T18:21:09Z"), edits.get("Kraken"));
-		assertFalse(edits.containsKey("Nonexistent page xyz"));
+		// deleting a page takes an administrator: not an edit to wait out, and waiting for ever would never clear
+		assertEquals(Instant.EPOCH, edits.get("Nonexistent page xyz"));
+	}
+
+	@Test
+	public void aTitleTheWikiGivesNoAnswerForIsLeftOut() throws IOException
+	{
+		Canned canned = new Canned().ok(revisions(page("Fire giant", "2026-10-04T11:09:10Z")));
+		Map<String, Instant> edits = canned.fetch(500).fetchLastEdits(Arrays.asList("Fire giant", "Kraken"));
+		assertEquals(1, edits.size());
+		assertFalse(edits.containsKey("Kraken"));
+	}
+
+	// the review's finding 5: replies of the wrong shape must not carry wiki text raw to the terminal
+	@Test
+	public void aWrongShapedReplyNeverCarriesWikiTextRaw()
+	{
+		assertSafe(assertFetchFails(new Canned().ok(bucket("\"\u001b[2J\u009b\u202e\"")), 500));
+		try
+		{
+			new Canned().ok("{\"query\":{\"normalized\":[\"\u001b[2J\u009b\u202e\"],\"pages\":{}}}").fetch(500)
+				.fetchLastEdits(Arrays.asList("Kraken"));
+			fail("should have failed");
+		}
+		catch (IOException e)
+		{
+			assertSafe(e.getMessage());
+		}
+		try
+		{
+			new Canned().ok("{\"query\":{\"pages\":{\"1\":{\"title\":\"Kraken\",\"revisions\":[{}]}}}}").fetch(500)
+				.fetchLastEdits(Arrays.asList("Kraken"));
+			fail("a revision with no timestamp should have failed");
+		}
+		catch (IOException e)
+		{
+			assertNotNull(e.getMessage());
+		}
 	}
 
 	@Test

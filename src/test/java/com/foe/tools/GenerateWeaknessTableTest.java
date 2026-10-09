@@ -51,6 +51,9 @@ public class GenerateWeaknessTableTest
 		final Map<String, Instant> edits = new HashMap<>();
 		int status = 200;
 		int requests;
+		/** When set, what the second and later walks see: the wiki changed while the generator was reading it. */
+		List<WikiRow> laterWalks;
+		int walks;
 
 		FakeWiki(List<WikiRow> rows)
 		{
@@ -77,10 +80,15 @@ public class GenerateWeaknessTableTest
 				String query = q.get("query");
 				int limit = Integer.parseInt(query.substring(query.indexOf(".limit(") + 7, query.indexOf(").offset(")));
 				int offset = Integer.parseInt(query.substring(query.indexOf(".offset(") + 8, query.indexOf(").run()")));
-				JsonArray array = new JsonArray();
-				for (int i = offset; i < Math.min(rows.size(), offset + limit); i++)
+				if (offset == 0)
 				{
-					array.add(rows.get(i).toJson());
+					walks++;
+				}
+				List<WikiRow> serve = walks >= 2 && laterWalks != null ? laterWalks : rows;
+				JsonArray array = new JsonArray();
+				for (int i = offset; i < Math.min(serve.size(), offset + limit); i++)
+				{
+					array.add(serve.get(i).toJson());
 				}
 				JsonObject o = new JsonObject();
 				o.add("bucket", array);
@@ -110,6 +118,9 @@ public class GenerateWeaknessTableTest
 			return new WikiFetch.Reply(200, o.toString());
 		}
 	}
+
+	/** A run with no previous table has to say it is a first generation. */
+	private static final String FIRST = "--first-generation";
 
 	private int run(FakeWiki wiki, Instant at, String... args) throws IOException
 	{
@@ -161,7 +172,7 @@ public class GenerateWeaknessTableTest
 	{
 		FakeWiki wiki = new FakeWiki(goodRows());
 		wiki.edits.put("Fire giant", T0.minusSeconds(86400));
-		int rc = run(wiki, T0);
+		int rc = run(wiki, T0, FIRST);
 		assertEquals(stderr(), 0, rc);
 
 		String raw = read(GenerateWeaknessTable.RAW);
@@ -181,7 +192,7 @@ public class GenerateWeaknessTableTest
 	@Test
 	public void theFilesGetTheSamePermissionsAsAnyOtherFileMadeInThatFolder() throws IOException
 	{
-		assertEquals(stderr(), 0, run(new FakeWiki(goodRows()), T0));
+		assertEquals(stderr(), 0, run(new FakeWiki(goodRows()), T0, FIRST));
 		Path plain = folder.newFile("plain.txt").toPath();
 		if (!Files.getFileStore(plain).supportsFileAttributeView("posix"))
 		{
@@ -201,11 +212,104 @@ public class GenerateWeaknessTableTest
 		// the property WeaknessTableResourceTest asserts on the committed files: table = generator(raw)
 		FakeWiki wiki = new FakeWiki(goodRows());
 		wiki.edits.put("Fire giant", T0.minusSeconds(86400));
-		assertEquals(stderr(), 0, run(wiki, T0));
+		assertEquals(stderr(), 0, run(wiki, T0, FIRST));
 		RawRows.Parsed parsed = RawRows.read(read(GenerateWeaknessTable.RAW));
-		Result again = WeaknessTableBuilder.build(parsed.rows, parsed.fetchedDate, null, Collections.emptyMap(), T0,
-			false);
+		Result again = WeaknessTableBuilder.rebuild(parsed.rows, parsed.fetchedDate, parsed.decisions);
 		assertEquals(again.table, read(GenerateWeaknessTable.TABLE));
+	}
+
+	// the review's finding 2: the property must survive a run that held something back
+	@Test
+	public void aSecondRunThatHoldsAChangeIsStillExactlyWhatItsRawFileDerives() throws IOException
+	{
+		FakeWiki first = new FakeWiki(goodRows());
+		first.edits.put("Fire giant", T0.minusSeconds(86400 * 30));
+		assertEquals(stderr(), 0, run(first, T0, FIRST));
+		List<WikiRow> changed = goodRows();
+		changed.set(0, WikiRow.of("Fire giant", "Level 86", "Fire", 100L, "2075", "2076"));
+		changed.add(WikiRow.of("Vorkath", null, "Water", 100L, "8061"));
+		FakeWiki second = new FakeWiki(changed);
+		Instant later = T0.plusSeconds(86400 * 10);
+		second.edits.put("Fire giant", later.minusSeconds(3600));
+		second.edits.put("Vorkath", later.minusSeconds(3600));
+		assertEquals(stderr(), 0, run(second, later));
+
+		String table = read(GenerateWeaknessTable.TABLE);
+		assertTrue(table, table.contains("2075\tWATER\t100\n"));
+		assertFalse(table, table.contains("8061"));
+		assertTrue(table, table.contains("# Generation: diffed against the previous table (5 ids)\n"));
+		RawRows.Parsed parsed = RawRows.read(read(GenerateWeaknessTable.RAW));
+		assertEquals(3, parsed.decisions.held.size());
+		assertEquals(table, WeaknessTableBuilder.rebuild(parsed.rows, parsed.fetchedDate, parsed.decisions).table);
+		// and the next run reads this pair back as its previous state
+		assertEquals(stderr(), 0, run(second, later.plusSeconds(60)));
+	}
+
+	// the review's finding 6: an offset walk over a live database can skip a row without any error
+	@Test
+	public void twoWalksThatDisagreeWriteNothing() throws IOException
+	{
+		FakeWiki wiki = new FakeWiki(goodRows());
+		List<WikiRow> fewer = goodRows();
+		fewer.remove(0);
+		wiki.laterWalks = fewer;
+		assertEquals(1, run(wiki, T0, FIRST));
+		assertTrue(stderr(), stderr().contains("changed during the fetch"));
+		assertTrue(noFilesBelow(folder.getRoot().toPath()));
+		assertEquals("both walks ran", 2, wiki.walks);
+	}
+
+	@Test
+	public void noPreviousTableWithoutTheFlagIsRefusedBeforeAnyRequest() throws IOException
+	{
+		FakeWiki wiki = new FakeWiki(goodRows());
+		assertEquals(1, run(wiki, T0));
+		assertTrue(stderr(), stderr().contains("--first-generation"));
+		assertEquals(0, wiki.requests);
+		assertTrue(noFilesBelow(folder.getRoot().toPath()));
+	}
+
+	@Test
+	public void deletingTheTableDoesNotSwitchTheHoldOff() throws IOException
+	{
+		assertEquals(stderr(), 0, run(new FakeWiki(goodRows()), T0, FIRST));
+		Files.delete(file(GenerateWeaknessTable.TABLE));
+		FakeWiki wiki = new FakeWiki(goodRows());
+		assertEquals(1, run(wiki, T0.plusSeconds(60)));
+		assertEquals(0, wiki.requests);
+	}
+
+	@Test
+	public void theFlagIsRefusedWhenThereIsAPreviousTable() throws IOException
+	{
+		assertEquals(stderr(), 0, run(new FakeWiki(goodRows()), T0, FIRST));
+		String before = read(GenerateWeaknessTable.TABLE);
+		FakeWiki wiki = new FakeWiki(goodRows());
+		assertEquals(1, run(wiki, T0.plusSeconds(60), FIRST));
+		assertEquals(0, wiki.requests);
+		assertEquals(before, read(GenerateWeaknessTable.TABLE));
+	}
+
+	@Test
+	public void aPreviousTableItsRawFileDoesNotDeriveIsRefused() throws IOException
+	{
+		assertEquals(stderr(), 0, run(new FakeWiki(goodRows()), T0, FIRST));
+		String table = read(GenerateWeaknessTable.TABLE).replace("2075\tWATER\t100", "2075\tFIRE\t100");
+		Files.write(file(GenerateWeaknessTable.TABLE), table.getBytes(StandardCharsets.UTF_8));
+		FakeWiki wiki = new FakeWiki(goodRows());
+		assertEquals(1, run(wiki, T0.plusSeconds(60)));
+		assertTrue(stderr(), stderr().contains("is not what"));
+		assertEquals(0, wiki.requests);
+	}
+
+	@Test
+	public void aPreviousTableWithNoRawFileIsRefused() throws IOException
+	{
+		assertEquals(stderr(), 0, run(new FakeWiki(goodRows()), T0, FIRST));
+		Files.delete(file(GenerateWeaknessTable.RAW));
+		FakeWiki wiki = new FakeWiki(goodRows());
+		assertEquals(1, run(wiki, T0.plusSeconds(60)));
+		assertEquals(0, wiki.requests);
 	}
 
 	@Test
@@ -216,7 +320,7 @@ public class GenerateWeaknessTableTest
 		try
 		{
 			// 23:30 UTC on the 9th is already the 10th in Auckland
-			assertEquals(stderr(), 0, run(new FakeWiki(goodRows()), Instant.parse("2026-10-09T23:30:00Z")));
+			assertEquals(stderr(), 0, run(new FakeWiki(goodRows()), Instant.parse("2026-10-09T23:30:00Z"), FIRST));
 		}
 		finally
 		{
@@ -233,7 +337,7 @@ public class GenerateWeaknessTableTest
 	{
 		List<WikiRow> rows = goodRows();
 		rows.add(WikiRow.of("Some dragon", "Normal", "Dragonfire", 50L, "900"));
-		int rc = run(new FakeWiki(rows), T0);
+		int rc = run(new FakeWiki(rows), T0, FIRST);
 		assertEquals(1, rc);
 		assertTrue(stderr(), stderr().contains("Dragonfire"));
 		assertTrue(stderr(), stderr().contains("Some dragon"));
@@ -245,7 +349,7 @@ public class GenerateWeaknessTableTest
 	{
 		List<WikiRow> rows = goodRows();
 		rows.add(WikiRow.of("Evil\u001b[2J\u009b", "Tab\u202e", "Dragonfire\u001b[31m", 50L, "900"));
-		assertEquals(1, run(new FakeWiki(rows), T0));
+		assertEquals(1, run(new FakeWiki(rows), T0, FIRST));
 		String shown = stderr() + new String(outBytes.toByteArray(), StandardCharsets.UTF_8);
 		assertFalse(shown, TextTest.isHostileToPrint(shown.replace("\n", "").replace("\r", "")));
 		assertTrue(shown, shown.contains("Dragonfire"));
@@ -254,7 +358,7 @@ public class GenerateWeaknessTableTest
 	@Test
 	public void aFetchFailureWritesNothingAndLeavesThePreviousTableAlone() throws IOException
 	{
-		assertEquals(0, run(new FakeWiki(goodRows()), T0));
+		assertEquals(0, run(new FakeWiki(goodRows()), T0, FIRST));
 		String tableBefore = read(GenerateWeaknessTable.TABLE);
 		String rawBefore = read(GenerateWeaknessTable.RAW);
 		FakeWiki down = new FakeWiki(goodRows());
@@ -294,7 +398,7 @@ public class GenerateWeaknessTableTest
 	{
 		FakeWiki first = new FakeWiki(goodRows());
 		first.edits.put("Fire giant", T0.minusSeconds(86400 * 30));
-		assertEquals(0, run(first, T0));
+		assertEquals(0, run(first, T0, FIRST));
 
 		List<WikiRow> changed = goodRows();
 		changed.set(0, WikiRow.of("Fire giant", "Level 86", "Fire", 100L, "2075", "2076"));
@@ -318,7 +422,7 @@ public class GenerateWeaknessTableTest
 			ids[i] = String.valueOf(i + 1);
 		}
 		many.add(WikiRow.of("Big page", null, "Fire", 50L, ids));
-		assertEquals(0, run(new FakeWiki(many), T0));
+		assertEquals(0, run(new FakeWiki(many), T0, FIRST));
 		String before = read(GenerateWeaknessTable.TABLE);
 
 		List<WikiRow> fewer = new ArrayList<>();
