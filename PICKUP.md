@@ -2,7 +2,7 @@
 
 ## START HERE
 
-**State (2026-10-09):** Tasks 1–8, the settings redesign, exact HP and remembered weaknesses are done and merged (PRs #1–#11; `main` at `92556ad`). There are 386 tests. **Next is the wiki weakness table, in v1. Resume at "Next actions" below.**
+**State (2026-10-10):** Tasks 1–10 are done. Task 10 (the portrait) is on **PR #21** (`feat/portrait`, 628 tests), reviewed and fixed; it merges once CI is green. **Next is Task 11: a fresh-context review of the whole plugin, then the release PR and the Plugin Hub.** The older state notes below are history.
 
 - **Spec:** `docs/superpowers/specs/2026-10-02-foe-design.md`. Read addenda 1–4 at the end; each later one overrides the earlier ones.
 - **Plan:** `docs/superpowers/plans/2026-10-02-foe-v1.md`. Task 8's addendum and its "Revision — 2026-10-08" record the weakness design.
@@ -20,7 +20,8 @@
 
 **Next actions, in order:**
 
-0. **Wiki weakness table done 2026-10-09** (PRs #13–#17: generator, first table of 1,769 ids, runtime load, `resolve()`, `Fire 50%` display, "Show weakness %", learned-vs-table startup check; spec addenda 7–12; 600 tests). **Task 9 mostly done 2026-10-09** (operator screenshots: Fire giant `Water 100%`, golems `Earth 35%` in every layout; log: 1769 entries, one check, 3 of 3 agree). Its form-change item is checked from `form change:` log lines as encountered (PR #19). **Next is Task 10, the portrait spike** (operator chose to skip ahead, 2026-10-09): a picture of the monster at the panel's left, via its chathead model or a flat render of its model. Timeboxed to one session, then recorded in `docs/probe/portrait.md`. Was: **Next is Task 9 (in-game acceptance)**, which now includes a Fire giant showing `Water 100%` before any spell, a monster that transforms by varbit, and one `weakness check:` line in `client.log` per start. Open, optional: have the generator re-check transclusion each run (measured clean 2026-10-09). v2: a `+12` heal indicator.
+0. **Portrait done 2026-10-10** (PR #21). The spike worked, so it ships as "Show portrait", default Off: a head crop of the NPC's own models, straight on, inside the panel, rendered off the client thread (spec addenda 14–15; `docs/probe/portrait.md` with three sheets; plan `docs/superpowers/plans/2026-10-10-portrait.md`). The reviewer found three real defects, all fixed test-first: a model still loading was never retried, `recolor` ran without `cloneColors()`, and a `LinkageError` escaped the tick. **Still open, not blocking:** no talking-head (Cow) screenshot in game, and whether the image is mirrored `[assumed]`. Branch `spike/portrait` is reference only; never merge it.
+   Earlier: **Wiki weakness table done 2026-10-09** (PRs #13–#17: generator, first table of 1,769 ids, runtime load, `resolve()`, `Fire 50%` display, "Show weakness %", learned-vs-table startup check; spec addenda 7–12; 600 tests). **Task 9 mostly done 2026-10-09** (operator screenshots: Fire giant `Water 100%`, golems `Earth 35%` in every layout; log: 1769 entries, one check, 3 of 3 agree). Its form-change item is checked from `form change:` log lines as encountered (PR #19). **Next is Task 10, the portrait spike** (operator chose to skip ahead, 2026-10-09): a picture of the monster at the panel's left, via its chathead model or a flat render of its model. Timeboxed to one session, then recorded in `docs/probe/portrait.md`. Was: **Next is Task 9 (in-game acceptance)**, which now includes a Fire giant showing `Water 100%` before any spell, a monster that transforms by varbit, and one `weakness check:` line in `client.log` per start. Open, optional: have the generator re-check transclusion each run (measured clean 2026-10-09). v2: a `+12` heal indicator.
 
 1. **Wiki weakness table (operator decision 2026-10-09: in v1).**
    - **Goal:** every monster shows its weakness, with the percentage, from the first attack.
@@ -40,7 +41,7 @@
    - **Settled already:** `WeaknessStore`/`WeaknessLearner` handle in-game learning, spec addenda 4–6 and plan Task 8 cover it, and exact HP is in `HpTracker`.
    - **Rejected (2026-10-09):** a same-name fallback (a confident guess, wrong on exactly the variants that matter), and reading other plugins' data (fragile, and inherits their errors).
 2. **Task 9: in-game acceptance.** Run through every setting value with screenshots. Most of it was already exercised on 2026-10-08.
-3. **Task 10: portrait spike.** Optional and time-boxed. The portrait setting is added only if it works.
+3. **Task 10: portrait spike.** Done 2026-10-10: it worked and shipped (PR #21, item 0).
 4. **Task 11:** a fresh-context review, then the release PR and the Plugin Hub.
 
 **v2 ideas (not v1):** a multi-target "Foe list" for multi-combat, and the `first-peasant-view` HUD reusing `HpEstimate`/`HpMemory`.
