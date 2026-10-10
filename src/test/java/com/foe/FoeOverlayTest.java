@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.overlay.components.ComponentConstants;
 import org.junit.Test;
 
@@ -922,7 +923,25 @@ public class FoeOverlayTest
 
 	private static FoeOverlay.Frame frame(TargetSnapshot s, Cfg c)
 	{
-		return FoeOverlay.frame(FoeOverlay.cells(s, c), c.layout(), fm());
+		return frame(s, c, fm());
+	}
+
+	private static FoeOverlay.Frame frame(TargetSnapshot s, Cfg c, FontMetrics fm)
+	{
+		return FoeOverlay.frame(FoeOverlay.cells(s, c), c.layout(), fm);
+	}
+
+	private static FontMetrics fm(java.awt.Font font)
+	{
+		Graphics2D g = graphics(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB));
+		try
+		{
+			return g.getFontMetrics(font);
+		}
+		finally
+		{
+			g.dispose();
+		}
 	}
 
 	/**
@@ -933,12 +952,18 @@ public class FoeOverlayTest
 	@Test
 	public void nothingMovesAsHpChanges()
 	{
-		nothingMovesAsHpChanges(1200);
-		// an unhit max HP wider than "100%", so Percent must reserve it too
-		nothingMovesAsHpChanges(123456);
+		// The default font has digits of one width, so it can't tell widestDigits from stringWidth. RuneScape Small,
+		// the client's overlay font, has proportional digits ('1' is 4px, '0' is 7px): that is the font that matters
+		// (second Task 11 review).
+		for (FontMetrics fm : new FontMetrics[] {fm(), fm(FontManager.getRunescapeSmallFont())})
+		{
+			nothingMovesAsHpChanges(1200, fm);
+			// an unhit max HP wider than "100%", so Percent must reserve it too
+			nothingMovesAsHpChanges(123456, fm);
+		}
 	}
 
-	private static void nothingMovesAsHpChanges(int maxHp)
+	private static void nothingMovesAsHpChanges(int maxHp, FontMetrics fm)
 	{
 		int[] boss = {40, 40, 40, maxHp, 1, 1};
 		for (FoeConfig.Layout layout : FoeConfig.Layout.values())
@@ -951,10 +976,10 @@ public class FoeOverlayTest
 					c.layout = layout;
 					c.hpText = text;
 					c.hpTextPosition = position;
-					FoeOverlay.Frame first = frame(snap(boss, -1, 0, false, FIRE), c);
+					FoeOverlay.Frame first = frame(snap(boss, -1, 0, false, FIRE), c, fm);
 					for (int ratio = 0; ratio <= 30; ratio++)
 					{
-						FoeOverlay.Frame f = frame(snap(boss, ratio, 30, false, FIRE), c);
+						FoeOverlay.Frame f = frame(snap(boss, ratio, 30, false, FIRE), c, fm);
 						String at = maxHp + " " + layout + "/" + text + "/" + position + " at " + ratio + "/30 ("
 							+ f.hp.text + ")";
 						assertEquals(at + ": panel width", first.width, f.width);
