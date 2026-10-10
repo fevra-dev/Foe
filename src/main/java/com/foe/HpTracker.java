@@ -84,6 +84,9 @@ final class HpTracker
 		/** False once a current live bar contradicted the count by more than regeneration explains; true again only
 		 * after an exact live reading. */
 		boolean valid = true;
+		/** A live bar has agreed with the count, or anchored it. Until then the count is only the full-health
+		 * assumption, and a drift is not regeneration (Task 11 review F4). */
+		boolean confirmed;
 	}
 
 	private final Map<Object, Track> tracks = new IdentityHashMap<>();
@@ -150,6 +153,7 @@ final class HpTracker
 		{
 			t.damage = maxHp - range.getMin();
 			t.valid = true;
+			t.confirmed = true;
 			return range.getMin();
 		}
 		if (!t.valid)
@@ -159,6 +163,10 @@ final class HpTracker
 		long hp = maxHp - t.damage;
 		if (hp >= range.getMin() && hp <= range.getMax())
 		{
+			if (!stale)
+			{
+				t.confirmed = true;
+			}
 			return (int) hp;
 		}
 		if (stale || hitThisTick)
@@ -169,10 +177,12 @@ final class HpTracker
 		}
 		// A live bar with no hit since the last read is current, so the count has drifted.
 		long resynced = Math.max(range.getMin(), Math.min(range.getMax(), hp));
-		if (Math.abs(resynced - hp) > MAX_DRIFT)
+		if (!t.confirmed || Math.abs(resynced - hp) > MAX_DRIFT)
 		{
-			// More than regeneration explains: damage Foe never saw (a relog, another player before Foe looked). The
-			// count is wrong by an unknown amount, so show the midpoint until an exact reading re-anchors it.
+			// More than regeneration explains, or a count no bar ever confirmed (only the full-health assumption, so
+			// even a small gap is damage before Foe looked, not regeneration: review F4): damage Foe never saw (a
+			// relog, another player before Foe looked). The count is wrong by an unknown amount, so show the midpoint
+			// until an exact reading re-anchors it.
 			t.valid = false;
 			log.debug("Tracked HP {} is {} outside the bar's {}-{}: midpoint until an exact reading", hp,
 				Math.abs(resynced - hp), range.getMin(), range.getMax());
