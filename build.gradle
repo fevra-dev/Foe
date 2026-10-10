@@ -80,3 +80,9 @@ tasks.register('shadowJar', Jar) {
 	archiveClassifier.set('shadow')
 	archiveFileName.set("${rootProject.name}-${project.version}-all.jar")
 }
+
+// Tests log to the console, not into the player's real ~/.runelite/logs/client.log (see the file for why it is not
+// on the classpath). Local only: the Plugin Hub's standard build replaces this file and runs no tests.
+tasks.named('test') {
+	systemProperty 'logback.configurationFile', file('src/test/logging/logback-test.xml').absolutePath
+}
