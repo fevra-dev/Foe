@@ -2,7 +2,7 @@
 
 ## START HERE
 
-**State (2026-10-10):** Tasks 1–10 are done. Task 10 (the portrait) is on **PR #21** (`feat/portrait`, 628 tests), reviewed and fixed; it merges once CI is green. **Next is Task 11: a fresh-context review of the whole plugin, then the release PR and the Plugin Hub.** The older state notes below are history.
+**State (2026-10-10, later):** Tasks 1–10 are merged (PR #21 included). **Task 11 is in progress on `release/v1` (not yet pushed).** A whole-plugin fresh-context review found F1–F9 (two medium: the stacked bar grew as HP fell; Talk-to on any NPC with stats took the panel). The operator decided each one, and all are fixed test-first with mutants (646 tests). Spec **addendum 16** records the decisions; F2 is now "only an Attack click or a spellbook cast makes the interaction an engagement" (AttackIntent). The README and SECURITY.md were still the repo template and are rewritten. **Next:** a second fresh-context review of the fix diff, then the operator pushes `release/v1`, I open the release PR (check `mergeable` + a CI run on the head SHA), then the Plugin Hub submission. **Needs an in-game check before the Hub:** left-click Attack, an autocast staff and a spellbook cast all bring up the panel, and Talk-to does not. The older state notes below are history.
 
 - **Spec:** `docs/superpowers/specs/2026-10-02-foe-design.md`. Read addenda 1–4 at the end; each later one overrides the earlier ones.
 - **Plan:** `docs/superpowers/plans/2026-10-02-foe-v1.md`. Task 8's addendum and its "Revision — 2026-10-08" record the weakness design.
