@@ -581,3 +581,31 @@ nits. Fixes land on `release/v1`, each test-first and proven by a mutant.
 - **Still open, `[assumed]`:** whether `client.mergeModels(parts)` can return a cached single part, which
   `cloneColors()` would then modify in place (review U1). This couldn't be checked: the method isn't in the
   readable sources.
+
+## Addendum 17 — 2026-10-10: second Task 11 review (supersedes parts of addendum 16)
+
+A second fresh-context review covered the fix diff. Verdict: approve with nits. Corrections:
+
+- **Attack is the option text, not the slot (supersedes addendum 16's `NPC_SECOND_OPTION` rule and its "known
+  limit").** The reviewer parsed the live cache: Attack is op 2 for 4,003 NPC definitions, but op 1, 3 or 5 for 17,
+  among them Tekton, Zalcano, an Ice demon, a Guard and Chompy bird `[measured]`. Under the slot rule the limit was
+  worse than addendum 16 said. In multi-combat, an Attack click on one of those NPCs left the panel on the old
+  target for as long as that target kept fighting. Now any NPC option whose text is `Attack` (colour tags removed)
+  is an attack, and an op 2 that says something else (Trade) isn't. Spell casts are unchanged.
+  - Confirmed in the 1.13.1 client bytecode `[measured]`:
+    - A deprioritised Attack still reports its real type.
+    - `getNpc()` covers the NPC option types, widget-on-NPC, item-on-NPC and examine, and it resolves in the
+      entry's own world view.
+    - Menu Entry Swapper reorders entries and never changes an NPC option's type.
+- **Description and README (supersede addendum 16's "replaces Opponent Info").** Opponent Info also covers player
+  opponents, so the description now says Foe *overlaps* it for monsters. The README says the same and stops
+  claiming that a reported weakness always wins: a learned "none" doesn't override a table element (addendum 8 F3).
+- **F1's test now uses RuneScape Small.** The default test font has digits of one width, so it couldn't tell
+  `widestDigits` from plain `stringWidth`.
+- **Known limit, recorded and not fixed (F4, lagging bar):** if the bar lags its hitsplat by a tick, a still-full
+  bar on a hit tick re-anchors the count at max HP. The next read can then resync it to the top of the real bar and
+  show that as exact. This was found by probe; the lag itself is unmeasured. It predates these commits, and the
+  FoePlugin class comment that said a lag would only show the midpoint is corrected.
+- **F7 side effect, accepted:** an id whose rows say both "Earth 0" and "Earth 50" used to be a percent conflict.
+  It is now an element conflict (NONE vs EARTH), and the id is skipped. The current table has 0 element conflicts,
+  so nothing changes today.

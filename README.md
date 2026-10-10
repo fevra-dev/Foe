@@ -6,12 +6,12 @@ The monster you're fighting, at a glance: its HP, its combat levels, and what el
 [![CI](https://github.com/fevra-dev/Foe/actions/workflows/ci.yml/badge.svg)](https://github.com/fevra-dev/Foe/actions/workflows/ci.yml)
 
 Foe is a RuneLite plugin that shows one small panel for your current target. It works offline:
-nothing is fetched while you play. It never shows a number it doesn't know. Before your first hit you
-see only the monster's max HP, and a weakness appears only when the game or the bundled table says
-what it is.
+nothing is fetched while you play. It never invents a value: before your first hit you see only the
+monster's max HP, and a weakness appears only when the game or the bundled table says what it is.
 
-**Foe replaces RuneLite's built-in Opponent Info overlay.** If you run both, you'll see the same
-information twice, so turn Opponent Info off.
+**Foe overlaps RuneLite's built-in Opponent Info overlay for monsters.** If you run both, you'll see
+a monster's HP twice. Opponent Info also covers player opponents, which Foe doesn't, so keep it on if
+you fight other players.
 
 ## What it shows
 
@@ -19,9 +19,9 @@ information twice, so turn Opponent Info off.
   the middle of the range the health bar allows. The bar never claims more precision than it has.
 - **Combat levels.** The combat level beside the name, plus Attack, Strength, Defence, Ranged and
   Magic in Full detail. Levels of 1 or less are left out.
-- **Elemental weakness.** Taken from a table bundled with the plugin, for example `Fire 50%`. The
-  game's own report wins over the table: Foe records it when one of your spells lands. A monster
-  with no weakness shows nothing.
+- **Elemental weakness.** Taken from a table bundled with the plugin, for example `Fire 50%`. When
+  one of your spells lands, the game reports the weakness, and Foe records it. A reported element
+  wins over a different element in the table. A monster with no weakness shows nothing.
 - **Portrait** (off by default). A small picture of the monster's head, drawn from its own models.
 
 The panel follows the monster you attack. In multi-combat it stays on your target, and it clears when

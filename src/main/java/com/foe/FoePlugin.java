@@ -66,8 +66,10 @@ import net.runelite.client.util.Text;
  * <li>The remembered HP of a target is not time-limited; it is always drawn as stale (see {@link HpMemory}).
  * <li>Exact HP is the damage counted from the hitsplats Foe saw, shown only when the bar allows it (see
  *     {@link HpTracker}). The one thing it assumes and nothing here has measured: that the bar already shows a hit
- *     when the tick that carries its hitsplat is read. If the bar lagged by a tick the count would be rejected after
- *     the first hit and the midpoint shown, as before, until an exact reading.
+ *     when the tick that carries its hitsplat is read. If the bar lagged by a tick, a still-full bar on a hit tick
+ *     is an exact reading that re-anchors the count at max HP, and the next read can then resync it to the top of
+ *     the real bar and show it as exact: off by up to the bar's resolution until the next exact reading (second
+ *     Task 11 review, by probe; the lag itself is unmeasured).
  * <li>A weakness is learned only from a confirmed spell impact (see {@link WeaknessLearner}), so it is missing, never
  *     false, for a type whose spell left the varp unchanged, or whose impact could not be tied to one NPC. One
  *     coincidence is not caught: our write on a tick where the only fought NPC with a spell graphic got it from
@@ -79,7 +81,7 @@ import net.runelite.client.util.Text;
 @Slf4j
 @PluginDescriptor(
 	name = "Foe",
-	description = "Live HP, combat levels and elemental weakness of the monster you're fighting. Replaces Opponent Info: turn that off to avoid seeing it twice",
+	description = "Live HP, combat levels and elemental weakness of the monster you're fighting. Overlaps Opponent Info for monsters",
 	tags = {"target", "monster", "npc", "weakness", "opponent", "hp", "combat"}
 )
 public class FoePlugin extends Plugin
