@@ -662,6 +662,9 @@ public class FoeOverlayTest
 			}
 			int after = with.argb(FoeOverlay.PAD + side + FoeOverlay.GAP / 2, FoeOverlay.PAD + side / 2);
 			assertTrue(layout + ": the square ends at its side", (after & 0xffffff) != 0xff0000);
+			// The background covers the wider panel too (review finding 4, M13): its right padding is not bare.
+			assertTrue(layout + ": background at the new right edge",
+				(with.argb(with.dim.width - 2, with.dim.height / 2) >>> 24) > 0);
 		}
 	}
 
@@ -672,6 +675,13 @@ public class FoeOverlayTest
 		Painted a = paint(live(), c);
 		Painted b = paint(live().withPortrait(null), c);
 		assertEquals(a.dim, b.dim);
+		for (int y = 0; y < a.img.getHeight(); y++)
+		{
+			for (int x = 0; x < a.img.getWidth(); x++)
+			{
+				assertEquals("pixel " + x + "," + y, a.argb(x, y), b.argb(x, y));
+			}
+		}
 	}
 
 	private static Painted paint(TargetSnapshot s, Cfg c)

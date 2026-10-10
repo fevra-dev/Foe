@@ -522,3 +522,21 @@ which settles open question 2 and the "Show portrait" row of the settings table.
 - **Never throws** into the tick (ADR-0005): any failure means no portrait for that id, and it isn't retried until
   the image is dropped from the cache.
 - **Open, `[assumed]`:** whether the image is left-right mirrored. The models tested are near-symmetric.
+
+## Addendum 15 — 2026-10-10: portrait review corrections (supersedes parts of addendum 14)
+
+A fresh-context review of `feat/portrait` found three defects in addendum 14's design. Each is confirmed against the
+API sources (`runelite-api-1.13.1-sources.jar`) `[measured]`, and fixed test-first on the branch:
+
+- **"Loading" is not "none".** `Client.loadModelData` returns null "if it is loading or nonexistent", and the two
+  can't be told apart. Addendum 14 treated every null as a failure and never retried it, so a model still loading
+  on the first fight left that monster type without a portrait for the session. Now a null load is asked again on
+  later ticks, up to **10 times** (about 6 seconds with the target shown), and then counts as no model.
+- **Colours are cloned before recolouring.** Loaded model data shares its face colours with the client's other
+  models, and the API says a mutation "MUST" clone them first (`ModelData.recolor`: "You should call cloneColors()").
+  Recolouring without that risked changing how other NPCs look in the game. The merged model is now cloned with
+  `cloneColors()` first.
+- **"Never throws" includes `LinkageError`.** A RuneLite API that changed under the plugin throws
+  `NoSuchMethodError`, which is an `Error`. That escaped the tick, and since nothing was cached it would have recurred
+  on every tick. Load and render now also catch `LinkageError`, and the failure is cached. Other `Error`s (out of
+  memory) still propagate, as the plugin's startup already chooses.

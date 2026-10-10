@@ -55,11 +55,39 @@ public class PortraitCacheTest
 	}
 
 	@Test
-	public void noModelMeansNoPortraitAndNoRetry()
+	public void aModelStillLoadingIsAskedAgainOnLaterAsks()
 	{
+		// Review finding 1: loadModelData returns null "if it is loading or nonexistent" (API Javadoc). A null is
+		// asked again, so a model that finishes loading still gets its portrait.
 		PortraitCache cache = new PortraitCache(Runnable::run);
 		assertNull(cache.get(7, counting(() -> null)));
 		assertNull(cache.get(7, counting(() -> null)));
+		assertNotNull("loaded on the third ask", cache.get(7, counting(PortraitCacheTest::mesh)));
+		assertEquals(3, loads);
+	}
+
+	@Test
+	public void aModelThatNeverLoadsIsGivenUpOnAfterTheLimit()
+	{
+		PortraitCache cache = new PortraitCache(Runnable::run);
+		for (int i = 0; i < PortraitCache.MAX_MISSES + 5; i++)
+		{
+			assertNull(cache.get(7, counting(() -> null)));
+		}
+		assertEquals("asked up to the limit, then not again", PortraitCache.MAX_MISSES, loads);
+	}
+
+	@Test
+	public void aLinkageErrorFromTheLoadIsNoPortraitAndIsNotRetried()
+	{
+		// Review finding 3: an API that changed under the plugin throws NoSuchMethodError, an Error. It must not
+		// escape into the tick, and must not be retried on every tick.
+		PortraitCache cache = new PortraitCache(Runnable::run);
+		assertNull(cache.get(7, counting(() ->
+		{
+			throw new NoSuchMethodError("Client.loadModelData");
+		})));
+		assertNull(cache.get(7, counting(PortraitCacheTest::mesh)));
 		assertEquals(1, loads);
 	}
 
@@ -109,5 +137,23 @@ public class PortraitCacheTest
 		assertEquals("the newest is still held", PortraitCache.CAPACITY + 1, loads);
 		cache.get(0, counting(PortraitCacheTest::mesh));
 		assertEquals("the oldest was dropped and loads again", PortraitCache.CAPACITY + 2, loads);
+	}
+
+	@Test
+	public void anIdAskedForRecentlyIsKeptOverAnOlderOne()
+	{
+		// Least recently USED, not first in: id 0 is asked for again before the overflow, so id 1 goes instead.
+		PortraitCache cache = new PortraitCache(Runnable::run);
+		for (int id = 0; id < PortraitCache.CAPACITY; id++)
+		{
+			cache.get(id, counting(PortraitCacheTest::mesh));
+		}
+		cache.get(0, counting(PortraitCacheTest::mesh));
+		cache.get(PortraitCache.CAPACITY, counting(PortraitCacheTest::mesh));
+		int before = loads;
+		cache.get(0, counting(PortraitCacheTest::mesh));
+		assertEquals("id 0 is still held", before, loads);
+		cache.get(1, counting(PortraitCacheTest::mesh));
+		assertEquals("id 1 was the least recently used, and loads again", before + 1, loads);
 	}
 }

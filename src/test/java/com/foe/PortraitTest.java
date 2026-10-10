@@ -52,6 +52,20 @@ public class PortraitTest
 	}
 
 	@Test
+	public void theNearerFaceIsDrawnOverTheFartherOne()
+	{
+		// Review finding 4 (M1): two squares in the same place, red at z +100 and blue at z -100. Smaller z is nearer
+		// the viewer: that is the order the spike's yaw-0 dumps showed as every model's front (docs/probe/portrait.md).
+		Portrait.Mesh m = new Portrait.Mesh(
+			new float[]{-50, 50, 50, -50, -50, 50, 50, -50}, new float[]{-100, -100, 0, 0, -100, -100, 0, 0},
+			new float[]{100, 100, 100, 100, -100, -100, -100, -100},
+			new int[]{0, 0, 4, 4}, new int[]{1, 2, 5, 6}, new int[]{2, 3, 6, 7},
+			new int[]{RED, RED, BLUE, BLUE}, new int[]{-1, -1, -1, -1}, null, 4, true);
+		int c = Portrait.render(m, 32).getRGB(16, 16);
+		assertTrue("blue, the nearer, on top: " + Integer.toHexString(c), (c & 255) > 150 && (c >> 16 & 255) < 80);
+	}
+
+	@Test
 	public void hiddenFacesDrawNothing()
 	{
 		assertNull(Portrait.render(square(RED, -2, true), 32));

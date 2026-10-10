@@ -87,7 +87,11 @@ public class FoePlugin extends Plugin
 	private NpcUtil npcUtil;
 	@Inject
 	private ConfigManager configManager;
-	/** RuneLite's shared executor (core plugins inject it the same way); portraits render on it, never on a tick. */
+	/**
+	 * RuneLite's shared executor (core plugins inject it the same way); portraits render on it, never on a tick. It
+	 * is single-threaded (client 1.13.1 RuneLiteModule.java:128), so each new portrait, 5 to 14 ms in the spike,
+	 * queues ahead of other plugins' work once.
+	 */
 	@Inject
 	private java.util.concurrent.ScheduledExecutorService injectedExecutor;
 	/** What the cache runs renders on: the injected executor, or a test's. Read at run time, so tests can set it. */

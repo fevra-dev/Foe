@@ -35,7 +35,9 @@ final class PortraitModels
 				return null;
 			}
 		}
-		ModelData md = client.mergeModels(parts);
+		// Cloned before recolouring: loaded model data shares its face colours with the client's other models, and
+		// the API says a mutation MUST clone them first (Client.loadModelData, ModelData.recolor; review finding 2).
+		ModelData md = client.mergeModels(parts).cloneColors();
 		short[] from = c.getColorToReplace();
 		short[] to = c.getColorToReplaceWith();
 		if (from != null && to != null)
