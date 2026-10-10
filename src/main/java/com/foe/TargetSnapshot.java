@@ -42,4 +42,10 @@ class TargetSnapshot
 	int magic;
 	/** null when there is none, or it is unknown or stale. */
 	Weakness weakness;
+	/**
+	 * The portrait to draw left of the name (spec addendum 14), or null: the setting is off, the image is not
+	 * rendered yet, or there is none. The overlay draws whatever is here and reserves no space when it is null.
+	 */
+	@With
+	java.awt.image.BufferedImage portrait;
 }

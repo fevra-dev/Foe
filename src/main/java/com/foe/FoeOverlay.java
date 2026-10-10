@@ -126,6 +126,11 @@ class FoeOverlay extends Overlay
 	{
 		FontMetrics fm = g.getFontMetrics();
 		Frame f = frame(cells(s, config), config.layout(), fm);
+		// Spec addendum 14: the portrait is a square as tall as the content, inside the padding, left of the name;
+		// everything else moves right by it. None reserves no space.
+		java.awt.image.BufferedImage portrait = s.getPortrait();
+		int side = f.height - 2 * PAD;
+		int shift = portrait == null ? 0 : side + GAP;
 
 		int alpha = backgroundAlpha(config.backgroundOpacity());
 		if (alpha > 0)
@@ -135,8 +140,18 @@ class FoeOverlay extends Overlay
 			// (Color, Rectangle) one [measured: javap], so use the no-arg one and the setters.
 			BackgroundComponent bg = new BackgroundComponent();
 			bg.setBackgroundColor(new Color(base.getRed(), base.getGreen(), base.getBlue(), alpha));
-			bg.setRectangle(new Rectangle(0, 0, f.width, f.height));
+			bg.setRectangle(new Rectangle(0, 0, f.width + shift, f.height));
 			bg.render(g);
+		}
+		if (portrait != null)
+		{
+			Object hint = g.getRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION);
+			g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
+				java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+			g.drawImage(portrait, PAD, PAD, side, side, null);
+			g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
+				hint == null ? java.awt.RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR : hint);
+			g.translate(shift, 0);
 		}
 
 		FoeConfig.StaleHpStyle style = config.staleHpStyle();
@@ -167,7 +182,8 @@ class FoeOverlay extends Overlay
 		{
 			drawHp(g, fm, s, f, fade, hollow, f.hpTop + (f.hpH + fm.getAscent() - fm.getDescent()) / 2);
 		}
-		return new Dimension(f.width, f.height);
+		g.translate(-shift, 0);
+		return new Dimension(f.width + shift, f.height);
 	}
 
 	/** The bar, then its text: centred on the bar, or after it on {@code besideBaseline}. */

@@ -114,7 +114,7 @@ public class FoeOverlayTest
 	private static TargetSnapshot raw(int[] stats, int ratio, int scale, boolean stale)
 	{
 		return new TargetSnapshot("Ice giant", 53, HpEstimate.estimate(ratio, scale, stats[3]), stats[3], ratio, scale,
-			stale, false, stats[0], stats[2], stats[1], stats[4], stats[5], null);
+			stale, false, stats[0], stats[2], stats[1], stats[4], stats[5], null, null);
 	}
 
 	/** The spec's worked example: ratio 22 of 30 on 70 max HP is 52 HP, 74%. */
@@ -280,7 +280,7 @@ public class FoeOverlayTest
 	{
 		// The factory never builds this (it returns UNKNOWN hp for ratio > scale), but the overlay must not
 		// depend on that: a number beside a missing bar is exactly the disagreement plan Task 7 item 8 forbids.
-		TargetSnapshot s = new TargetSnapshot("Ice giant", 53, 52, 70, 31, 30, false, false, 40, 40, 40, 1, 1, null);
+		TargetSnapshot s = new TargetSnapshot("Ice giant", 53, 52, 70, 31, 30, false, false, 40, 40, 40, 1, 1, null, null);
 		assertEquals("", FoeOverlay.hpText(s, new Cfg()));
 		for (FoeOverlay.Cell cell : FoeOverlay.cells(s, new Cfg()))
 		{
@@ -623,6 +623,55 @@ public class FoeOverlayTest
 		{
 			return img.getRGB(x, y);
 		}
+	}
+
+	private static BufferedImage solid(int rgb)
+	{
+		BufferedImage img = new BufferedImage(PortraitCache.SIZE, PortraitCache.SIZE, BufferedImage.TYPE_INT_ARGB);
+		for (int y = 0; y < img.getHeight(); y++)
+		{
+			for (int x = 0; x < img.getWidth(); x++)
+			{
+				img.setRGB(x, y, 0xff000000 | rgb);
+			}
+		}
+		return img;
+	}
+
+	@Test
+	public void aPortraitIsASquareAsTallAsTheContentLeftOfTheNameAndThePanelWidensByIt()
+	{
+		for (FoeConfig.Layout layout : FoeConfig.Layout.values())
+		{
+			Cfg c = new Cfg();
+			c.layout = layout;
+			Painted without = paint(live(), c);
+			Painted with = paint(live().withPortrait(solid(0xff0000)), c);
+			int side = with.dim.height - 2 * FoeOverlay.PAD;
+			assertEquals(layout + ": same height", without.dim.height, with.dim.height);
+			assertEquals(layout + ": wider by the square and a gap", without.dim.width + side + FoeOverlay.GAP,
+				with.dim.width);
+			// Every pixel of the square is the portrait's: nothing else (the name) is drawn over it.
+			for (int y = FoeOverlay.PAD + 1; y < FoeOverlay.PAD + side - 1; y++)
+			{
+				for (int x = FoeOverlay.PAD + 1; x < FoeOverlay.PAD + side - 1; x++)
+				{
+					assertEquals(layout + ": the portrait alone at " + x + "," + y, 0xff0000,
+						with.argb(x, y) & 0xffffff);
+				}
+			}
+			int after = with.argb(FoeOverlay.PAD + side + FoeOverlay.GAP / 2, FoeOverlay.PAD + side / 2);
+			assertTrue(layout + ": the square ends at its side", (after & 0xffffff) != 0xff0000);
+		}
+	}
+
+	@Test
+	public void noPortraitDrawsExactlyAsBefore()
+	{
+		Cfg c = new Cfg();
+		Painted a = paint(live(), c);
+		Painted b = paint(live().withPortrait(null), c);
+		assertEquals(a.dim, b.dim);
 	}
 
 	private static Painted paint(TargetSnapshot s, Cfg c)
