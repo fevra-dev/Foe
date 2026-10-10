@@ -138,6 +138,10 @@ public class FoePlugin extends Plugin
 	/** The one snapshot FoeOverlay draws. Written on the client thread, read on the render thread. */
 	@Getter(AccessLevel.PACKAGE)
 	private volatile TargetSnapshot snapshot;
+	/** The NPC {@link #snapshot} is of, or null. Client thread only. */
+	private NPC shown;
+	/** The new target already held back one tick for its portrait (addendum 18), so it is never held twice. */
+	private NPC heldForPortrait;
 
 	@Provides
 	FoeConfig provideConfig(ConfigManager configManager)
@@ -232,7 +236,14 @@ public class FoePlugin extends Plugin
 		NPC npc = e.getMenuEntry().getNpc();
 		if (npc != null)
 		{
-			attackIntent.clicked(npc, isAttack(e.getMenuAction(), e.getMenuOption()));
+			boolean attack = isAttack(e.getMenuAction(), e.getMenuOption());
+			attackIntent.clicked(npc, attack);
+			NPCComposition c = attack && config.showPortrait() ? npc.getTransformedComposition() : null;
+			if (c != null)
+			{
+				// Addendum 18: start the portrait now. The click comes before the panel, so they usually arrive together.
+				portraits.get(c.getId(), () -> portraitMesh(c));
+			}
 		}
 	}
 
@@ -369,7 +380,34 @@ public class FoePlugin extends Plugin
 		}
 		NPC npc = feed.tick(now(), lingerMs(), this::fighting);
 		learnWeakness(npc);
-		snapshot = npc == null ? null : snapshotOf(npc);
+		TargetSnapshot next = npc == null ? null : snapshotOf(npc);
+		if (waitForPortrait(npc, next))
+		{
+			return; // the panel stays as it was for this one tick
+		}
+		shown = next == null ? null : npc;
+		snapshot = next;
+	}
+
+	/**
+	 * Addendum 18: a newly shown target whose portrait is still on its way waits one tick, so the panel and the
+	 * portrait appear together. Once only per target: a slow or missing portrait must never cost the panel.
+	 */
+	private boolean waitForPortrait(NPC npc, TargetSnapshot next)
+	{
+		if (next == null || npc == shown || next.getPortrait() != null || !config.showPortrait()
+			|| npc == heldForPortrait)
+		{
+			heldForPortrait = null;
+			return false;
+		}
+		NPCComposition c = npc.getTransformedComposition();
+		if (c == null || !portraits.pending(c.getId()))
+		{
+			return false;
+		}
+		heldForPortrait = npc;
+		return true;
 	}
 
 	/**
@@ -576,6 +614,7 @@ public class FoePlugin extends Plugin
 		if (feed.gone(npc))
 		{
 			snapshot = null; // the panel clears now, not on the next tick
+			shown = null;
 		}
 	}
 
@@ -615,6 +654,8 @@ public class FoePlugin extends Plugin
 		hpTracker.clear();
 		weakness.discardTick();
 		snapshot = null;
+		shown = null;
+		heldForPortrait = null;
 	}
 
 	/** The player and this NPC are interacting with each other, either way round. */

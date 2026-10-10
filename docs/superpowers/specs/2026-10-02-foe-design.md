@@ -609,3 +609,21 @@ A second fresh-context review covered the fix diff. Verdict: approve with nits. 
 - **F7 side effect, accepted:** an id whose rows say both "Earth 0" and "Earth 50" used to be a percent conflict.
   It is now an element conflict (NONE vs EARTH), and the id is skipped. The current table has 0 element conflicts,
   so nothing changes today.
+
+## Addendum 18 — 2026-10-10: the portrait arrives with the panel (operator, after the in-game check)
+
+**The in-game check (operator, 2026-10-10) passed:** left-click Attack, an autocast staff and a spellbook cast each
+show the panel, and Talk-to doesn't, mid-fight included. That confirms addenda 16 and 17 against the real client.
+
+One complaint came out of it. On a first attack the bar appeared and the portrait popped in beside it a moment
+later. A repeat attack was fine, because the image is cached by then. The fix (operator's choice of three):
+
+- **Prefetch:** an Attack click (addendum 17's rule) with Show portrait on starts that NPC type's load and render
+  at once, on the client thread as before. The click comes at least a tick before the panel, so the image is usually
+  ready when the panel first shows.
+- **Hold, at most one tick:** when a newly shown target's portrait is still on its way (no click, e.g. an NPC
+  attacked first), the panel keeps its previous state for that tick. On the next tick it shows anyway, with or
+  without the portrait. A portrait that is rendered, known to be none, or turned off never holds anything.
+
+**v1.1, not v1 (operator):** a monster search in the side panel, with stats, weakness, attack style, max hit and the
+like. It needs a wider wiki query than the weakness-only snapshot in `data/`, so it gets its own spec, grill and plan.
