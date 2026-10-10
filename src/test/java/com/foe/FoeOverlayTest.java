@@ -933,7 +933,14 @@ public class FoeOverlayTest
 	@Test
 	public void nothingMovesAsHpChanges()
 	{
-		int[] boss = {40, 40, 40, 1200, 1, 1};
+		nothingMovesAsHpChanges(1200);
+		// an unhit max HP wider than "100%", so Percent must reserve it too
+		nothingMovesAsHpChanges(123456);
+	}
+
+	private static void nothingMovesAsHpChanges(int maxHp)
+	{
+		int[] boss = {40, 40, 40, maxHp, 1, 1};
 		for (FoeConfig.Layout layout : FoeConfig.Layout.values())
 		{
 			for (FoeConfig.HpText text : FoeConfig.HpText.values())
@@ -948,7 +955,8 @@ public class FoeOverlayTest
 					for (int ratio = 0; ratio <= 30; ratio++)
 					{
 						FoeOverlay.Frame f = frame(snap(boss, ratio, 30, false, FIRE), c);
-						String at = layout + "/" + text + "/" + position + " at " + ratio + "/30 (" + f.hp.text + ")";
+						String at = maxHp + " " + layout + "/" + text + "/" + position + " at " + ratio + "/30 ("
+							+ f.hp.text + ")";
 						assertEquals(at + ": panel width", first.width, f.width);
 						assertEquals(at + ": bar", first.bar, f.bar);
 						assertArrayEquals(at + ": cell positions", first.x, f.x);
