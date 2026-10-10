@@ -230,6 +230,29 @@ public class TargetFeedTest
 		assertSame(a, feed.tick(0, LINGER, NOBODY));
 	}
 
+	/**
+	 * Review finding F3 (Task 11): an index is unique only within one world view, so another NPC can share the
+	 * target's. A hit on it, or by it, used to refresh the tracker's index and then hand the panel to that other
+	 * object, after which the real target's death did nothing. While the target is live it is ignored, as any hit on
+	 * a non-target is; with no live target it is adopted like any other.
+	 */
+	@Test
+	public void anotherNpcWithTheTargetsIndexDoesNotTakeThePanel()
+	{
+		Npc twin = new Npc(a.index); // a, in a different world view
+		feed.playerEngaged(a, true, 0);
+		settle(0, LINGER);
+		feed.playerHit(twin, true, 600, LINGER, NOBODY);
+		assertSame("own hit on the twin", a, feed.tick(600, LINGER, NOBODY));
+		feed.playerHurt(Collections.singletonList(twin), 1200, LINGER, NOBODY);
+		assertSame("the twin hit the player", a, feed.tick(1200, LINGER, NOBODY));
+		assertTrue("the real target's death still clears it", feed.gone(a));
+		assertNull(feed.tick(1200, LINGER, NOBODY));
+
+		feed.playerHit(twin, true, 1800, LINGER, NOBODY);
+		assertSame("no live target: the twin is adopted like anyone", twin, feed.tick(1800, LINGER, NOBODY));
+	}
+
 	@Test
 	public void goneWithNoTargetSaysItWasNot()
 	{
