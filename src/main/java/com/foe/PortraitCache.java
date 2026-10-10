@@ -53,6 +53,16 @@ final class PortraitCache
 		return f.isDone() && !f.isCompletedExceptionally() ? f.getNow(null) : null;
 	}
 
+	/**
+	 * The portrait for this id may still come: its model is not loaded yet, or its render has not finished. False once
+	 * it is rendered or known to be none. Changes nothing; FoePlugin holds a new panel one tick on it (addendum 18).
+	 */
+	boolean pending(int id)
+	{
+		CompletableFuture<BufferedImage> f = byId.get(id);
+		return f == null || !f.isDone();
+	}
+
 	/** Null to ask again later; else the render, or a done null for no portrait. */
 
 	private CompletableFuture<BufferedImage> start(int id, Supplier<Portrait.Mesh> load)

@@ -875,19 +875,64 @@ public class FoePluginWiringTest
 		assertEquals(0, meshLoads);
 	}
 
+	/**
+	 * Operator, 2026-10-10 (in game): on a first attack the bar appeared and the portrait popped in beside it a moment
+	 * later. The render now starts on the Attack click, which comes before the panel, so they arrive together.
+	 */
 	@Test
-	public void withShowPortraitOnThePortraitArrivesOnTheTickAfterItsRender()
+	public void aPortraitPrefetchedOnTheAttackClickArrivesWithThePanel()
+	{
+		showPortrait = true;
+		Npc giant = iceGiant(7).bar(15, 30);
+		click(giant.npc, MenuAction.NPC_SECOND_OPTION, "Attack");
+		assertEquals("loaded on the click", 1, meshLoads);
+		runRenders();
+		interact(giant);
+		assertNotNull("the first tick shown already has it", tick().getPortrait());
+		assertEquals("loaded once per type", 1, meshLoads);
+	}
+
+	/**
+	 * When the portrait is still rendering as a new target is shown (an NPC attacked you first, so there was no
+	 * click), the panel waits one tick so both appear together. Never longer: a slow or missing portrait must not
+	 * cost the panel.
+	 */
+	@Test
+	public void aNewTargetWaitsAtMostOneTickForItsPortrait()
 	{
 		showPortrait = true;
 		engage(iceGiant(7).bar(15, 30));
-		assertNull("rendering: no blank square", tick().getPortrait());
+		assertNull("held one tick while it renders", tick());
+		TargetSnapshot s = tick();
+		assertNotNull("never held twice", s);
+		assertNull("shown without it rather than wait longer", s.getPortrait());
+		runRenders();
+		assertNotNull(tick().getPortrait());
+	}
+
+	@Test
+	public void aRenderedPortraitAndAPortraitOffNeverHoldThePanel()
+	{
+		showPortrait = true;
+		Npc giant = iceGiant(7).bar(15, 30);
+		engage(giant);
+		runRenders();
+		assertNotNull("already rendered: no hold", tick().getPortrait());
+		Npc other = iceGiant(8).bar(30, 30).type(2007); // same type as giant 7, so its portrait is cached
+		engage(other);
+		assertNotNull("a cached type switches at once", tick().getPortrait());
+
+		showPortrait = false;
+		engage(iceGiant(9).bar(30, 30));
+		assertNotNull("portrait off: no hold", tick());
+	}
+
+	private void runRenders()
+	{
 		while (!renders.isEmpty())
 		{
 			renders.poll().run();
 		}
-		assertNotNull(tick().getPortrait());
-		assertNotNull(tick().getPortrait());
-		assertEquals("loaded once per type", 1, meshLoads);
 	}
 
 	@Test
