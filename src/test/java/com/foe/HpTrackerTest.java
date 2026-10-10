@@ -183,6 +183,40 @@ public class HpTrackerTest
 		assertEquals("regenerated 1 HP unseen, no hit since: resynced, and exact again", t + 1, live(t + 1));
 	}
 
+	/**
+	 * Review finding F4 (Task 11): a track no bar has confirmed is only an assumption (full health), so a near-full bar
+	 * on first sight (a relog mid-fight, a boss hurt before Foe looked) was "resynced" to the top of its range and
+	 * shown as exact: 999 for a bar of 966-999. Regeneration explains a small drift only in a count a bar already
+	 * agreed with, so an unconfirmed one shows the midpoint (addendum 5) until a bar confirms or anchors it.
+	 */
+	@Test
+	public void aCountNoBarHasConfirmedIsNeverResyncedToTheBarEdge()
+	{
+		int max = 1000;
+		int ratio = ratioFor(970, max, SCALE);
+		HpEstimate.Range bar = HpEstimate.range(ratio, SCALE, max);
+		assertTrue("precondition: the assumed full HP is just above this bar", bar.getMax() == max - 1);
+		assertEquals("first sight of a near-full bar: midpoint", UNKNOWN, tracker.read(npc, ratio, SCALE, false, max));
+		assertEquals("and still on the next read", UNKNOWN, tracker.read(npc, ratio, SCALE, false, max));
+
+		Object hitFirst = new Object(); // a hitsplat before any bar: still only an assumption
+		tracker.hit(hitFirst, DAMAGE_ME, 0);
+		assertEquals(UNKNOWN, tracker.read(hitFirst, ratio, SCALE, false, max));
+		assertEquals(UNKNOWN, tracker.read(hitFirst, ratio, SCALE, false, max));
+
+		Object watched = new Object(); // control: a full bar confirms the count, and then a 1 HP drift is resynced
+		assertEquals(max, tracker.read(watched, SCALE, SCALE, false, max));
+		tracker.hit(watched, DAMAGE_ME, 34);
+		assertEquals(966, tracker.read(watched, ratio, SCALE, false, max));
+		int below = ratioFor(965, max, SCALE);
+		assertTrue("precondition: 965 is on the next bar down", !HpEstimate.range(below, SCALE, max).contains(966));
+		assertEquals("confirmed, so a 1 HP drift is resynced", 965, tracker.read(watched, below, SCALE, false, max));
+
+		Object anchored = new Object(); // an exact reading confirms by itself: a 1 HP drift right after it resyncs
+		assertEquals(max, tracker.read(anchored, SCALE, SCALE, false, max));
+		assertEquals(bar.getMax(), tracker.read(anchored, ratioFor(max - 1, max, SCALE), SCALE, false, max));
+	}
+
 	@Test
 	public void driftBeyondRegenerationIsNotNudgedButShownAsTheMidpoint()
 	{

@@ -1,11 +1,5 @@
 # Security Policy
 
-## Authorized use
-
-This project is intended for systems you own or have explicit written permission to test.
-Using it against third-party systems without authorization is likely illegal in your
-jurisdiction. The maintainer accepts no liability for unauthorized use.
-
 ## Supported versions
 
 | Version | Supported |

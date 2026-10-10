@@ -14,6 +14,7 @@ import net.runelite.api.Actor;
 import net.runelite.api.ActorSpotAnim;
 import net.runelite.api.Client;
 import net.runelite.api.Hitsplat;
+import net.runelite.api.MenuAction;
 import net.runelite.api.IterableHashTable;
 import net.runelite.api.NPC;
 import net.runelite.api.NPCComposition;
@@ -25,9 +26,13 @@ import net.runelite.api.events.GameTick;
 import net.runelite.api.events.GraphicChanged;
 import net.runelite.api.events.HitsplatApplied;
 import net.runelite.api.events.InteractingChanged;
+import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.api.events.NpcDespawned;
 import net.runelite.api.events.VarbitChanged;
+import net.runelite.api.gameval.InterfaceID;
 import net.runelite.api.gameval.VarPlayerID;
+import net.runelite.api.widgets.Widget;
+import net.runelite.api.widgets.WidgetUtil;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.game.NPCManager;
@@ -35,6 +40,7 @@ import net.runelite.client.game.NpcUtil;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.client.util.Text;
 
 /**
  * Wiring only: reads facts off RuneLite's events and NPC objects, hands them to {@link TargetFeed},
@@ -46,6 +52,11 @@ import net.runelite.client.ui.overlay.OverlayManager;
  * {@link WeaknessStore} (the saved value is only ever merged into) and {@link #begin} (the cache is reloaded on the
  * client thread). FoeOverlay reads the volatile snapshot when it renders.
  *
+ * <p>The overlap also means {@link #forgetEverything} can clear collections (formsSeen, HpMemory, HpTracker, the
+ * learner's buffers; none thread safe) while that in-flight handler reads them. The worst case is a
+ * ConcurrentModificationException in it, which EventBus catches and logs, so that one tick is lost while the panel
+ * is already gone (Task 11 review F5). Accepted: locking every handler to make a shutdown tick exact is not worth it.
+ *
  * <p>Known limits (the first is a decision, the rest are the client's):
  * <ul>
  * <li>When several NPCs are hitting you and none is the live target, the client does not say whose hit landed, so
@@ -55,8 +66,10 @@ import net.runelite.client.ui.overlay.OverlayManager;
  * <li>The remembered HP of a target is not time-limited; it is always drawn as stale (see {@link HpMemory}).
  * <li>Exact HP is the damage counted from the hitsplats Foe saw, shown only when the bar allows it (see
  *     {@link HpTracker}). The one thing it assumes and nothing here has measured: that the bar already shows a hit
- *     when the tick that carries its hitsplat is read. If the bar lagged by a tick the count would be rejected after
- *     the first hit and the midpoint shown, as before, until an exact reading.
+ *     when the tick that carries its hitsplat is read. If the bar lagged by a tick, a still-full bar on a hit tick
+ *     is an exact reading that re-anchors the count at max HP, and the next read can then resync it to the top of
+ *     the real bar and show it as exact: off by up to the bar's resolution until the next exact reading (second
+ *     Task 11 review, by probe; the lag itself is unmeasured).
  * <li>A weakness is learned only from a confirmed spell impact (see {@link WeaknessLearner}), so it is missing, never
  *     false, for a type whose spell left the varp unchanged, or whose impact could not be tied to one NPC. One
  *     coincidence is not caught: our write on a tick where the only fought NPC with a spell graphic got it from
@@ -68,7 +81,7 @@ import net.runelite.client.ui.overlay.OverlayManager;
 @Slf4j
 @PluginDescriptor(
 	name = "Foe",
-	description = "Live HP, combat levels and elemental weakness of the monster you're fighting",
+	description = "Live HP, combat levels and elemental weakness of the monster you're fighting. Overlaps Opponent Info for monsters",
 	tags = {"target", "monster", "npc", "weakness", "opponent", "hp", "combat"}
 )
 public class FoePlugin extends Plugin
@@ -100,6 +113,8 @@ public class FoePlugin extends Plugin
 	private final PortraitCache portraits = new PortraitCache(r -> executor.execute(r));
 
 	private final TargetFeed<NPC> feed = new TargetFeed<>(NPC::getIndex);
+	/** Spec addendum 16: which NPC the player last chose to attack, so Talk-to never counts as an engagement. */
+	private final AttackIntent<NPC> attackIntent = new AttackIntent<>();
 	private final HpMemory hpMemory = new HpMemory();
 	private final HpTracker hpTracker = new HpTracker();
 	/**
@@ -206,7 +221,44 @@ public class FoePlugin extends Plugin
 			return;
 		}
 		NPC npc = (NPC) e.getTarget();
-		feed.playerEngaged(npc, isCombatNpc(npc), now());
+		// Spec addendum 16: Talk-to sets the interacting target exactly as Attack does, so only an NPC the player's
+		// latest NPC click attacked counts. Hits still adopt on their own (auto-retaliate, an NPC that attacks you).
+		feed.playerEngaged(npc, isCombatNpc(npc) && attackIntent.attacked(npc), now());
+	}
+
+	@Subscribe
+	public void onMenuOptionClicked(MenuOptionClicked e)
+	{
+		NPC npc = e.getMenuEntry().getNpc();
+		if (npc != null)
+		{
+			attackIntent.clicked(npc, isAttack(e.getMenuAction(), e.getMenuOption()));
+		}
+	}
+
+	/**
+	 * Spec addendum 16: an NPC option that says Attack, in whichever slot, or a spell from the spellbook cast on the
+	 * NPC. Using an item or another widget on an NPC isn't an attack.
+	 *
+	 * <p>The text, not the slot: RuneLite 1.13.1's InteractHighlightPlugin takes op 2 as Attack, but 17 NPC
+	 * definitions put Attack at op 1, 3 or 5 (Tekton, Zalcano, an Ice demon, a Guard, Chompy bird), against 4,003 at
+	 * op 2 [measured 2026-10-10 from the live cache, second Task 11 review]. Text.removeTags drops any colour.
+	 */
+	private boolean isAttack(MenuAction action, String option)
+	{
+		switch (action)
+		{
+			case NPC_FIRST_OPTION:
+			case NPC_SECOND_OPTION:
+			case NPC_THIRD_OPTION:
+			case NPC_FOURTH_OPTION:
+			case NPC_FIFTH_OPTION:
+				return option != null && "Attack".equals(Text.removeTags(option));
+			default:
+				break;
+		}
+		Widget selected = action == MenuAction.WIDGET_TARGET_ON_NPC ? client.getSelectedWidget() : null;
+		return selected != null && WidgetUtil.componentToInterface(selected.getId()) == InterfaceID.MAGIC_SPELLBOOK;
 	}
 
 	@Subscribe
@@ -520,6 +572,7 @@ public class FoePlugin extends Plugin
 	{
 		hpMemory.forget(npc); // any NPC that died or left: its memory must not outlive it
 		hpTracker.forget(npc);
+		attackIntent.forget(npc);
 		if (feed.gone(npc))
 		{
 			snapshot = null; // the panel clears now, not on the next tick
@@ -557,6 +610,7 @@ public class FoePlugin extends Plugin
 	{
 		formsSeen.clear();
 		feed.reset();
+		attackIntent.reset();
 		hpMemory.clear();
 		hpTracker.clear();
 		weakness.discardTick();
@@ -589,7 +643,10 @@ public class FoePlugin extends Plugin
 		return out;
 	}
 
-	/** Spec addendum 2: Talk-to also sets getInteracting(), so only NPCs with a combat level above 0 count. */
+	/**
+	 * Spec addendum 2: only NPCs with a combat level above 0 count, and not while dying. That alone does not keep
+	 * Talk-to out (most talkable NPCs have stats), so engagement also needs an attack click (addendum 16).
+	 */
 	private boolean isCombatNpc(NPC npc)
 	{
 		NPCComposition c = npc.getTransformedComposition();

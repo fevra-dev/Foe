@@ -28,16 +28,20 @@ import net.runelite.api.Hitsplat;
 import net.runelite.api.HitsplatID;
 import net.runelite.api.IndexedObjectSet;
 import net.runelite.api.IterableHashTable;
+import net.runelite.api.MenuAction;
+import net.runelite.api.MenuEntry;
 import net.runelite.api.NPC;
 import net.runelite.api.NPCComposition;
 import net.runelite.api.Player;
 import net.runelite.api.WorldView;
+import net.runelite.api.widgets.Widget;
 import net.runelite.api.events.ActorDeath;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.GraphicChanged;
 import net.runelite.api.events.HitsplatApplied;
 import net.runelite.api.events.InteractingChanged;
+import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.api.events.NpcDespawned;
 import net.runelite.api.events.VarbitChanged;
 import net.runelite.client.eventbus.Subscribe;
@@ -356,10 +360,42 @@ public class FoePluginWiringTest
 		};
 	}
 
+	/** The player attacks this NPC: the Attack click (addendum 16), then the interaction it starts. */
 	private void engage(Npc n)
+	{
+		click(n.npc, MenuAction.NPC_SECOND_OPTION, "Attack");
+		interact(n);
+	}
+
+	/** The player talks to this NPC: a Talk-to click, then the interaction it starts, exactly as an attack's. */
+	private void talkTo(Npc n)
+	{
+		click(n.npc, MenuAction.NPC_FIRST_OPTION, "Talk-to");
+		interact(n);
+	}
+
+	private void interact(Npc n)
 	{
 		meValues.put("getInteracting", n.npc);
 		plugin.onInteractingChanged(new InteractingChanged(me, n.npc));
+	}
+
+	/** A menu click of this type on this NPC (null for a click on anything else). */
+	private void click(NPC npc, MenuAction type, String option)
+	{
+		Map<String, Object> entry = new HashMap<>();
+		entry.put("getNpc", npc);
+		entry.put("getType", type);
+		entry.put("getOption", option);
+		plugin.onMenuOptionClicked(new MenuOptionClicked(fake(MenuEntry.class, entry)));
+	}
+
+	/** The widget selected for a "Use on" or a spell: its interface is the component's top 16 bits. */
+	private void select(Integer interfaceId)
+	{
+		Map<String, Object> w = new HashMap<>();
+		w.put("getId", interfaceId == null ? -1 : (interfaceId << 16) | 5);
+		clientValues.put("getSelectedWidget", interfaceId == null ? null : fake(Widget.class, w));
 	}
 
 	private void hit(Actor on, int hitsplatType)
@@ -454,7 +490,7 @@ public class FoePluginWiringTest
 		}
 		assertEquals("every event the plugin listens to, none more", new TreeSet<>(java.util.Arrays.asList(
 			"ActorDeath", "GameStateChanged", "GameTick", "GraphicChanged", "HitsplatApplied", "InteractingChanged",
-			"NpcDespawned", "ProfileChanged", "VarbitChanged")), events);
+			"MenuOptionClicked", "NpcDespawned", "ProfileChanged", "VarbitChanged")), events);
 	}
 
 	// ---- engagement ----
@@ -483,6 +519,105 @@ public class FoePluginWiringTest
 		Npc banker = new Npc(3, "Banker", 0, new int[] {1, 1, 1, 1, 1, 1});
 		engage(banker);
 		assertNull(tick());
+	}
+
+	// ---- addendum 16 (Task 11 review F2): only an attack click makes the interaction an engagement ----
+
+	private Npc man(int index)
+	{
+		return new Npc(index, "Man", 2, new int[] {1, 1, 1, 7, 1, 1}).bar(30, 30);
+	}
+
+	@Test
+	public void talkingToANpcWithACombatLevelNeverShowsAPanel()
+	{
+		talkTo(man(4));
+		assertNull(tick());
+	}
+
+	@Test
+	public void talkingToANpcMidFightDoesNotTakeThePanel()
+	{
+		Npc giant = iceGiant(7).bar(15, 30);
+		engage(giant);
+		assertEquals("Ice giant 7", tick().getName());
+		talkTo(man(4));
+		assertEquals("Ice giant 7", tick().getName());
+	}
+
+	@Test
+	public void attackingTheNpcYouWereTalkingToShowsIt()
+	{
+		Npc man = man(4);
+		talkTo(man);
+		assertNull(tick());
+		engage(man);
+		assertEquals("Man", tick().getName());
+	}
+
+	@Test
+	public void aTalkToClickReplacesAnEarlierAttackClickOnTheSameNpc()
+	{
+		Npc man = man(4);
+		click(man.npc, MenuAction.NPC_SECOND_OPTION, "Attack"); // clicked Attack, then changed their mind
+		talkTo(man);
+		assertNull(tick());
+	}
+
+	/**
+	 * Second review (Task 11): "Attack" is op 2 for 4,003 NPC definitions but op 1, 3 or 5 for 17 (Tekton, Zalcano, an
+	 * Ice demon, a Guard, Chompy bird...) [measured from the live cache]. The option text is what says attack, so an
+	 * op 1 Attack switches the panel in multi-combat, and an op 2 that is not Attack (Trade) does not count.
+	 */
+	@Test
+	public void anAttackOptionInAnySlotIsAnAttackAndOnlyAttackIs()
+	{
+		Npc a = iceGiant(7).bar(15, 30);
+		Npc b = iceGiant(8).bar(30, 30);
+		engage(a);
+		assertEquals("Ice giant 7", tick().getName());
+		click(b.npc, MenuAction.NPC_FIRST_OPTION, "<col=ff0000>Attack</col>");
+		interact(b);
+		assertEquals("an op 1 Attack, colour tags and all", "Ice giant 8", tick().getName());
+
+		Npc trader = man(4);
+		click(trader.npc, MenuAction.NPC_SECOND_OPTION, "Trade");
+		interact(trader);
+		assertEquals("op 2 is not an attack when it says Trade", "Ice giant 8", tick().getName());
+	}
+
+	@Test
+	public void aSpellCastOnAnNpcIsAnAttack()
+	{
+		Npc giant = iceGiant(7).bar(15, 30);
+		select(218); // the magic spellbook
+		click(giant.npc, MenuAction.WIDGET_TARGET_ON_NPC, "Cast");
+		interact(giant);
+		assertEquals("Ice giant 7", tick().getName());
+	}
+
+	@Test
+	public void usingAnotherWidgetOnAnNpcIsNotAnAttack()
+	{
+		Npc giant = iceGiant(7).bar(15, 30);
+		select(149); // the inventory: "Use item on" is not an attack
+		click(giant.npc, MenuAction.WIDGET_TARGET_ON_NPC, "Cast");
+		interact(giant);
+		assertNull(tick());
+		select(null);
+		click(giant.npc, MenuAction.WIDGET_TARGET_ON_NPC, "Cast");
+		interact(giant);
+		assertNull("no widget selected at all", tick());
+	}
+
+	@Test
+	public void aClickOnSomethingElseLeavesTheAttackStanding()
+	{
+		Npc giant = iceGiant(7).bar(15, 30);
+		click(giant.npc, MenuAction.NPC_SECOND_OPTION, "Attack");
+		click(null, MenuAction.CC_OP, "Activate"); // a prayer flick on the way
+		interact(giant);
+		assertEquals("Ice giant 7", tick().getName());
 	}
 
 	@Test

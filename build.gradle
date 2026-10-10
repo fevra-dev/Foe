@@ -13,7 +13,9 @@ repositories {
 	mavenCentral()
 }
 
-def runeLiteVersion = 'latest.release'
+// Pinned (ADR-0001: no floating versions; Task 11 review F9). Code comments cite facts [measured] on 1.13.1, so a
+// bump is a deliberate change: re-run the suite and the in-game smoke test. The Plugin Hub replaces this file.
+def runeLiteVersion = '1.13.1'
 def pluginMainClass = 'com.foe.FoePluginTest'
 
 dependencies {

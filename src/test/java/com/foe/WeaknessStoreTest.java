@@ -227,6 +227,38 @@ public class WeaknessStoreTest
 		assertTrue(stored.endsWith("3025:FIRE"));
 	}
 
+	/**
+	 * Review finding F6 (Task 11): the cap check counted MAX_ENTRIES commas, i.e. MAX_ENTRIES + 1 tokens, so a value of
+	 * exactly MAX_ENTRIES tokens was rewritten with one more, and the next parse dropped its last entry. Addendum 6:
+	 * at or beyond the cap is never rewritten. One under the cap is rewritten and keeps everything.
+	 */
+	@Test
+	public void exactlyAtTheCapIsNotRewrittenAndOneUnderIs()
+	{
+		stored = tokens(WeaknessStore.MAX_ENTRIES);
+		store.put(2103, new Weakness(Weakness.Element.EARTH));
+		assertEquals("at the cap", 0, writes);
+
+		stored = tokens(WeaknessStore.MAX_ENTRIES - 1);
+		store.put(2103, new Weakness(Weakness.Element.EARTH));
+		assertEquals("one under", 1, writes);
+		Map<Integer, Weakness> after = WeaknessStore.parse(stored);
+		assertEquals(WeaknessStore.MAX_ENTRIES, after.size());
+		assertEquals(Weakness.Element.EARTH, after.get(2103).getElement());
+		assertTrue("the highest id survived", after.containsKey(1_000_000 + WeaknessStore.MAX_ENTRIES - 2));
+	}
+
+	/** {@code n} distinct entries, ids 1000000 and up (above 2103, so the new entry sorts first). */
+	private static String tokens(int n)
+	{
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < n; i++)
+		{
+			sb.append(i == 0 ? "" : ",").append(1_000_000 + i).append(":FIRE");
+		}
+		return sb.toString();
+	}
+
 	// ---- load ----
 
 	@Test

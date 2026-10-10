@@ -47,7 +47,9 @@ public class WeaknessTableTest
 		assertEquals(0, t.skipped);
 		assertEquals(6, t.entries.size());
 		assertEquals(new Weakness(Element.EARTH, 60), t.entries.get(1));
-		assertEquals("0 is a real percent, not 'unknown'", new Weakness(Element.AIR, 0), t.entries.get(2));
+		// F7 (Task 11, operator 2026-10-10): 0% gives no bonus, so it is no weakness. The generator now writes NONE;
+		// the loader reads an older table's 0 the same way, so "Air 0%" can never be drawn.
+		assertEquals("0% is a known no-weakness, not 'unknown'", Weakness.NONE, t.entries.get(2));
 		assertEquals("over 100 is kept as given", FIRE_200.getPercent(), t.entries.get(3).getPercent());
 		assertEquals(Element.FIRE, t.entries.get(3).getElement());
 		assertNull("an element-only line has no percent", t.entries.get(4).getPercent());

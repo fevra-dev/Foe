@@ -70,6 +70,10 @@ final class TargetFeed<T>
 			return;
 		}
 		refreshIfFightingNow(nowMs, fighting);
+		if (twinOfLiveTarget(npc, nowMs, lingerMs))
+		{
+			return;
+		}
 		tracker.playerHit(indexOf.applyAsInt(npc), nowMs, lingerMs);
 		adoptIfTarget(npc, nowMs, lingerMs);
 	}
@@ -89,6 +93,10 @@ final class TargetFeed<T>
 		refreshIfFightingNow(nowMs, fighting);
 		T live = current(nowMs, lingerMs);
 		T hitter = live != null && hitters.contains(live) ? live : hitters.get(0);
+		if (twinOfLiveTarget(hitter, nowMs, lingerMs))
+		{
+			return;
+		}
 		tracker.hitBy(indexOf.applyAsInt(hitter), nowMs, lingerMs);
 		adoptIfTarget(hitter, nowMs, lingerMs);
 	}
@@ -155,6 +163,17 @@ final class TargetFeed<T>
 			tracker.stillFighting(indexOf.applyAsInt(held), nowMs);
 			evidence = true;
 		}
+	}
+
+	/**
+	 * {@code npc} is not the live target but shares its index: another world view, since an index is unique only
+	 * within one (as in {@link #gone}). The tracker knows only indexes, so it would read a hit on it as the target's
+	 * own and hand it the panel (Task 11 review F3). A hit never replaces a live target, so it is ignored.
+	 */
+	private boolean twinOfLiveTarget(T npc, long nowMs, long lingerMs)
+	{
+		T live = current(nowMs, lingerMs);
+		return live != null && live != npc && indexOf.applyAsInt(live) == indexOf.applyAsInt(npc);
 	}
 
 	/** After a tracker call for {@code npc}: it is the target now if it was adopted or refreshed, and that is evidence. */

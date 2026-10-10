@@ -178,6 +178,30 @@ public class WeaknessTableBuilderTest
 		assertTrue(dataLines(r.table).contains("496\tNONE\t"));
 	}
 
+	/**
+	 * Review finding F7 (Task 11, operator 2026-10-10): an element at 0% gives no bonus, so it is no weakness. Dinky
+	 * the drink troll (15171) is listed Earth 0, which drew "Earth 0%". It is written as NONE, and as NONE it takes
+	 * part in the conflict rule like any other None.
+	 */
+	@Test
+	public void anElementAtZeroPercentIsWrittenAsNone()
+	{
+		Result r = build(
+			row("Dinky the drink troll", "", "Earth", 0, "15171"),
+			row("Kraken", "Kraken", "Earth", 50, "494"));
+		assertOk(r);
+		assertEquals(entry(Element.NONE, null), r.entries.get(15171));
+		assertTrue(dataLines(r.table).contains("15171\tNONE\t"));
+		assertEquals("control: a real percent is kept", entry(Element.EARTH, 50), r.entries.get(494));
+
+		Result agree = build(
+			row("Twin", "A", "Earth", 0, "900"),
+			row("Twin", "B", "None", null, "900"));
+		assertOk(agree);
+		assertEquals("0% and None are the same answer, so no conflict", entry(Element.NONE, null),
+			agree.entries.get(900));
+	}
+
 	@Test
 	public void aRowWithNoWeaknessWritesNothingBecauseUnknownIsNotNone()
 	{
@@ -263,18 +287,16 @@ public class WeaknessTableBuilderTest
 	}
 
 	@Test
-	public void zeroTwoHundredAndOneHundredFiftyAreKeptAsGiven()
+	public void twoHundredAndOneHundredFiftyAreKeptAsGiven()
 	{
+		// Zero is no longer kept as given: it is written as NONE (F7, anElementAtZeroPercentIsWrittenAsNone).
 		Result r = build(
-			row("Dinky the drink troll", null, "Earth", 0, "15171"),
 			row("Spiritual mage", "Zaros", "Fire", 200, "11292"),
 			row("Ice demon", "Normal", "Fire", 150, "7584"));
 		assertOk(r);
-		assertEquals("zero is a value, not 'none'", entry(Element.EARTH, 0), r.entries.get(15171));
 		assertEquals(entry(Element.FIRE, 200), r.entries.get(11292));
 		assertEquals(entry(Element.FIRE, 150), r.entries.get(7584));
 		assertTrue(dataLines(r.table).contains("11292\tFIRE\t200"));
-		assertTrue(dataLines(r.table).contains("15171\tEARTH\t0"));
 	}
 
 	@Test

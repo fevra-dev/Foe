@@ -1,5 +1,6 @@
 package com.foe;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -21,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.overlay.components.ComponentConstants;
 import org.junit.Test;
 
@@ -921,7 +923,72 @@ public class FoeOverlayTest
 
 	private static FoeOverlay.Frame frame(TargetSnapshot s, Cfg c)
 	{
-		return FoeOverlay.frame(FoeOverlay.cells(s, c), c.layout(), fm());
+		return frame(s, c, fm());
+	}
+
+	private static FoeOverlay.Frame frame(TargetSnapshot s, Cfg c, FontMetrics fm)
+	{
+		return FoeOverlay.frame(FoeOverlay.cells(s, c), c.layout(), fm);
+	}
+
+	private static FontMetrics fm(java.awt.Font font)
+	{
+		Graphics2D g = graphics(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB));
+		try
+		{
+			return g.getFontMetrics(font);
+		}
+		finally
+		{
+			g.dispose();
+		}
+	}
+
+	/**
+	 * Review finding F1 (Task 11): the HP text beside the bar used to be measured from the current text, so as HP fell
+	 * the stacked bar grew (290 to 309px on 1200 max HP) and, in one line, every cell after the HP cell slid left.
+	 * The beside width is now reserved for the widest text this target can show, so nothing moves while HP changes.
+	 */
+	@Test
+	public void nothingMovesAsHpChanges()
+	{
+		// The default font has digits of one width, so it can't tell widestDigits from stringWidth. RuneScape Small,
+		// the client's overlay font, has proportional digits ('1' is 4px, '0' is 7px): that is the font that matters
+		// (second Task 11 review).
+		for (FontMetrics fm : new FontMetrics[] {fm(), fm(FontManager.getRunescapeSmallFont())})
+		{
+			nothingMovesAsHpChanges(1200, fm);
+			// an unhit max HP wider than "100%", so Percent must reserve it too
+			nothingMovesAsHpChanges(123456, fm);
+		}
+	}
+
+	private static void nothingMovesAsHpChanges(int maxHp, FontMetrics fm)
+	{
+		int[] boss = {40, 40, 40, maxHp, 1, 1};
+		for (FoeConfig.Layout layout : FoeConfig.Layout.values())
+		{
+			for (FoeConfig.HpText text : FoeConfig.HpText.values())
+			{
+				for (FoeConfig.HpTextPosition position : FoeConfig.HpTextPosition.values())
+				{
+					Cfg c = flat();
+					c.layout = layout;
+					c.hpText = text;
+					c.hpTextPosition = position;
+					FoeOverlay.Frame first = frame(snap(boss, -1, 0, false, FIRE), c, fm);
+					for (int ratio = 0; ratio <= 30; ratio++)
+					{
+						FoeOverlay.Frame f = frame(snap(boss, ratio, 30, false, FIRE), c, fm);
+						String at = maxHp + " " + layout + "/" + text + "/" + position + " at " + ratio + "/30 ("
+							+ f.hp.text + ")";
+						assertEquals(at + ": panel width", first.width, f.width);
+						assertEquals(at + ": bar", first.bar, f.bar);
+						assertArrayEquals(at + ": cell positions", first.x, f.x);
+					}
+				}
+			}
+		}
 	}
 
 	private static Cfg inside()
@@ -1023,7 +1090,10 @@ public class FoeOverlayTest
 		int needed = fm().stringWidth(text) + 2 * FoeOverlay.INSIDE_PAD;
 		assertTrue("precondition: " + text + " does not fit in the standard bar", needed > FoeOverlay.BAR_W);
 		FoeOverlay.Frame f = frame(s, inside());
-		assertEquals(needed, f.bar.width);
+		// sized for the widest text this target can show (F1), which is at least what this text needs
+		int reserved = FoeOverlay.widestDigits("123456/123456", fm()) + 2 * FoeOverlay.INSIDE_PAD;
+		assertTrue(reserved >= needed);
+		assertEquals(reserved, f.bar.width);
 		assertEquals("beside never widens the bar", FoeOverlay.BAR_W, frame(s, flat()).bar.width);
 
 		Painted p = paint(s, inside());
