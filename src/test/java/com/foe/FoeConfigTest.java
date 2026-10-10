@@ -34,7 +34,7 @@ public class FoeConfigTest
 	}
 
 	@Test
-	public void nineSettingsAtPositionsZeroToEightInTheSpecOrder()
+	public void tenSettingsAtPositionsZeroToNineInTheSpecOrder()
 	{
 		List<String> keys = new ArrayList<>();
 		List<Integer> positions = new ArrayList<>();
@@ -44,9 +44,18 @@ public class FoeConfigTest
 			positions.add(m.getAnnotation(ConfigItem.class).position());
 		}
 		assertEquals(Arrays.asList("layout", "hpText", "hpTextPosition", "detail", "staleHpStyle", "showWeakness",
-			"showWeaknessPercent", "lingerSeconds", "backgroundOpacity"), keys);
-		assertEquals(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8), positions);
+			"showWeaknessPercent", "lingerSeconds", "backgroundOpacity", "showPortrait"), keys);
+		assertEquals(Arrays.asList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), positions);
 		assertEquals("keyNames are unique", keys.size(), new HashSet<>(keys).size());
+	}
+
+	@Test
+	public void showPortraitIsOffByDefault()
+	{
+		FoeConfig d = new FoeConfig()
+		{
+		};
+		assertFalse("addendum 14: default Off", d.showPortrait());
 	}
 
 	// Spec addendum 5: what was learned is saved under one key of the foe group that is not a setting. A declared item

@@ -56,7 +56,7 @@ final class SnapshotFactory
 			ratio, scale, hpStale, unhit,
 			stat(stats, NPCComposition.STAT_ATTACK), stat(stats, NPCComposition.STAT_STRENGTH),
 			stat(stats, NPCComposition.STAT_DEFENCE), stat(stats, NPCComposition.STAT_RANGED),
-			stat(stats, NPCComposition.STAT_MAGIC), weakness);
+			stat(stats, NPCComposition.STAT_MAGIC), weakness, null);
 	}
 
 	private static int stat(int[] stats, int i)
