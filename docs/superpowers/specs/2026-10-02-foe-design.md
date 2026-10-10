@@ -500,3 +500,25 @@ the HP number rises on the tick a heal lands. What v1 doesn't show is the heal a
   `~/.runelite/logs/client.log`, which held 7,838 `[Test worker]` lines on 2026-10-09. The `test` task now points
   logback at `src/test/logging/logback-test.xml`, which is console-only and kept off the classpath so `./gradlew run`
   still logs normally. Measured: a full test run left that count unchanged.
+
+## Addendum 14 — 2026-10-10: the portrait ships (Task 10 spike succeeded)
+
+The spike (`docs/probe/portrait.md`, branch `spike/portrait`, not merged) found a client-only portrait feasible,
+which settles open question 2 and the "Show portrait" row of the settings table. Operator decisions, 2026-10-10:
+
+- **What:** the NPC's own models, flat-rendered in software: its chathead models whole, or, when it has none, its
+  body models cropped to a square over the top 30% of the model (a head crop). Straight on (yaw 0); 20 degrees was
+  tried and was indistinguishable at panel size. Merged, recoloured with the composition's recolour pairs, lit.
+- **Where:** inside the panel, left of the name, on the panel's background, with no frame or border. A square as tall
+  as the panel's content (panel height minus padding), in both layouts, followed by the usual gap. The panel only
+  gets wider.
+- **Setting:** "Show portrait", default **Off**, the tenth setting (position 9, after Background opacity).
+- **No blank square.** Until the image is ready, or when there is none (no models, a failed render), nothing is
+  drawn and no space is kept: the panel widens when the portrait arrives, at most a tick later.
+- **Off the client thread.** The spike measured 0.5–16.9 ms to load and light, and 4.6–13.5 ms to render one 64px
+  image `[measured]`. The load and light stay on the client thread (they read the client's cache). The render runs
+  on RuneLite's shared executor, once per composition id, and is kept: up to 64 images, least recently used dropped
+  first.
+- **Never throws** into the tick (ADR-0005): any failure means no portrait for that id, and it isn't retried until
+  the image is dropped from the cache.
+- **Open, `[assumed]`:** whether the image is left-right mirrored. The models tested are near-symmetric.
