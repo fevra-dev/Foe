@@ -40,6 +40,7 @@ import net.runelite.client.game.NpcUtil;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.client.util.Text;
 
 /**
  * Wiring only: reads facts off RuneLite's events and NPC objects, hands them to {@link TargetFeed},
@@ -229,19 +230,30 @@ public class FoePlugin extends Plugin
 		NPC npc = e.getMenuEntry().getNpc();
 		if (npc != null)
 		{
-			attackIntent.clicked(npc, isAttack(e.getMenuAction()));
+			attackIntent.clicked(npc, isAttack(e.getMenuAction(), e.getMenuOption()));
 		}
 	}
 
 	/**
-	 * Spec addendum 16: the Attack slot, or a spell cast on the NPC. This is the rule RuneLite 1.13.1's own
-	 * InteractHighlightPlugin uses for "attacked". Using an item or another widget on an NPC isn't an attack.
+	 * Spec addendum 16: an NPC option that says Attack, in whichever slot, or a spell from the spellbook cast on the
+	 * NPC. Using an item or another widget on an NPC isn't an attack.
+	 *
+	 * <p>The text, not the slot: RuneLite 1.13.1's InteractHighlightPlugin takes op 2 as Attack, but 17 NPC
+	 * definitions put Attack at op 1, 3 or 5 (Tekton, Zalcano, an Ice demon, a Guard, Chompy bird), against 4,003 at
+	 * op 2 [measured 2026-10-10 from the live cache, second Task 11 review]. Text.removeTags drops any colour.
 	 */
-	private boolean isAttack(MenuAction action)
+	private boolean isAttack(MenuAction action, String option)
 	{
-		if (action == MenuAction.NPC_SECOND_OPTION)
+		switch (action)
 		{
-			return true;
+			case NPC_FIRST_OPTION:
+			case NPC_SECOND_OPTION:
+			case NPC_THIRD_OPTION:
+			case NPC_FOURTH_OPTION:
+			case NPC_FIFTH_OPTION:
+				return option != null && "Attack".equals(Text.removeTags(option));
+			default:
+				break;
 		}
 		Widget selected = action == MenuAction.WIDGET_TARGET_ON_NPC ? client.getSelectedWidget() : null;
 		return selected != null && WidgetUtil.componentToInterface(selected.getId()) == InterfaceID.MAGIC_SPELLBOOK;

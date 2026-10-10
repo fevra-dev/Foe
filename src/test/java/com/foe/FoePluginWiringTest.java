@@ -363,14 +363,14 @@ public class FoePluginWiringTest
 	/** The player attacks this NPC: the Attack click (addendum 16), then the interaction it starts. */
 	private void engage(Npc n)
 	{
-		click(n.npc, MenuAction.NPC_SECOND_OPTION);
+		click(n.npc, MenuAction.NPC_SECOND_OPTION, "Attack");
 		interact(n);
 	}
 
 	/** The player talks to this NPC: a Talk-to click, then the interaction it starts, exactly as an attack's. */
 	private void talkTo(Npc n)
 	{
-		click(n.npc, MenuAction.NPC_FIRST_OPTION);
+		click(n.npc, MenuAction.NPC_FIRST_OPTION, "Talk-to");
 		interact(n);
 	}
 
@@ -381,11 +381,12 @@ public class FoePluginWiringTest
 	}
 
 	/** A menu click of this type on this NPC (null for a click on anything else). */
-	private void click(NPC npc, MenuAction type)
+	private void click(NPC npc, MenuAction type, String option)
 	{
 		Map<String, Object> entry = new HashMap<>();
 		entry.put("getNpc", npc);
 		entry.put("getType", type);
+		entry.put("getOption", option);
 		plugin.onMenuOptionClicked(new MenuOptionClicked(fake(MenuEntry.class, entry)));
 	}
 
@@ -558,9 +559,31 @@ public class FoePluginWiringTest
 	public void aTalkToClickReplacesAnEarlierAttackClickOnTheSameNpc()
 	{
 		Npc man = man(4);
-		click(man.npc, MenuAction.NPC_SECOND_OPTION); // clicked Attack, then changed their mind
+		click(man.npc, MenuAction.NPC_SECOND_OPTION, "Attack"); // clicked Attack, then changed their mind
 		talkTo(man);
 		assertNull(tick());
+	}
+
+	/**
+	 * Second review (Task 11): "Attack" is op 2 for 4,003 NPC definitions but op 1, 3 or 5 for 17 (Tekton, Zalcano, an
+	 * Ice demon, a Guard, Chompy bird...) [measured from the live cache]. The option text is what says attack, so an
+	 * op 1 Attack switches the panel in multi-combat, and an op 2 that is not Attack (Trade) does not count.
+	 */
+	@Test
+	public void anAttackOptionInAnySlotIsAnAttackAndOnlyAttackIs()
+	{
+		Npc a = iceGiant(7).bar(15, 30);
+		Npc b = iceGiant(8).bar(30, 30);
+		engage(a);
+		assertEquals("Ice giant 7", tick().getName());
+		click(b.npc, MenuAction.NPC_FIRST_OPTION, "<col=ff0000>Attack</col>");
+		interact(b);
+		assertEquals("an op 1 Attack, colour tags and all", "Ice giant 8", tick().getName());
+
+		Npc trader = man(4);
+		click(trader.npc, MenuAction.NPC_SECOND_OPTION, "Trade");
+		interact(trader);
+		assertEquals("op 2 is not an attack when it says Trade", "Ice giant 8", tick().getName());
 	}
 
 	@Test
@@ -568,7 +591,7 @@ public class FoePluginWiringTest
 	{
 		Npc giant = iceGiant(7).bar(15, 30);
 		select(218); // the magic spellbook
-		click(giant.npc, MenuAction.WIDGET_TARGET_ON_NPC);
+		click(giant.npc, MenuAction.WIDGET_TARGET_ON_NPC, "Cast");
 		interact(giant);
 		assertEquals("Ice giant 7", tick().getName());
 	}
@@ -578,11 +601,11 @@ public class FoePluginWiringTest
 	{
 		Npc giant = iceGiant(7).bar(15, 30);
 		select(149); // the inventory: "Use item on" is not an attack
-		click(giant.npc, MenuAction.WIDGET_TARGET_ON_NPC);
+		click(giant.npc, MenuAction.WIDGET_TARGET_ON_NPC, "Cast");
 		interact(giant);
 		assertNull(tick());
 		select(null);
-		click(giant.npc, MenuAction.WIDGET_TARGET_ON_NPC);
+		click(giant.npc, MenuAction.WIDGET_TARGET_ON_NPC, "Cast");
 		interact(giant);
 		assertNull("no widget selected at all", tick());
 	}
@@ -591,8 +614,8 @@ public class FoePluginWiringTest
 	public void aClickOnSomethingElseLeavesTheAttackStanding()
 	{
 		Npc giant = iceGiant(7).bar(15, 30);
-		click(giant.npc, MenuAction.NPC_SECOND_OPTION);
-		click(null, MenuAction.CC_OP); // a prayer flick on the way
+		click(giant.npc, MenuAction.NPC_SECOND_OPTION, "Attack");
+		click(null, MenuAction.CC_OP, "Activate"); // a prayer flick on the way
 		interact(giant);
 		assertEquals("Ice giant 7", tick().getName());
 	}
