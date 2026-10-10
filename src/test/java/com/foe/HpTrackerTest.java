@@ -211,6 +211,10 @@ public class HpTrackerTest
 		int below = ratioFor(965, max, SCALE);
 		assertTrue("precondition: 965 is on the next bar down", !HpEstimate.range(below, SCALE, max).contains(966));
 		assertEquals("confirmed, so a 1 HP drift is resynced", 965, tracker.read(watched, below, SCALE, false, max));
+
+		Object anchored = new Object(); // an exact reading confirms by itself: a 1 HP drift right after it resyncs
+		assertEquals(max, tracker.read(anchored, SCALE, SCALE, false, max));
+		assertEquals(bar.getMax(), tracker.read(anchored, ratioFor(max - 1, max, SCALE), SCALE, false, max));
 	}
 
 	@Test
