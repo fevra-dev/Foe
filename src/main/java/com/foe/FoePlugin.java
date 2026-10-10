@@ -68,7 +68,7 @@ import net.runelite.client.ui.overlay.OverlayManager;
 @Slf4j
 @PluginDescriptor(
 	name = "Foe",
-	description = "Live HP, combat levels and elemental weakness of the monster you're fighting",
+	description = "Live HP, combat levels and elemental weakness of the monster you're fighting. Replaces Opponent Info: turn that off to avoid seeing it twice",
 	tags = {"target", "monster", "npc", "weakness", "opponent", "hp", "combat"}
 )
 public class FoePlugin extends Plugin
