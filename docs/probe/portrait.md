@@ -85,3 +85,27 @@ side by side for comparison.
   layout, so "panel height in every layout" isn't checked there.
 
 ![portrait sheet, round 2](portrait-sheet-r2.png)
+
+## Shipped feature — in-game acceptance (plan Task 6, 2026-10-10, 00:50–00:54)
+
+Branch `feat/portrait` at `071ca96`, run with plain `./gradlew run` (no spike flag), "Show portrait" turned on in
+the settings panel. The operator's verdict: "all looks great!" `portrait-shipped.png` crops the panel from nine of
+the operator's screenshots, top to bottom:
+
+| Row | Layout, detail | Monster | Shows |
+|---|---|---|---|
+| 1–2 | Stacked, Compact / Full | Lesser demon (87) | head crop, square as tall as both rows |
+| 3 | Stacked, Compact | Ghost | head crop |
+| 4 | Stacked, Compact | Moss giant (unhit bar) | head crop |
+| 5 | Stacked, Compact | Abyssal demon (124) | head crop; a monster not seen in the spike |
+| 6–8 | One line, Compact / Full, inside / beside bar | Lesser demon (94) | a one-line-tall square, still a recognisable head |
+| 9 | Stacked, Full | Lesser demon, **Show portrait off** | no portrait and no space kept, as before the feature |
+
+- **One line is small.** The square is as tall as one text line there, as addendum 14 says. It still reads as a
+  horned head, but it's at the lower limit; if that matters, it's a later decision, not a defect.
+- **Not covered in this run:** a chathead monster (no Cow screenshot), and the mirroring `[assumed]` (no monster with a
+  one-handed weapon). Both stay open as written in addendum 14.
+- **No stutter was reported** when switching targets; the operator was not asked to time it, so this is an
+  observation, not a measurement.
+
+![portrait, shipped](portrait-shipped.png)
