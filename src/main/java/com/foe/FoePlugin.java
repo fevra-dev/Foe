@@ -46,6 +46,11 @@ import net.runelite.client.ui.overlay.OverlayManager;
  * {@link WeaknessStore} (the saved value is only ever merged into) and {@link #begin} (the cache is reloaded on the
  * client thread). FoeOverlay reads the volatile snapshot when it renders.
  *
+ * <p>The overlap also means {@link #forgetEverything} can clear collections (formsSeen, HpMemory, HpTracker, the
+ * learner's buffers; none thread safe) while that in-flight handler reads them. The worst case is a
+ * ConcurrentModificationException in it, which EventBus catches and logs, so that one tick is lost while the panel
+ * is already gone (Task 11 review F5). Accepted: locking every handler to make a shutdown tick exact is not worth it.
+ *
  * <p>Known limits (the first is a decision, the rest are the client's):
  * <ul>
  * <li>When several NPCs are hitting you and none is the live target, the client does not say whose hit landed, so
