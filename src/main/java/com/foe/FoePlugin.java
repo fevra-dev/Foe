@@ -14,6 +14,7 @@ import net.runelite.api.Actor;
 import net.runelite.api.ActorSpotAnim;
 import net.runelite.api.Client;
 import net.runelite.api.Hitsplat;
+import net.runelite.api.MenuAction;
 import net.runelite.api.IterableHashTable;
 import net.runelite.api.NPC;
 import net.runelite.api.NPCComposition;
@@ -25,9 +26,13 @@ import net.runelite.api.events.GameTick;
 import net.runelite.api.events.GraphicChanged;
 import net.runelite.api.events.HitsplatApplied;
 import net.runelite.api.events.InteractingChanged;
+import net.runelite.api.events.MenuOptionClicked;
 import net.runelite.api.events.NpcDespawned;
 import net.runelite.api.events.VarbitChanged;
+import net.runelite.api.gameval.InterfaceID;
 import net.runelite.api.gameval.VarPlayerID;
+import net.runelite.api.widgets.Widget;
+import net.runelite.api.widgets.WidgetUtil;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.game.NPCManager;
@@ -105,6 +110,8 @@ public class FoePlugin extends Plugin
 	private final PortraitCache portraits = new PortraitCache(r -> executor.execute(r));
 
 	private final TargetFeed<NPC> feed = new TargetFeed<>(NPC::getIndex);
+	/** Spec addendum 16: which NPC the player last chose to attack, so Talk-to never counts as an engagement. */
+	private final AttackIntent<NPC> attackIntent = new AttackIntent<>();
 	private final HpMemory hpMemory = new HpMemory();
 	private final HpTracker hpTracker = new HpTracker();
 	/**
@@ -211,7 +218,33 @@ public class FoePlugin extends Plugin
 			return;
 		}
 		NPC npc = (NPC) e.getTarget();
-		feed.playerEngaged(npc, isCombatNpc(npc), now());
+		// Spec addendum 16: Talk-to sets the interacting target exactly as Attack does, so only an NPC the player's
+		// latest NPC click attacked counts. Hits still adopt on their own (auto-retaliate, an NPC that attacks you).
+		feed.playerEngaged(npc, isCombatNpc(npc) && attackIntent.attacked(npc), now());
+	}
+
+	@Subscribe
+	public void onMenuOptionClicked(MenuOptionClicked e)
+	{
+		NPC npc = e.getMenuEntry().getNpc();
+		if (npc != null)
+		{
+			attackIntent.clicked(npc, isAttack(e.getMenuAction()));
+		}
+	}
+
+	/**
+	 * Spec addendum 16: the Attack slot, or a spell cast on the NPC. This is the rule RuneLite 1.13.1's own
+	 * InteractHighlightPlugin uses for "attacked". Using an item or another widget on an NPC isn't an attack.
+	 */
+	private boolean isAttack(MenuAction action)
+	{
+		if (action == MenuAction.NPC_SECOND_OPTION)
+		{
+			return true;
+		}
+		Widget selected = action == MenuAction.WIDGET_TARGET_ON_NPC ? client.getSelectedWidget() : null;
+		return selected != null && WidgetUtil.componentToInterface(selected.getId()) == InterfaceID.MAGIC_SPELLBOOK;
 	}
 
 	@Subscribe
@@ -525,6 +558,7 @@ public class FoePlugin extends Plugin
 	{
 		hpMemory.forget(npc); // any NPC that died or left: its memory must not outlive it
 		hpTracker.forget(npc);
+		attackIntent.forget(npc);
 		if (feed.gone(npc))
 		{
 			snapshot = null; // the panel clears now, not on the next tick
@@ -562,6 +596,7 @@ public class FoePlugin extends Plugin
 	{
 		formsSeen.clear();
 		feed.reset();
+		attackIntent.reset();
 		hpMemory.clear();
 		hpTracker.clear();
 		weakness.discardTick();
@@ -594,7 +629,10 @@ public class FoePlugin extends Plugin
 		return out;
 	}
 
-	/** Spec addendum 2: Talk-to also sets getInteracting(), so only NPCs with a combat level above 0 count. */
+	/**
+	 * Spec addendum 2: only NPCs with a combat level above 0 count, and not while dying. That alone does not keep
+	 * Talk-to out (most talkable NPCs have stats), so engagement also needs an attack click (addendum 16).
+	 */
 	private boolean isCombatNpc(NPC npc)
 	{
 		NPCComposition c = npc.getTransformedComposition();

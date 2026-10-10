@@ -540,3 +540,44 @@ API sources (`runelite-api-1.13.1-sources.jar`) `[measured]`, and fixed test-fir
   `NoSuchMethodError`, which is an `Error`. That escaped the tick, and since nothing was cached it would have recurred
   on every tick. Load and render now also catch `LinkageError`, and the failure is cached. Other `Error`s (out of
   memory) still propagate, as the plugin's startup already chooses.
+
+## Addendum 16 — 2026-10-10: Task 11 review corrections (operator decisions 2026-10-10)
+
+A fresh-context review of the whole plugin (628 tests passing) found two medium defects, several low ones and some
+nits. Fixes land on `release/v1`, each test-first and proven by a mutant.
+
+- **Engagement means an attack click (F2; supersedes addendum 2's "combat level above 0" as the Talk-to rule).**
+  Talk-to sets the player's interacting target just as Attack does. So talking to a Man, a Guard or any quest NPC
+  with stats took the panel, even from a live target mid-fight. Now the player's own interaction adopts an NPC only
+  when the player's most recent click **on an NPC** was an attack on that same NPC. An attack is
+  `NPC_SECOND_OPTION` (the Attack slot), or `WIDGET_TARGET_ON_NPC` with a magic-spellbook widget selected. That is
+  the rule RuneLite 1.13.1's own InteractHighlight plugin uses for "attacked" `[documented: client sources]`.
+  - Any other click on an NPC clears the intent (Talk-to, Pickpocket, Trade, using an item on it). Clicks on
+    anything else don't touch it, so a prayer flick between the Attack click and the walk-up still counts.
+  - The combat-level and not-dying filters still apply.
+  - Hits still adopt as before, so auto-retaliate and an NPC that attacks you still bring up the panel.
+  - **Known limit:** an attack under a different option slot (a minigame "Fight") adopts on the first hit instead
+    of the click.
+- **Nothing moves as HP changes (F1).** The HP text beside the bar is measured from every text the target can show
+  (unhit max HP, and the setting's text at full HP, each digit at the font's widest), not from the current text.
+  Before this, the stacked bar grew from 290 to 309 px as a 1,200-HP monster died, and in one line the cells after
+  HP slid left.
+- **A count no bar has confirmed is never resynced (F4).** A track starts as an assumption (full health). The
+  regeneration resync (addendum 6) now applies only after a live bar has agreed with the count or anchored it.
+  Otherwise a mismatch shows the midpoint, as addendum 5 says, until an exact reading anchors it.
+- **A twin index can't take the panel (F3).** An NPC that shares the live target's index but is a different object
+  (another world view) is ignored by the hit paths, as `gone()` already does. With no live target it's adopted
+  like any other NPC.
+- **0% is no weakness (F7; supersedes addendum 9's "drawn as given" for 0).** The generator writes an element at 0%
+  as NONE, and the loader reads an old table's 0 the same way. One row was affected: Dinky the drink troll (15171).
+- **The store's cap counts tokens (F6).** Exactly `MAX_ENTRIES` tokens is "at the cap" and is never rewritten
+  (addendum 6).
+- **Release text (F8).** The plugin description says Foe replaces Opponent Info. The README is the plugin's own;
+  it replaces the repo template.
+- **RuneLite pinned to 1.13.1 (F9, ADR-0001).** The version the code's `[measured]` facts were measured on.
+- **Accepted, documented (F5).** A client-thread tick still running while the plugin stops can hit a collection
+  being cleared. The worst case is one `ConcurrentModificationException`, which EventBus 1.13.1 catches and logs
+  (`new EventBus()`, default handler `log.warn`) `[measured: client sources]`.
+- **Still open, `[assumed]`:** whether `client.mergeModels(parts)` can return a cached single part, which
+  `cloneColors()` would then modify in place (review U1). This couldn't be checked: the method isn't in the
+  readable sources.
