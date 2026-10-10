@@ -87,6 +87,13 @@ public class FoePlugin extends Plugin
 	private NpcUtil npcUtil;
 	@Inject
 	private ConfigManager configManager;
+	/** RuneLite's shared executor (core plugins inject it the same way); portraits render on it, never on a tick. */
+	@Inject
+	private java.util.concurrent.ScheduledExecutorService injectedExecutor;
+	/** What the cache runs renders on: the injected executor, or a test's. Read at run time, so tests can set it. */
+	private java.util.concurrent.Executor executor = r -> injectedExecutor.execute(r);
+	/** Spec addendum 14. Client thread only. Kept across stop and start: it holds at most 64 small images. */
+	private final PortraitCache portraits = new PortraitCache(r -> executor.execute(r));
 
 	private final TargetFeed<NPC> feed = new TargetFeed<>(NPC::getIndex);
 	private final HpMemory hpMemory = new HpMemory();
@@ -469,6 +476,12 @@ public class FoePlugin extends Plugin
 		}
 	}
 
+	/** Package-private so a test can stand in for the client glue, which needs a live client and its cache. */
+	Portrait.Mesh portraitMesh(NPCComposition c)
+	{
+		return PortraitModels.load(client, c);
+	}
+
 	/** Package-private so a test can stand in for NPCManager, which is a concrete class that needs a live client. */
 	Integer fallbackMaxHp(int npcId)
 	{
@@ -494,7 +507,9 @@ public class FoePlugin extends Plugin
 		// Judged against the snapshot's own max HP and bar reading, so the tracker and the panel cannot disagree on
 		// either. UNKNOWN (no bar, no max HP, or the bar rejects the count) leaves the midpoint the factory chose.
 		int exact = hpTracker.read(npc, s.getHpRatio(), s.getHpScale(), s.isHpStale(), s.getMaxHp());
-		return exact == HpEstimate.UNKNOWN ? s : s.withHp(exact);
+		TargetSnapshot out = exact == HpEstimate.UNKNOWN ? s : s.withHp(exact);
+		// Spec addendum 14: nothing is loaded while the setting is off; the image joins the snapshot once rendered.
+		return config.showPortrait() ? out.withPortrait(portraits.get(c.getId(), () -> portraitMesh(c))) : out;
 	}
 
 	private void forget(NPC npc)

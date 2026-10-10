@@ -84,6 +84,11 @@ public class FoePluginWiringTest
 	private boolean tableStreamFails;
 	private boolean useRealTable;
 	private int tableOpens;
+	private boolean showPortrait;
+	private int meshLoads;
+	private boolean meshThrows;
+	/** Renders the plugin queued on its executor; run by hand, so a test sees "not rendered yet". */
+	private final java.util.Deque<Runnable> renders = new java.util.ArrayDeque<>();
 	private LogCapture logs;
 
 	/** A Proxy that answers from a map and throws on anything else. */
@@ -181,6 +186,10 @@ public class FoePluginWiringTest
 		tableStreamFails = false;
 		useRealTable = false;
 		tableOpens = 0;
+		showPortrait = false;
+		meshLoads = 0;
+		meshThrows = false;
+		renders.clear();
 		logs = new LogCapture(FoePlugin.class);
 		world.clear();
 		meValues.clear();
@@ -224,6 +233,19 @@ public class FoePluginWiringTest
 	{
 		FoePlugin p = new FoePlugin()
 		{
+			@Override
+			Portrait.Mesh portraitMesh(NPCComposition c)
+			{
+				meshLoads++;
+				if (meshThrows)
+				{
+					throw new IllegalStateException("model cache not ready");
+				}
+				return new Portrait.Mesh(new float[]{-50, 50, 50, -50}, new float[]{-100, -100, 0, 0}, new float[4],
+					new int[]{0, 0}, new int[]{1, 2}, new int[]{2, 3}, new int[]{64, 64}, new int[]{-1, -1}, null, 2,
+					true);
+			}
+
 			@Override
 			Integer fallbackMaxHp(int npcId)
 			{
@@ -280,12 +302,19 @@ public class FoePluginWiringTest
 			}
 		};
 		set(p, "client", fake(Client.class, clientValues));
+		set(p, "executor", (java.util.concurrent.Executor) renders::add);
 		set(p, "config", new FoeConfig()
 		{
 			@Override
 			public int lingerSeconds()
 			{
 				return lingerSeconds;
+			}
+
+			@Override
+			public boolean showPortrait()
+			{
+				return showPortrait;
 			}
 		});
 		return p;
@@ -700,6 +729,41 @@ public class FoePluginWiringTest
 		plugin.onNpcDespawned(new NpcDespawned(other.npc));
 		assertNotNull(plugin.getSnapshot());
 		assertNotNull(tick());
+	}
+
+	@Test
+	public void withShowPortraitOffNoModelIsLoadedAndTheSnapshotHasNoPortrait()
+	{
+		engage(iceGiant(7).bar(15, 30));
+		assertNull(tick().getPortrait());
+		assertNull(tick().getPortrait());
+		assertEquals(0, meshLoads);
+	}
+
+	@Test
+	public void withShowPortraitOnThePortraitArrivesOnTheTickAfterItsRender()
+	{
+		showPortrait = true;
+		engage(iceGiant(7).bar(15, 30));
+		assertNull("rendering: no blank square", tick().getPortrait());
+		while (!renders.isEmpty())
+		{
+			renders.poll().run();
+		}
+		assertNotNull(tick().getPortrait());
+		assertNotNull(tick().getPortrait());
+		assertEquals("loaded once per type", 1, meshLoads);
+	}
+
+	@Test
+	public void aPortraitHookThatThrowsCostsThePortraitNotThePanel()
+	{
+		showPortrait = true;
+		meshThrows = true;
+		engage(iceGiant(7).bar(15, 30));
+		TargetSnapshot s = tick();
+		assertNotNull(s);
+		assertNull(s.getPortrait());
 	}
 
 	@Test
