@@ -486,3 +486,17 @@ the HP number rises on the tick a heal lands. What v1 doesn't show is the heal a
   N = M + K + L and a gap is visible. This supersedes addendum 11's three-count format.
 - **"Never throws" means exceptions.** An `Error` from the loader (OutOfMemoryError, LinkageError) is not caught.
   RuneLite then stops the plugin cleanly, and the read is capped at 1 MiB. Marked in code as a deliberate ceiling.
+
+## Addendum 13 — 2026-10-09: form changes are logged; tests stop writing to the player's log
+
+- **Form-change log.** The first time Foe shows an NPC whose shown form (the transformed composition) has a
+  different id from the NPC itself, it logs at info level:
+  `form change: npc <id> is shown as <form id>; table <id>=<value> is not used, <form id>=<value> is`. Each value is
+  `ELEMENT [percent]` or `no entry`. Each pair is logged once, until the next start, login or hop. This makes
+  addendum 8's last `[assumed]` (wiki ids match the shown form for monsters that transform) checkable in ordinary
+  play rather than by hunting a monster. Measured 2026-10-09: the level-70 candidates (Rock and Sand Crabs) have the
+  same value in every form, so they could not discriminate.
+- **Tests log to the console.** The RuneLite client jar's `logback.xml` was sending every unit test's log lines into
+  `~/.runelite/logs/client.log`, which held 7,838 `[Test worker]` lines on 2026-10-09. The `test` task now points
+  logback at `src/test/logging/logback-test.xml`, which is console-only and kept off the classpath so `./gradlew run`
+  still logs normally. Measured: a full test run left that count unchanged.

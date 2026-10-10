@@ -1932,6 +1932,68 @@ public class FoePluginWiringTest
 		assertTrue("nothing wrong with the real file", logs.at(Level.WARN).isEmpty());
 	}
 
+	// ---- form changes (spec addendum 13): every NPC whose shown form has its own id says so once, so the open
+	// [assumed] that wiki ids match the shown form is checked by ordinary play ----
+
+	private java.util.List<String> formLines()
+	{
+		java.util.List<String> out = new java.util.ArrayList<>();
+		for (String l : logs.at(Level.INFO))
+		{
+			if (l.startsWith("form change"))
+			{
+				out.add(l);
+			}
+		}
+		return out;
+	}
+
+	@Test
+	public void aFormChangeIsLoggedOnceWithBothIdsAndWhatTheTableSaysForEach()
+	{
+		tableText = "# h\n1001\tFIRE\t50\n2001\tWATER\t100\n";
+		plugin.begin();
+		Npc n = new Npc(1, "Shifter", 28, ICE_GIANT);
+		shown(n);
+		tick();
+		tick();
+		assertEquals(java.util.Collections.singletonList(
+			"form change: npc 1001 is shown as 2001; table 1001=FIRE 50 is not used, 2001=WATER 100 is"), formLines());
+	}
+
+	@Test
+	public void anIdTheTableDoesNotHaveIsNamedAsSuch()
+	{
+		tableText = "# h\n2001\tEARTH\t35\n";
+		plugin.begin();
+		shown(new Npc(1, "Shifter", 28, ICE_GIANT));
+		assertEquals(java.util.Collections.singletonList(
+			"form change: npc 1001 is shown as 2001; table 1001=no entry is not used, 2001=EARTH 35 is"), formLines());
+	}
+
+	@Test
+	public void anNpcWhoseFormIsItsOwnIdLogsNothing()
+	{
+		tableText = "# h\n1001\tFIRE\t50\n";
+		plugin.begin();
+		Npc n = new Npc(1, "Plain", 28, ICE_GIANT);
+		n.comp.put("getId", 1001);
+		shown(n);
+		assertTrue(formLines().toString(), formLines().isEmpty());
+	}
+
+	@Test
+	public void aRestartLogsTheSameFormChangeAgain()
+	{
+		tableText = "# h\n";
+		plugin.begin();
+		Npc n = new Npc(1, "Shifter", 28, ICE_GIANT);
+		shown(n);
+		plugin.begin();
+		shown(n);
+		assertEquals(2, formLines().size());
+	}
+
 	@Test
 	public void theDefaultSeamReadsTheClasspathResource() throws Exception
 	{

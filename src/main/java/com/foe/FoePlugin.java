@@ -104,6 +104,8 @@ public class FoePlugin extends Plugin
 	 * it with what was learned, and the startup check compares the two. Empty when it could not be loaded.
 	 */
 	private volatile Map<Integer, Weakness> weaknessTable = Collections.emptyMap();
+	/** NPC id and form id pairs already logged by noteForm (high 32 bits the NPC id). Reset with everything else. */
+	private final java.util.Set<Long> formsSeen = new java.util.HashSet<>();
 	/** Set when the plugin starts, taken by the first load with it: the learned-vs-table check runs once (addendum 11). */
 	private volatile boolean checkWeaknesses;
 
@@ -480,6 +482,7 @@ public class FoePlugin extends Plugin
 		{
 			return null;
 		}
+		noteForm(npc.getId(), c.getId());
 		HpMemory.Reading hp = hpMemory.read(npc, npc.getHealthRatio(), npc.getHealthScale());
 		TargetSnapshot s = SnapshotFactory.build(npc.getName(), c.getCombatLevel(), c.getStats(),
 			hp.getRatio(), hp.getScale(), hp.isStale(), fallbackMaxHp(npc.getId()),
@@ -505,8 +508,35 @@ public class FoePlugin extends Plugin
 	}
 
 	/** Logout, hop or stop: forget the fight. The learned weaknesses stay (see {@link #stop}); only this tick's buffer goes. */
+	/**
+	 * Spec addendum 13: the first time this start shows an NPC whose form has an id of its own, log both ids and what
+	 * the table holds for each. Weaknesses are looked up by the form's id, and whether the wiki's ids match that for
+	 * NPCs that transform is the last [assumed] in addendum 8; ordinary play now checks it. Info level, no UI.
+	 */
+	// ponytail: the set of pairs seen is unbounded for a start, but there are only so many NPC forms in the game
+	private void noteForm(int npcId, int shownId)
+	{
+		if (npcId != shownId && formsSeen.add(((long) npcId << 32) | (shownId & 0xffffffffL)))
+		{
+			log.info("form change: npc {} is shown as {}; table {}={} is not used, {}={} is", npcId, shownId,
+				npcId, tableText(npcId), shownId, tableText(shownId));
+		}
+	}
+
+	private String tableText(int id)
+	{
+		Weakness w = weaknessTable.get(id);
+		if (w == null)
+		{
+			return "no entry";
+		}
+		String element = w.getElement() == null ? "NONE" : w.getElement().name();
+		return w.getPercent() == null ? element : element + " " + w.getPercent();
+	}
+
 	private void forgetEverything()
 	{
+		formsSeen.clear();
 		feed.reset();
 		hpMemory.clear();
 		hpTracker.clear();

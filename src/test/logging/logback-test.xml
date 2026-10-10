@@ -1,0 +1,17 @@
+<!--
+  Logging for the unit tests only, wired by the `test` task in build.gradle (logback.configurationFile). Without it
+  the RuneLite client jar's own logback.xml sends every test's log lines into the player's real
+  ~/.runelite/logs/client.log. Deliberately outside src/test/resources: `./gradlew run` uses the test classpath, and
+  the dev client should keep logging where RuneLite normally does. Tests that assert on log lines attach their own
+  appender (LogCapture), so they need nothing from here but the INFO level.
+-->
+<configuration>
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+		</encoder>
+	</appender>
+	<root level="INFO">
+		<appender-ref ref="STDOUT"/>
+	</root>
+</configuration>
