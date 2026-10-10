@@ -6,6 +6,8 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import javax.inject.Inject;
@@ -56,18 +58,29 @@ class FoeOverlay extends Overlay
 	 * bar. Its text is empty when HP text is None and when max HP is unknown, and {@code inside} says the text goes on
 	 * the bar rather than beside it (never true for an empty text: there is nothing to centre). Every other cell has
 	 * text, or it is not in the list: a missing segment collapses, with no gap or placeholder.
+	 *
+	 * <p>{@code reserve} is every text the HP cell can show for this target, from unhit to dead ({@link #hpReserve}).
+	 * {@link #frame} makes room for the widest of them, so the panel does not move while HP changes (Task 11 review
+	 * F1). It is empty for every other cell.
 	 */
 	static final class Cell
 	{
 		final String text;
 		final boolean hp;
 		final boolean inside;
+		final List<String> reserve;
 
 		Cell(String text, boolean hp, boolean inside)
+		{
+			this(text, hp, inside, Collections.emptyList());
+		}
+
+		Cell(String text, boolean hp, boolean inside, List<String> reserve)
 		{
 			this.text = text;
 			this.hp = hp;
 			this.inside = inside;
+			this.reserve = reserve;
 		}
 	}
 
@@ -270,8 +283,10 @@ class FoeOverlay extends Overlay
 	 *
 	 * <p>Text inside the bar widens the bar to fit ({@link #INSIDE_PAD} clear on each side) instead of falling back
 	 * to beside or being clipped, so the setting is honoured and no digit is lost; the bar is also made tall enough
-	 * for the font and its shadow. Only inside text does either, so the widths do not depend on the HP text when it
-	 * is beside.
+	 * for the font and its shadow. Only inside text does either.
+	 *
+	 * <p>The HP text is measured from the cell's {@code reserve}, never from the current text alone, so no width or
+	 * position depends on the current HP: the bar does not grow as HP falls, and no cell slides (Task 11 review F1).
 	 */
 	static Frame frame(List<Cell> cells, FoeConfig.Layout layout, FontMetrics fm)
 	{
@@ -290,8 +305,9 @@ class FoeOverlay extends Overlay
 			}
 		}
 		int barH = hp == null ? 0 : barHeight(hp, fm);
-		int natural = hp == null ? 0 : hp.inside ? Math.max(BAR_W, fm.stringWidth(hp.text) + 2 * INSIDE_PAD) : BAR_W;
-		int beside = hp == null || hp.inside || hp.text.isEmpty() ? 0 : BAR_TEXT_GAP + fm.stringWidth(hp.text);
+		int textW = hp == null ? 0 : hpTextWidth(hp, fm);
+		int natural = hp == null ? 0 : hp.inside ? Math.max(BAR_W, textW + 2 * INSIDE_PAD) : BAR_W;
+		int beside = hp == null || hp.inside || hp.text.isEmpty() ? 0 : BAR_TEXT_GAP + textW;
 
 		int[] x = new int[line.size()];
 		int cursor = PAD;
@@ -323,6 +339,42 @@ class FoeOverlay extends Overlay
 		int hpTop = PAD + lineH + ROW_GAP;
 		Rectangle bar = new Rectangle(PAD, hpTop + (hpH - barH) / 2, width - PAD * 2 - beside, barH);
 		return new Frame(width, hpTop + hpH + PAD, line, x, lineH, hp, bar, hpTop, hpH);
+	}
+
+	/** The room the HP cell's text needs: its current text, or the widest of its reserve, whichever is wider. */
+	private static int hpTextWidth(Cell hp, FontMetrics fm)
+	{
+		int w = fm.stringWidth(hp.text);
+		for (String r : hp.reserve)
+		{
+			w = Math.max(w, widestDigits(r, fm));
+		}
+		return w;
+	}
+
+	/** The width of {@code s} with every digit drawn as the font's widest digit, so any number of that length fits. */
+	static int widestDigits(String s, FontMetrics fm)
+	{
+		int digit = 0;
+		for (char d = '0'; d <= '9'; d++)
+		{
+			digit = Math.max(digit, fm.charWidth(d));
+		}
+		int digits = 0;
+		StringBuilder rest = new StringBuilder(s.length());
+		for (int i = 0; i < s.length(); i++)
+		{
+			char ch = s.charAt(i);
+			if (ch >= '0' && ch <= '9')
+			{
+				digits++;
+			}
+			else
+			{
+				rest.append(ch);
+			}
+		}
+		return Math.max(fm.stringWidth(s), digits * digit + fm.stringWidth(rest.toString()));
 	}
 
 	/**
@@ -387,7 +439,8 @@ class FoeOverlay extends Overlay
 		if (hasBar(s))
 		{
 			String hp = hpText(s, c);
-			out.add(new Cell(hp, true, !hp.isEmpty() && c.hpTextPosition() == FoeConfig.HpTextPosition.INSIDE));
+			out.add(new Cell(hp, true, !hp.isEmpty() && c.hpTextPosition() == FoeConfig.HpTextPosition.INSIDE,
+				hpReserve(s, c)));
 		}
 		if (c.detail() == FoeConfig.Detail.FULL)
 		{
@@ -450,6 +503,31 @@ class FoeOverlay extends Overlay
 				return (partial(s) ? Math.max(1, Math.min(99, pct)) : pct) + "%";
 			default:
 				return "";
+		}
+	}
+
+	/**
+	 * Every text {@link #hpText} can give this target under this setting: the unhit max HP, and the setting's text at
+	 * full HP. Current HP never has more digits than max HP, and {@link #frame} measures each digit at the font's
+	 * widest, so these cover every value in between. Empty when there is never any text.
+	 */
+	static List<String> hpReserve(TargetSnapshot s, FoeConfig c)
+	{
+		int max = s.getMaxHp();
+		if (max <= 0)
+		{
+			return Collections.emptyList();
+		}
+		switch (c.hpText())
+		{
+			case CURRENT_MAX:
+				return Arrays.asList(String.valueOf(max), max + "/" + max);
+			case CURRENT:
+				return Collections.singletonList(String.valueOf(max));
+			case PERCENT:
+				return Arrays.asList(String.valueOf(max), "100%");
+			default:
+				return Collections.emptyList();
 		}
 	}
 
