@@ -489,7 +489,10 @@ final class WeaknessTableBuilder
 			}
 			// An element without a percent is still a claim about the element (addendum 9), so it takes part in the
 			// conflict rule; resolve() skips an id only when none of its rows has a percent (rule 3).
-			Entry value = new Entry(element, row.percent == null ? null : row.percent.intValue());
+			// An element at 0% gives no bonus, so it is no weakness: written as NONE (Task 11 review F7, operator
+			// 2026-10-10), and as NONE it takes part in the conflict rule.
+			Entry value = row.percent != null && row.percent == 0 ? new Entry(Element.NONE, null)
+				: new Entry(element, row.percent == null ? null : row.percent.intValue());
 			for (Integer id : numeric)
 			{
 				claims.computeIfAbsent(id, k -> new ArrayList<>()).add(new Claim(row, value));

@@ -162,12 +162,20 @@ final class WeaknessTable
 		return new Loaded(Map.copyOf(entries), skipped, null);
 	}
 
-	/** The line's weakness, or null when the combination is one the generator never writes (a NONE with a percent). */
+	/**
+	 * The line's weakness, or null when the combination is one the generator never writes (a NONE with a percent). An
+	 * element at 0% is NONE: no bonus is no weakness (Task 11 review F7). The generator writes it as NONE already;
+	 * this reads an older table the same way.
+	 */
 	private static Weakness weakness(String name, String percent)
 	{
 		if (name.equals("NONE"))
 		{
 			return percent.isEmpty() ? Weakness.NONE : null;
+		}
+		if (percent.equals("0"))
+		{
+			return Weakness.NONE;
 		}
 		return new Weakness(Weakness.Element.valueOf(name), percent.isEmpty() ? null : Integer.valueOf(percent));
 	}
