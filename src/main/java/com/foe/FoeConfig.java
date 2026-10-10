@@ -7,7 +7,7 @@ import net.runelite.client.config.Range;
 import net.runelite.client.config.Units;
 
 /**
- * Nine settings (spec addenda 3 and 9), defaults first in every enum so the settings panel lists the default first.
+ * Ten settings (spec addenda 3, 9 and 14), defaults first in every enum so the settings panel lists the default first.
  *
  * <p>Storage is by {@code Enum.name()} under {@code keyName} (ConfigPanel.createComboBox writes
  * {@code ((Enum) selected).name()}), so the {@code toString} labels below only change what the combo box shows,
@@ -193,5 +193,12 @@ public interface FoeConfig extends Config
 	default int backgroundOpacity()
 	{
 		return 61;
+	}
+
+	@ConfigItem(keyName = "showPortrait", name = "Show portrait", position = 9,
+		description = "A small picture of the monster, left of its name.")
+	default boolean showPortrait()
+	{
+		return false;
 	}
 }
