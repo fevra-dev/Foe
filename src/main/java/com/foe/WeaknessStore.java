@@ -135,7 +135,11 @@ final class WeaknessStore
 		write.accept(format(stored));
 	}
 
-	/** True when the value has at least {@link #MAX_ENTRIES} tokens, so {@link #parse} did not read all of it. */
+	/**
+	 * True when the value has at least {@link #MAX_ENTRIES} tokens, so {@link #parse} did not read all of it or a
+	 * rewrite with one more would not be read back whole. Tokens are commas plus one (Task 11 review F6: counting
+	 * MAX_ENTRIES commas let exactly MAX_ENTRIES tokens through).
+	 */
 	static boolean atCap(String raw)
 	{
 		if (raw == null)
@@ -145,7 +149,7 @@ final class WeaknessStore
 		int commas = 0;
 		for (int i = 0; i < raw.length(); i++)
 		{
-			if (raw.charAt(i) == ',' && ++commas >= MAX_ENTRIES)
+			if (raw.charAt(i) == ',' && ++commas >= MAX_ENTRIES - 1)
 			{
 				return true;
 			}
