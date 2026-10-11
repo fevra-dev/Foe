@@ -55,7 +55,7 @@ public class FoeConfigTest
 		FoeConfig d = new FoeConfig()
 		{
 		};
-		assertFalse("addendum 14: default Off", d.showPortrait());
+		assertTrue("addendum 20: default On, now that creatures on all fours draw their heads", d.showPortrait());
 	}
 
 	// Spec addendum 5: what was learned is saved under one key of the foe group that is not a setting. A declared item

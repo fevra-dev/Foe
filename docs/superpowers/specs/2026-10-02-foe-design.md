@@ -661,3 +661,9 @@ than it is long, so the side view showed a sliver. The rule is now four cases, `
 Each newly loaded portrait logs its view and extents at debug level (`portrait: id N drawn VIEW (width, height,
 length)`), so the rule can be checked against real models. **`[assumed]`, checked in game next:** which side of the
 width/length line the frog and the spider actually fall on.
+
+**Checked in game, 2026-10-10 (operator):** the giant spider drawn from above was "a good call", the giant rat and
+the frog from the side look right, and chatheads are unchanged. Log: Giant rat 2859 is SIDE (138 × 83 × 333), Giant
+spider 3017 is TOP (186 × 41 × 176). So **Show portrait is now On by default** (addendum 19's condition). Open: the
+spider is only about 6% wider than it is long, so a spider with tighter legs could fall to SIDE. The frog's extents
+weren't logged, so the line was left where it is rather than moved blind.

@@ -199,6 +199,6 @@ public interface FoeConfig extends Config
 		description = "A small picture of the monster, left of its name.")
 	default boolean showPortrait()
 	{
-		return false;
+		return true;
 	}
 }

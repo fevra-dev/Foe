@@ -19,7 +19,7 @@ a weakness shows only when the game or the bundled table says what it is.
 - **Elemental weakness.** From a table built from the OSRS Wiki, for example *Fire 50%*. When one of
   your spells lands, the game reports the weakness and Foe remembers it, and a reported element wins
   over a different one in the table. A monster with no weakness shows nothing.
-- **Portrait** (off by default). A small picture of the monster's head, drawn from its own models:
+- **Portrait.** A small picture of the monster's head, drawn from its own models:
   its chathead when it has one, otherwise the head of its body model, seen from the side for a
   creature on all fours.
 
@@ -47,7 +47,7 @@ a weakness shows only when the game or the bundled table says what it is.
 | Show weakness % | On | The percentage beside it, for example *Fire 50%* |
 | Linger after combat | 10 s | How long the panel stays after the last sign of combat (0 to 60). Very short values can flicker between hits |
 | Background opacity | 61% | RuneLite's standard overlay background; 0% draws the text alone |
-| Show portrait | Off | A small picture of the monster, left of its name |
+| Show portrait | On | A small picture of the monster's head, left of its name |
 
 ![Stacked and One line](docs/layouts.png)
 
