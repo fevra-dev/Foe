@@ -86,6 +86,43 @@ public class PortraitTest
 		assertTrue("the head fills a good part of the square: " + red + " pixels", red > 600);
 	}
 
+	/**
+	 * Addendum 20 (operator, in game): the side view fixed the rat and the frog but not the giant spider, whose legs
+	 * spread it wider than it is long, so from the side it was a sliver. Low and wider than long is seen from above,
+	 * whole. Width x, height y, length z.
+	 */
+	@Test
+	public void theViewFollowsTheBodysShape()
+	{
+		assertEquals(Portrait.View.CHATHEAD, Portrait.View.of(true, 50, 10, 400));
+		assertEquals("a human: tall", Portrait.View.UPRIGHT, Portrait.View.of(false, 60, 200, 40));
+		assertEquals("as tall as long: upright", Portrait.View.UPRIGHT, Portrait.View.of(false, 60, 100, 100));
+		assertEquals("a rat: low and long", Portrait.View.SIDE, Portrait.View.of(false, 60, 40, 400));
+		assertEquals("as long as wide: side", Portrait.View.SIDE, Portrait.View.of(false, 120, 40, 120));
+		assertEquals("a spider: low and wide", Portrait.View.TOP, Portrait.View.of(false, 300, 40, 160));
+	}
+
+	@Test
+	public void aCreatureWiderThanItIsLongIsSeenWholeFromAbove()
+	{
+		// A spider lying flat in the x-z plane (no height at all, so no front or side view can show it): a red body,
+		// x and z from -30 to 30, and blue legs reaching out to x -150 and 150. From above it is drawn whole.
+		Portrait.Mesh spider = new Portrait.Mesh(
+			new float[]{-30, 30, 30, -30, -150, -30, -30, -150, 30, 150, 150, 30},
+			new float[12],
+			new float[]{-30, -30, 30, 30, -10, -10, 10, 10, -10, -10, 10, 10},
+			new int[]{0, 0, 4, 4, 8, 8}, new int[]{1, 2, 5, 6, 9, 10}, new int[]{2, 3, 6, 7, 10, 11},
+			new int[]{RED, RED, BLUE, BLUE, BLUE, BLUE}, new int[]{-1, -1, -1, -1, -1, -1}, null, 6, false);
+		assertEquals("precondition", Portrait.View.TOP, Portrait.View.of(false, 300, 0, 60));
+		BufferedImage img = Portrait.render(spider, 60);
+		assertNotNull(img);
+		int centre = img.getRGB(30, 30);
+		assertTrue("the body in the middle: " + Integer.toHexString(centre), (centre >>> 24) == 255 && (centre >> 16 & 255) > 150);
+		int left = img.getRGB(4, 30), right = img.getRGB(55, 30);
+		assertTrue("a leg reaches the left edge: " + Integer.toHexString(left), (left >>> 24) == 255 && (left & 255) > 150);
+		assertTrue("and the right: " + Integer.toHexString(right), (right >>> 24) == 255 && (right & 255) > 150);
+	}
+
 	@Test
 	public void anUprightBodyStillShowsItsTopFromTheFront()
 	{

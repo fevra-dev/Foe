@@ -88,6 +88,10 @@ final class PortraitCache
 			return CompletableFuture.completedFuture(null);
 		}
 		misses.remove(id);
+		if (log.isDebugEnabled())
+		{
+			log.debug("portrait: id {} drawn {}", id, Portrait.describe(mesh)); // addendum 20: tune the view rule
+		}
 		try
 		{
 			return CompletableFuture.supplyAsync(() -> render(id, mesh), executor);
