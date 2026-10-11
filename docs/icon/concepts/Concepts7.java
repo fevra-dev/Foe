@@ -4,7 +4,8 @@
 // Run: javac -d /tmp/foeicon *.java && java -cp /tmp/foeicon Concepts7 .
 import java.awt.*; import java.awt.geom.*;
 public class Concepts7 {
-  static final Color TILE = Concepts.TILE, WHITE = Concepts.WHITE, GREEN = Concepts.GREEN, GLASS = Concepts4.GLASS;
+  static final Color TILE = Concepts.TILE, WHITE = Concepts.WHITE, GLASS = Concepts4.GLASS;
+  static Color GREEN = Concepts.GREEN;
   static Path2D tri(double x1, double y1, double x2, double y2, double x3, double y3) { return Concepts4.tri(x1, y1, x2, y2, x3, y3); }
 
   /** A long goblin ear: base on the side of the head, sweeping out and a little up to a point. side = -1 / +1. */

@@ -4,7 +4,7 @@ import java.awt.*; import java.awt.geom.*; import java.awt.image.*; import javax
 public class Concepts {
   static final Color TILE = new Color(0x35, 0x32, 0x2D);
   static final Color WHITE = new Color(0xF2, 0xF0, 0xEB);
-  static final Color GREEN = new Color(82, 161, 82);        // FoeOverlay.BAR_FG: the HP bar, and a goblin
+  static Color GREEN = new Color(82, 161, 82);              // FoeOverlay.BAR_FG; not final so later rounds can recolour
   static final int W = 48, H = 72, K = 8;
   static final double CX = 22, CY = 33, R = 11.5;            // lens centre and radius (stroke centre)
 

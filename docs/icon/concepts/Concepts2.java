@@ -1,7 +1,8 @@
 // Foe icon finalists. Same tile, palette and lens as Concepts.java.
 import java.awt.*; import java.awt.geom.*; import java.awt.image.*; import javax.imageio.*; import java.io.*;
 public class Concepts2 {
-  static final Color TILE = Concepts.TILE, WHITE = Concepts.WHITE, GREEN = Concepts.GREEN;
+  static final Color TILE = Concepts.TILE, WHITE = Concepts.WHITE;
+  static Color GREEN = Concepts.GREEN;
   static final double CX = Concepts.CX, CY = Concepts.CY, R = Concepts.R;
 
   /** Ears leave the ring at its sides and point out and up: span outward, lift upward. Tips stay 3px inside the tile. */
