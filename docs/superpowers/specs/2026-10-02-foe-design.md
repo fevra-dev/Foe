@@ -627,3 +627,20 @@ later. A repeat attack was fine, because the image is cached by then. The fix (o
 
 **v1.1, not v1 (operator):** a monster search in the side panel, with stats, weakness, attack style, max hit and the
 like. It needs a wider wiki query than the weakness-only snapshot in `data/`, so it gets its own spec, grill and plan.
+
+## Addendum 19 — 2026-10-10: defaults, and heads for creatures on all fours (operator, from in-game screenshots)
+
+**Defaults (operator):** HP text **Inside bar** and Detail **Compact**, from the in-game screenshots. Each is now
+the first constant of its enum, so the settings panel lists the default first. The others are unchanged: Stacked,
+Current/max, Faded, Show weakness and Show weakness % on, linger 10 s, background 61%. Show portrait stays **Off**
+until the fix below is checked in game. If it checks out, it becomes **On** before the Plugin Hub release
+(operator).
+
+**Portraits of creatures on all fours.** A giant rat, a frog and a spider have no chathead, and their body crop (the
+top 30% of the height, seen from the front) came out as polygon blobs. The top of a creature on all fours is its back.
+Its head is at its front. So a body longer than it is tall (z extent greater than y extent) is seen from the side:
+across is z and depth is x. It is cropped to a square over the front 30% of its length, centred on the height of what
+is there. The front is the smaller-z end, as the spike's yaw-0 dumps showed. Chatheads and upright bodies are
+unchanged. The operator prefers heads to whole bodies, and this keeps every portrait a head.
+- **`[assumed]`, check in game:** the 30% share for a long body. A rat's length includes its tail, so the crop may
+  take in some of the body.

@@ -40,16 +40,17 @@ public class FoeOverlayTest
 	private static final Weakness FIRE = new Weakness(Weakness.Element.FIRE);
 
 	/**
-	 * FoeConfig with the interface's own defaults, each one overridable, except the layout: the geometry assertions
-	 * in this class are written against the one-line strip, so that is spelled out here. The real default (Stacked)
-	 * is pinned in FoeConfigTest, and the stacked layout is tested through {@link #stacked()}.
+	 * FoeConfig with the interface's own defaults, each one overridable, except three: the geometry assertions in
+	 * this class are written against the one-line strip, HP text beside the bar and Full detail, so those are spelled
+	 * out here. The real defaults (Stacked, Inside bar, Compact: addendum 19) are pinned in FoeConfigTest, and the
+	 * other values are tested through {@link #stacked()}, {@link #inside()} and the detail tests.
 	 */
 	private static final class Cfg implements FoeConfig
 	{
 		Layout layout = Layout.ONE_LINE;
 		HpText hpText = FoeConfig.super.hpText();
-		HpTextPosition hpTextPosition = FoeConfig.super.hpTextPosition();
-		Detail detail = FoeConfig.super.detail();
+		HpTextPosition hpTextPosition = HpTextPosition.BESIDE;
+		Detail detail = Detail.FULL;
 		boolean showWeakness = FoeConfig.super.showWeakness();
 		boolean showWeaknessPercent = FoeConfig.super.showWeaknessPercent();
 		StaleHpStyle staleHpStyle = FoeConfig.super.staleHpStyle();
@@ -1046,7 +1047,7 @@ public class FoeOverlayTest
 	public void theHpCellIsInsideOnlyWhenTheSettingSaysSoAndThereIsTextToPlace()
 	{
 		Cfg c = new Cfg();
-		assertFalse("beside is the default", FoeOverlay.cells(live(), c).get(1).inside);
+		assertFalse("beside, as this fixture sets it", FoeOverlay.cells(live(), c).get(1).inside);
 		c.hpTextPosition = FoeConfig.HpTextPosition.INSIDE;
 		assertTrue(FoeOverlay.cells(live(), c).get(1).inside);
 		c.hpText = FoeConfig.HpText.NONE;

@@ -14,12 +14,14 @@ a weakness shows only when the game or the bundled table says what it is.
 - **HP.** Exact when Foe has seen every hit since the monster was at full health. Otherwise it's the
   middle of the range the health bar allows. Before your first hit, the bar is an empty outline with
   the max HP alone.
-- **Combat levels.** The combat level beside the name, and in Full detail the Attack, Strength,
-  Defence, Ranged and Magic levels. Levels of 1 or less are left out.
+- **Combat levels.** The combat level beside the name, and with Detail set to Full the Attack,
+  Strength, Defence, Ranged and Magic levels. Levels of 1 or less are left out.
 - **Elemental weakness.** From a table built from the OSRS Wiki, for example *Fire 50%*. When one of
   your spells lands, the game reports the weakness and Foe remembers it, and a reported element wins
   over a different one in the table. A monster with no weakness shows nothing.
-- **Portrait** (off by default). A small picture of the monster's head, drawn from its own models.
+- **Portrait** (off by default). A small picture of the monster's head, drawn from its own models:
+  its chathead when it has one, otherwise the head of its body model, seen from the side for a
+  creature on all fours.
 
 ### How it behaves
 
@@ -38,8 +40,8 @@ a weakness shows only when the game or the bundled table says what it is.
 |---|---|---|
 | Layout | Stacked | *Stacked* puts the bar under the name; *One line* puts everything on one strip |
 | HP text | Current/max | *Current/max*, *Current*, *Percent* or *None* |
-| HP text position | Beside bar | *Beside bar*, or *Inside bar*, where the bar widens if the text needs it |
-| Detail | Full | *Full* adds Attack, Strength, Defence, Ranged and Magic; *Compact* is name, HP and weakness |
+| HP text position | Inside bar | *Inside bar*, where the bar widens if the text needs it, or *Beside bar* |
+| Detail | Compact | *Compact* is name, HP and weakness; *Full* adds Attack, Strength, Defence, Ranged and Magic |
 | Stale HP style | Faded | How HP looks once the health bar has gone: *Faded* (half opacity) or *Hollow* (outline only) |
 | Show weakness | On | The elemental weakness, when one is known |
 | Show weakness % | On | The percentage beside it, for example *Fire 50%* |
