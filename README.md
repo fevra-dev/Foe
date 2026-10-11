@@ -21,7 +21,11 @@ a weakness shows only when the game or the bundled table says what it is.
   over a different one in the table. A monster with no weakness shows nothing.
 - **Portrait.** A small picture of the monster's head, drawn from its own models:
   its chathead when it has one, otherwise the head of its body model, seen from the side for a
-  creature on all fours.
+  creature on all fours, and from above for a spider-shaped one.
+
+![Portraits: a goblin, a mugger, a giant rat, a giant frog and a giant spider](docs/portraits.png)
+
+*Portraits, top to bottom: two chatheads, a rat and a frog from the side, a spider from above.*
 
 ### How it behaves
 
@@ -55,7 +59,7 @@ a weakness shows only when the game or the bundled table says what it is.
 
 ![The HP text settings](docs/hp-text.png)
 
-*HP text: Current/max, Current, Percent, and Inside bar.*
+*HP text: Current/max, Current, Percent, then Beside bar.*
 
 ![Faded and Hollow stale HP](docs/stale.png)
 
