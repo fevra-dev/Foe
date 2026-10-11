@@ -51,6 +51,56 @@ public class PortraitTest
 		assertTrue("clear beyond the body's sides", (img.getRGB(2, 30) >>> 24) < 128);
 	}
 
+	/**
+	 * Operator, in game 2026-10-10: a giant rat, a frog and a spider (no chathead) came out as polygon blobs, because
+	 * the top of a creature on all fours is its back, not its head. A body longer than it is tall is drawn from the
+	 * side and cropped at its front end, where its head is (the front is the smaller-z end: see the test below).
+	 *
+	 * <p>The rat here lies along z, 400 long and 40 tall, as one flat panel in the y-z plane: red from z -200 to -60
+	 * (its head), blue behind. From the front the panel has no width at all, so only a side view can show it.
+	 */
+	@Test
+	public void aCreatureOnAllFoursShowsItsHeadFromTheSide()
+	{
+		Portrait.Mesh rat = new Portrait.Mesh(new float[8],
+			new float[]{-40, -40, 0, 0, -40, -40, 0, 0},
+			new float[]{-200, -60, -60, -200, -60, 200, 200, -60},
+			new int[]{0, 0, 4, 4}, new int[]{1, 2, 5, 6}, new int[]{2, 3, 6, 7},
+			new int[]{RED, RED, BLUE, BLUE}, new int[]{-1, -1, -1, -1}, null, 4, false);
+		BufferedImage img = Portrait.render(rat, 60);
+		assertNotNull(img);
+		int red = 0;
+		for (int y = 0; y < 60; y++)
+		{
+			for (int x = 0; x < 60; x++)
+			{
+				int c = img.getRGB(x, y);
+				if ((c >>> 24) < 128)
+				{
+					continue;
+				}
+				assertTrue("only the head, no body, at " + x + "," + y + ": " + Integer.toHexString(c), (c & 255) < 120);
+				red++;
+			}
+		}
+		assertTrue("the head fills a good part of the square: " + red + " pixels", red > 600);
+	}
+
+	@Test
+	public void anUprightBodyStillShowsItsTopFromTheFront()
+	{
+		// The rat's rule must not catch a body that stands: the 400-tall body of the crop test above, but given depth
+		// (z from -50 to 50), is still taller than it is long, so it keeps the front view and the top crop.
+		Portrait.Mesh body = new Portrait.Mesh(new float[]{-50, 50, 50, -50, 50, -50},
+			new float[]{-400, -400, -200, -200, 0, 0}, new float[]{-50, -50, 50, 50, 50, 50},
+			new int[]{0, 0, 3, 3}, new int[]{1, 2, 2, 4}, new int[]{2, 3, 4, 5},
+			new int[]{RED, RED, BLUE, BLUE}, new int[]{-1, -1, -1, -1}, null, 4, false);
+		BufferedImage img = Portrait.render(body, 60);
+		assertNotNull(img);
+		assertEquals("red reaches the bottom edge, as the top crop draws it", 255, img.getRGB(30, 59) >>> 24);
+		assertTrue("clear beyond the body's sides", (img.getRGB(2, 30) >>> 24) < 128);
+	}
+
 	@Test
 	public void theNearerFaceIsDrawnOverTheFartherOne()
 	{

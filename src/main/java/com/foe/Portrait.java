@@ -8,13 +8,18 @@ import java.util.Arrays;
 
 /**
  * The portrait renderer (spec addendum 14): a flat software render of a lit model into a square image, with a
- * transparent background. Painter's algorithm (faces sorted far to near, no z-buffer), orthographic, straight on.
+ * transparent background. Painter's algorithm (faces sorted far to near, no z-buffer), orthographic, straight on,
+ * except a body on all fours, which is seen from the side (addendum 19).
  * A textured face draws grey at its light level. Pure: it takes the model's arrays, never the client, so it is tested
  * without one and can run on any thread.
  */
 final class Portrait
 {
-	/** A body model is cropped to a square over this share of its height, from the top: the head. */
+	/**
+	 * A body model is cropped to a square over this share of its height, from the top: the head. A body longer than
+	 * it is tall is on all fours, and its head is at its front instead: seen from the side, it is cropped to a square
+	 * over this share of its length, from the front (addendum 19).
+	 */
 	static final double HEAD = 0.3;
 	private static final int SUPERSAMPLE = 4;
 	/** The client's default brightness [assumed: the middle of its 0.6 to 0.9 brightness steps]. */
@@ -61,6 +66,7 @@ final class Portrait
 		Integer[] order = new Integer[m.faces];
 		int drawable = 0;
 		double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE, maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
+		double minZ = Double.MAX_VALUE, maxZ = -Double.MAX_VALUE;
 		for (int f = 0; f < m.faces; f++)
 		{
 			if (m.colours3 != null && m.colours3[f] == -2)
@@ -74,6 +80,8 @@ final class Portrait
 				maxX = Math.max(maxX, m.x[v]);
 				minY = Math.min(minY, m.y[v]);
 				maxY = Math.max(maxY, m.y[v]);
+				minZ = Math.min(minZ, m.z[v]);
+				maxZ = Math.max(maxZ, m.z[v]);
 			}
 		}
 		if (drawable == 0)
@@ -81,7 +89,40 @@ final class Portrait
 			return null;
 		}
 		Integer[] faces = Arrays.copyOf(order, drawable);
-		if (!m.head)
+		// On all fours (addendum 19): a body longer than it is tall is seen from the side, so the screen's horizontal
+		// is the model's z and the depth is its x. Chatheads and upright bodies are seen from the front.
+		boolean fours = !m.head && maxZ - minZ > maxY - minY;
+		float[] across = fours ? m.z : m.x;
+		float[] depth = fours ? m.x : m.z;
+		if (fours)
+		{
+			minX = minZ;
+			maxX = maxZ;
+		}
+		if (!m.head && fours)
+		{
+			// The front is the smaller-z end (the spike's yaw-0 dumps, docs/probe/portrait.md): crop a square over
+			// the front share of the length, centred on the height of what is there.
+			double side = (maxX - minX) * HEAD;
+			double sum = 0;
+			int count = 0;
+			for (int f : faces)
+			{
+				for (int v : new int[]{m.a[f], m.b[f], m.c[f]})
+				{
+					if (across[v] <= minX + side)
+					{
+						sum += m.y[v];
+						count++;
+					}
+				}
+			}
+			double centre = count == 0 ? (minY + maxY) / 2 : sum / count;
+			maxX = minX + side;
+			minY = centre - side / 2;
+			maxY = centre + side / 2;
+		}
+		else if (!m.head)
 		{
 			double side = (maxY - minY) * HEAD;
 			double sum = 0;
@@ -92,7 +133,7 @@ final class Portrait
 				{
 					if (m.y[v] <= minY + side)
 					{
-						sum += m.x[v];
+						sum += across[v];
 						count++;
 					}
 				}
@@ -103,9 +144,10 @@ final class Portrait
 			maxY = minY + side;
 		}
 		// Far first: the spike's yaw-0 dumps showed every model's front with this order (docs/probe/portrait.md).
+		// From the side the depth is x, and the order is the same rule along it.
 		Arrays.sort(faces, (p, q) -> Double.compare(
-			m.z[m.a[q]] + m.z[m.b[q]] + m.z[m.c[q]],
-			m.z[m.a[p]] + m.z[m.b[p]] + m.z[m.c[p]]));
+			depth[m.a[q]] + depth[m.b[q]] + depth[m.c[q]],
+			depth[m.a[p]] + depth[m.b[p]] + depth[m.c[p]]));
 
 		int big = size * SUPERSAMPLE;
 		double span = Math.max(Math.max(maxX - minX, maxY - minY), 1);
@@ -122,7 +164,7 @@ final class Portrait
 			int[] vs = {m.a[f], m.b[f], m.c[f]};
 			for (int k = 0; k < 3; k++)
 			{
-				xs[k] = (int) Math.round(m.x[vs[k]] * scale + offX);
+				xs[k] = (int) Math.round(across[vs[k]] * scale + offX);
 				ys[k] = (int) Math.round(m.y[vs[k]] * scale + offY); // the client's y points down: head at the top
 			}
 			boolean textured = m.textures != null && m.textures[f] != -1;
