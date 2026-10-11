@@ -644,3 +644,20 @@ is there. The front is the smaller-z end, as the spike's yaw-0 dumps showed. Cha
 unchanged. The operator prefers heads to whole bodies, and this keeps every portrait a head.
 - **`[assumed]`, check in game:** the 30% share for a long body. A rat's length includes its tail, so the crop may
   take in some of the body.
+
+## Addendum 20 — 2026-10-10: wide creatures are seen from above (supersedes addendum 19's all-fours rule)
+
+In game (operator), addendum 19 fixed the giant rat and the frog, but not the giant spider. Its legs spread it wider
+than it is long, so the side view showed a sliver. The rule is now four cases, `Portrait.View`, from the body's width
+(x), height (y) and length (z):
+
+| View | When | Drawn |
+|---|---|---|
+| CHATHEAD | the NPC has chathead models | from the front, whole |
+| UPRIGHT | length ≤ height | from the front, the top 30% (the head) |
+| SIDE | low, and length ≥ width (rat, frog) | from the side, the front 30% (the head) |
+| TOP | low, and wider than long (spider) | from above, whole, the front at the top |
+
+Each newly loaded portrait logs its view and extents at debug level (`portrait: id N drawn VIEW (width, height,
+length)`), so the rule can be checked against real models. **`[assumed]`, checked in game next:** which side of the
+width/length line the frog and the spider actually fall on.
