@@ -1,11 +1,11 @@
 // Draws icon.png (48x72, the Plugin Hub maximum). Regenerate from the repo root with:
 //   java docs/icon/Icon.java icon.png /tmp/foe-icon-preview
 //
-// Dieter Rams-style badge in the Wayfarer/Quoth system: a flat dark tile, a white magnifier, and one accent.
+// Dieter Rams-style badge in the Wayfarer/Quoth system: a flat dark tile, a white lens ring, and one accent.
 // The accent is OSRS goblin olive. A goblin's face fills the lens: frowning, an underbite with fangs pointing up,
 // and long ears breaking out over the ring with a tile-coloured knockout, so the white ring never swallows them.
-// The magnifier says what Foe does: it looks at the monster you're fighting. Chosen 2026-10-10 from four rounds of
-// concepts (docs/icon/concepts/, "G3 olive" on sheet10).
+// One bold glyph, like the family's W and speech bubble: the foe, in focus. Chosen 2026-10-10 from four rounds of
+// concepts (docs/icon/concepts/, "G1 olive" on sheet10).
 import java.awt.*; import java.awt.geom.*; import java.awt.image.*; import javax.imageio.*; import java.io.*;
 public class Icon {
   static final Color TILE = new Color(0x35, 0x32, 0x2D);   // the family tile (Wayfarer, Quoth)
@@ -13,8 +13,8 @@ public class Icon {
   static final Color OLIVE = new Color(156, 166, 58);      // OSRS goblin olive
   static final Color GLASS = new Color(0x45, 0x41, 0x3A);  // the lens: a lifted tile tone, not a new hue
 
-  static final double CX = 23, CY = 32, R = 12, STROKE = 2.8;   // the lens: centre, radius (stroke centre), stroke
-  static final double FACE_DY = 0.8, FACE_S = 0.84;             // the face: offset below the lens centre, and scale
+  static final double CX = 24, CY = 37, R = 13, STROKE = 2.6;   // the lens: centre, radius (stroke centre), stroke
+  static final double FACE_DY = 0.8, FACE_S = 0.92;             // the face: offset below the lens centre, and scale
 
   static Path2D tri(double x1, double y1, double x2, double y2, double x3, double y3) {
     Path2D p = new Path2D.Double(); p.moveTo(x1, y1); p.lineTo(x2, y2); p.lineTo(x3, y3); p.closePath(); return p;
@@ -52,7 +52,7 @@ public class Icon {
   /** The ears, over the ring: a tile-coloured knockout first, then the olive. */
   static void ears(Graphics2D g) {
     for (int side : new int[]{-1, 1}) {
-      Shape e = ear(side, 5.8, -3.6, 1.4, 16.5, -8.0);
+      Shape e = ear(side, 5.8, -3.6, 1.4, 17.0, -9.0);
       g.setColor(TILE); g.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)); g.draw(e);
       g.setColor(OLIVE); g.fill(e);
     }
@@ -72,10 +72,6 @@ public class Icon {
     g.draw(new Ellipse2D.Double(CX - R, CY - R, 2 * R, 2 * R));
     g.translate(CX, CY + FACE_DY); g.scale(FACE_S, FACE_S); ears(g);
     g.setTransform(t);
-    double h = Math.toRadians(45), r0 = R + 1.4;                            // the handle, down and right
-    g.setColor(WHITE);
-    g.setStroke(new BasicStroke(4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER));
-    g.draw(new Line2D.Double(CX + r0 * Math.cos(h), CY + r0 * Math.sin(h), 38.5, 52.5));
   }
 
   public static void main(String[] a) throws Exception {
