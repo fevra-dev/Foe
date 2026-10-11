@@ -31,6 +31,24 @@ public class PortraitTest
 		assertTrue("red dominates: " + Integer.toHexString(centre), (centre >> 16 & 255) > 150 && (centre >> 8 & 255) < 80);
 	}
 
+	/**
+	 * Addendum 21 (operator, in game): a black demon's wingtips rise above its head, and a crop of the top 30% cut
+	 * its jaw off. The upright crop now reaches past a third of the height: red over the top third here, blue below,
+	 * and the crop's bottom rows show the blue.
+	 */
+	@Test
+	public void anUprightCropReachesPastAThirdOfTheHeight()
+	{
+		Portrait.Mesh body = new Portrait.Mesh(new float[]{-50, 50, 50, -50, 50, -50},
+			new float[]{-300, -300, -200, -200, 0, 0}, new float[6],
+			new int[]{0, 0, 3, 3}, new int[]{1, 2, 2, 4}, new int[]{2, 3, 4, 5},
+			new int[]{RED, RED, BLUE, BLUE}, new int[]{-1, -1, -1, -1}, null, 4, false);
+		BufferedImage img = Portrait.render(body, 60);
+		assertNotNull(img);
+		int c = img.getRGB(30, 58);
+		assertTrue("blue at the bottom of the crop: " + Integer.toHexString(c), (c >>> 24) == 255 && (c & 255) > 150);
+	}
+
 	@Test
 	public void aBodyIsCroppedToASquareOverItsTopThirtyPercent()
 	{
@@ -100,6 +118,13 @@ public class PortraitTest
 		assertEquals("a rat: low and long", Portrait.View.SIDE, Portrait.View.of(false, 60, 40, 400));
 		assertEquals("as long as wide: side", Portrait.View.SIDE, Portrait.View.of(false, 120, 40, 120));
 		assertEquals("a spider: low and wide", Portrait.View.TOP, Portrait.View.of(false, 300, 40, 160));
+		// Measured in game 2026-10-10 (client.log, addendum 21): a lesser demon's wings and tail make it 5% longer than
+		// it is tall, and it stands; a hellhound is 73% as tall as it is long, and is on all fours.
+		assertEquals("lesser demon 7247: upright", Portrait.View.UPRIGHT, Portrait.View.of(false, 242, 490, 516));
+		assertEquals("hellhound 7256: side", Portrait.View.SIDE, Portrait.View.of(false, 62, 143, 196));
+		assertEquals("giant rat 2859: side", Portrait.View.SIDE, Portrait.View.of(false, 138, 83, 333));
+		assertEquals("giant spider 3017: top", Portrait.View.TOP, Portrait.View.of(false, 186, 41, 176));
+		assertEquals("black demon 7243: upright", Portrait.View.UPRIGHT, Portrait.View.of(false, 348, 553, 516));
 	}
 
 	@Test

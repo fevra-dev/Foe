@@ -16,11 +16,18 @@ import java.util.Arrays;
 final class Portrait
 {
 	/**
-	 * A body model is cropped to a square over this share of its height, from the top: the head. A body longer than
-	 * it is tall is on all fours, and its head is at its front instead: seen from the side, it is cropped to a square
-	 * over this share of its length, from the front (addendum 19).
+	 * An upright body is cropped to a square over this share of its height, from the top: the head. 0.35, not 0.3, so
+	 * a black demon's head still fits below the wingtips that rise over it (addendum 21).
 	 */
-	static final double HEAD = 0.3;
+	static final double HEAD = 0.35;
+	/** A body on all fours is seen from the side and cropped to a square over this share of its length, from the front. */
+	static final double FRONT = 0.3;
+	/**
+	 * A body is low (on all fours) only when its height is under this share of its length. Measured in game
+	 * (addendum 21): a lesser demon's wings and tail make it 5% longer than tall (0.95) though it stands, and a
+	 * hellhound is 0.73.
+	 */
+	static final double LOW = 0.85;
 	private static final int SUPERSAMPLE = 4;
 	/** The client's default brightness [assumed: the middle of its 0.6 to 0.9 brightness steps]. */
 	private static final double GAMMA = 0.8;
@@ -63,7 +70,8 @@ final class Portrait
 		CHATHEAD,
 		/** A body at least as tall as it is long: from the front, cropped to the top (its head). */
 		UPRIGHT,
-		/** Low, and at least as long as it is wide (a rat, a frog): from the side, cropped to the front (its head). */
+		/** Low (height under {@link #LOW} of its length), at least as long as wide (rat, frog, hellhound): from the
+		 * side, cropped to the front (its head). */
 		SIDE,
 		/** Low, and wider than it is long (a spider, its legs spread): from above, whole. */
 		TOP;
@@ -74,7 +82,7 @@ final class Portrait
 			{
 				return CHATHEAD;
 			}
-			if (length <= height)
+			if (height >= LOW * length)
 			{
 				return UPRIGHT;
 			}
@@ -173,7 +181,7 @@ final class Portrait
 		{
 			// The front is the smaller-z end (the spike's yaw-0 dumps, docs/probe/portrait.md): crop a square over
 			// the front share of the length, centred on the height of what is there.
-			double side = (maxX - minX) * HEAD;
+			double side = (maxX - minX) * FRONT;
 			double sum = 0;
 			int count = 0;
 			for (int f : faces)
