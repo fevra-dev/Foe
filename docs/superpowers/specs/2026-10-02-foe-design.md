@@ -667,3 +667,25 @@ the frog from the side look right, and chatheads are unchanged. Log: Giant rat 2
 spider 3017 is TOP (186 × 41 × 176). So **Show portrait is now On by default** (addendum 19's condition). Open: the
 spider is only about 6% wider than it is long, so a spider with tighter legs could fall to SIDE. The frog's extents
 weren't logged, so the line was left where it is rather than moved blind.
+
+## Addendum 21 — 2026-10-11: a lesser demon stands; a black demon's head fits (operator, in game)
+
+Measured in client.log: a lesser demon (7247) is 242 × 490 × 516. Its wings and tail make it 5% longer than it is
+tall, so "longer than tall" put it on all fours. A hellhound (7256) is 62 × 143 × 196, 73% as tall as it is long. A
+body is now low only when its **height is under 85% of its length** (`Portrait.LOW`). A black demon (7243, 348 × 553 ×
+516) has wingtips that rise over its head, and the top-30% crop cut its jaw off. The upright crop is now **35%**
+(`HEAD`), and the side crop stays 30% (`FRONT`).
+
+## Addendum 22 — 2026-10-15: compact bodies drawn whole; the side crop starts at the head (operator, in game)
+
+- **Rock crab** (100/102) is 123 × 112 × 124, nearly a cube, so no crop showed it. A body whose longest side is at
+  most **1.25 times** its shortest (`COMPACT`) is drawn **whole from the front** (`View.WHOLE`).
+- **Black unicorn:** the side crop was centred on the front's mean height, which on a tall animal falls between its
+  head and its legs. It now **starts at the top of the front**, where the head is. The unicorn's extents weren't in
+  the logs, so this one is reasoned, not measured `[assumed]`. Check in game, together with the frog, whose shape
+  was never logged and which could now count as compact.
+
+The views in order: CHATHEAD, WHOLE, UPRIGHT, SIDE, TOP.
+
+**README:** the hero is the operator's hobgoblin screenshot. The three comparison images (layouts, HP text, stale)
+were dropped; the settings table carries that information.

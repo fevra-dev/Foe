@@ -2,7 +2,7 @@
 
 The monster you're fighting, at a glance.
 
-![Foe's panel during a fight](docs/hero.png)
+![Foe's panel during a fight with a hobgoblin](docs/hero.png)
 
 One small panel for your current target: its name and combat level, an HP bar, its combat stats, and
 the element it's weak to. It appears when you attack and clears when the monster dies. It works
@@ -52,18 +52,6 @@ a weakness shows only when the game or the bundled table says what it is.
 | Linger after combat | 10 s | How long the panel stays after the last sign of combat (0 to 60). Very short values can flicker between hits |
 | Background opacity | 61% | RuneLite's standard overlay background; 0% draws the text alone |
 | Show portrait | On | A small picture of the monster's head, left of its name |
-
-![Stacked and One line](docs/layouts.png)
-
-*Layout: Stacked, then One line.*
-
-![The HP text settings](docs/hp-text.png)
-
-*HP text: Current/max, Current, Percent, then Beside bar.*
-
-![Faded and Hollow stale HP](docs/stale.png)
-
-*Stale HP style: Faded, then Hollow.*
 
 ## Works with
 
