@@ -28,6 +28,11 @@ final class Portrait
 	 * hellhound is 0.73.
 	 */
 	static final double LOW = 0.85;
+	/**
+	 * A body is compact when its longest side is at most this many times its shortest, and is drawn whole from the
+	 * front: a rock crab is 123 x 112 x 124, and no crop shows it (addendum 22).
+	 */
+	static final double COMPACT = 1.25;
 	private static final int SUPERSAMPLE = 4;
 	/** The client's default brightness [assumed: the middle of its 0.6 to 0.9 brightness steps]. */
 	private static final double GAMMA = 0.8;
@@ -68,6 +73,8 @@ final class Portrait
 	{
 		/** A chathead: from the front, whole. */
 		CHATHEAD,
+		/** A compact body, no side much longer than another (a rock crab): from the front, whole. */
+		WHOLE,
 		/** A body at least as tall as it is long: from the front, cropped to the top (its head). */
 		UPRIGHT,
 		/** Low (height under {@link #LOW} of its length), at least as long as wide (rat, frog, hellhound): from the
@@ -81,6 +88,12 @@ final class Portrait
 			if (head)
 			{
 				return CHATHEAD;
+			}
+			double shortest = Math.min(width, Math.min(height, length));
+			double longest = Math.max(width, Math.max(height, length));
+			if (shortest > 0 && longest <= COMPACT * shortest)
+			{
+				return WHOLE;
 			}
 			if (height >= LOW * length)
 			{
@@ -180,25 +193,27 @@ final class Portrait
 		if (view == View.SIDE)
 		{
 			// The front is the smaller-z end (the spike's yaw-0 dumps, docs/probe/portrait.md): crop a square over
-			// the front share of the length, centred on the height of what is there.
+			// the front share of the length, from the top of what is there, where the head is (addendum 22: centred on
+			// the mean height, a tall animal's crop fell between its head and its legs).
 			double side = (maxX - minX) * FRONT;
-			double sum = 0;
-			int count = 0;
+			double top = Double.MAX_VALUE;
 			for (int f : faces)
 			{
 				for (int v : new int[]{m.a[f], m.b[f], m.c[f]})
 				{
 					if (across[v] <= minX + side)
 					{
-						sum += m.y[v];
-						count++;
+						top = Math.min(top, m.y[v]);
 					}
 				}
 			}
-			double centre = count == 0 ? (minY + maxY) / 2 : sum / count;
+			if (top == Double.MAX_VALUE)
+			{
+				top = minY;
+			}
 			maxX = minX + side;
-			minY = centre - side / 2;
-			maxY = centre + side / 2;
+			minY = top;
+			maxY = top + side;
 		}
 		else if (view == View.UPRIGHT)
 		{

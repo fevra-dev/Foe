@@ -125,6 +125,10 @@ public class PortraitTest
 		assertEquals("giant rat 2859: side", Portrait.View.SIDE, Portrait.View.of(false, 138, 83, 333));
 		assertEquals("giant spider 3017: top", Portrait.View.TOP, Portrait.View.of(false, 186, 41, 176));
 		assertEquals("black demon 7243: upright", Portrait.View.UPRIGHT, Portrait.View.of(false, 348, 553, 516));
+		// Addendum 22: a rock crab is nearly a cube (123 x 112 x 124): no side, top or front crop shows it, so a body
+		// whose longest side is within a quarter of its shortest is drawn whole from the front.
+		assertEquals("rock crab 100: whole", Portrait.View.WHOLE, Portrait.View.of(false, 123, 112, 124));
+		assertEquals("abyssal demon 7241 is not compact", Portrait.View.UPRIGHT, Portrait.View.of(false, 246, 272, 193));
 	}
 
 	@Test
@@ -146,6 +150,39 @@ public class PortraitTest
 		int left = img.getRGB(4, 30), right = img.getRGB(55, 30);
 		assertTrue("a leg reaches the left edge: " + Integer.toHexString(left), (left >>> 24) == 255 && (left & 255) > 150);
 		assertTrue("and the right: " + Integer.toHexString(right), (right >>> 24) == 255 && (right & 255) > 150);
+	}
+
+	/**
+	 * Addendum 22 (operator, in game: a black unicorn): the side crop was centred on the mean height of the front, which
+	 * on a tall animal falls between its head and its legs. It now starts at the top of the front, where the head is.
+	 * A horse 400 long: red head high at the front (y -300 to -200), blue legs low (-100 to 0), and a red body behind
+	 * (it reaches into the front slab, so only the legs are the thing to keep out).
+	 */
+	@Test
+	public void theSideCropStartsAtTheTopOfTheFront()
+	{
+		Portrait.Mesh horse = new Portrait.Mesh(new float[12],
+			new float[]{-300, -300, -200, -200, -100, -100, 0, 0, -200, -200, -100, -100},
+			new float[]{-200, -100, -100, -200, -200, -100, -100, -200, -100, 200, 200, -100},
+			new int[]{0, 0, 4, 4, 8, 8}, new int[]{1, 2, 5, 6, 9, 10}, new int[]{2, 3, 6, 7, 10, 11},
+			new int[]{RED, RED, BLUE, BLUE, RED, RED}, new int[]{-1, -1, -1, -1, -1, -1}, null, 6, false);
+		assertEquals("precondition", Portrait.View.SIDE, Portrait.View.of(false, 0, 300, 400));
+		BufferedImage img = Portrait.render(horse, 60);
+		assertNotNull(img);
+		int red = 0;
+		for (int y = 0; y < 60; y++)
+		{
+			for (int x = 0; x < 60; x++)
+			{
+				int c = img.getRGB(x, y);
+				if ((c >>> 24) >= 128)
+				{
+					assertTrue("only the head, no legs, at " + x + "," + y + ": " + Integer.toHexString(c), (c & 255) < 120);
+					red++;
+				}
+			}
+		}
+		assertTrue("the head is there: " + red, red > 600);
 	}
 
 	@Test
