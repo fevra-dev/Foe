@@ -63,7 +63,7 @@ public interface FoeConfig extends Config
 
 	enum HpTextPosition
 	{
-		BESIDE("Beside bar"), INSIDE("Inside bar");
+		INSIDE("Inside bar"), BESIDE("Beside bar");
 
 		private final String label;
 
@@ -81,7 +81,7 @@ public interface FoeConfig extends Config
 
 	enum Detail
 	{
-		FULL("Full"), COMPACT("Compact");
+		COMPACT("Compact"), FULL("Full");
 
 		private final String label;
 
@@ -135,7 +135,7 @@ public interface FoeConfig extends Config
 		description = "Beside the bar, or centred on it. The bar widens when the text would not fit inside it.")
 	default HpTextPosition hpTextPosition()
 	{
-		return HpTextPosition.BESIDE;
+		return HpTextPosition.INSIDE;
 	}
 
 	@ConfigItem(keyName = "detail", name = "Detail", position = 3,
@@ -143,7 +143,7 @@ public interface FoeConfig extends Config
 			+ "Compact: name, HP and weakness only. The combat level next to the name is always shown.")
 	default Detail detail()
 	{
-		return Detail.FULL;
+		return Detail.COMPACT;
 	}
 
 	@ConfigItem(keyName = "staleHpStyle", name = "Stale HP style", position = 4,
@@ -199,6 +199,6 @@ public interface FoeConfig extends Config
 		description = "A small picture of the monster, left of its name.")
 	default boolean showPortrait()
 	{
-		return false;
+		return true;
 	}
 }

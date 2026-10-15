@@ -55,7 +55,7 @@ public class FoeConfigTest
 		FoeConfig d = new FoeConfig()
 		{
 		};
-		assertFalse("addendum 14: default Off", d.showPortrait());
+		assertTrue("addendum 20: default On, now that creatures on all fours draw their heads", d.showPortrait());
 	}
 
 	// Spec addendum 5: what was learned is saved under one key of the foe group that is not a setting. A declared item
@@ -126,8 +126,9 @@ public class FoeConfigTest
 		};
 		assertEquals("Stacked since 2026-10-08 (spec addendum 4)", FoeConfig.Layout.STACKED, d.layout());
 		assertEquals(FoeConfig.HpText.CURRENT_MAX, d.hpText());
-		assertEquals(FoeConfig.HpTextPosition.BESIDE, d.hpTextPosition());
-		assertEquals(FoeConfig.Detail.FULL, d.detail());
+		// addendum 19 (operator, 2026-10-10, from the in-game screenshots): text inside the bar, Compact
+		assertEquals(FoeConfig.HpTextPosition.INSIDE, d.hpTextPosition());
+		assertEquals(FoeConfig.Detail.COMPACT, d.detail());
 		assertEquals(FoeConfig.StaleHpStyle.FADED, d.staleHpStyle());
 		assertTrue(d.showWeakness());
 		assertTrue("addendum 9: on by default", d.showWeaknessPercent());

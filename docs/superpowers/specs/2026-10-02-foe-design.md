@@ -627,3 +627,65 @@ later. A repeat attack was fine, because the image is cached by then. The fix (o
 
 **v1.1, not v1 (operator):** a monster search in the side panel, with stats, weakness, attack style, max hit and the
 like. It needs a wider wiki query than the weakness-only snapshot in `data/`, so it gets its own spec, grill and plan.
+
+## Addendum 19 — 2026-10-10: defaults, and heads for creatures on all fours (operator, from in-game screenshots)
+
+**Defaults (operator):** HP text **Inside bar** and Detail **Compact**, from the in-game screenshots. Each is now
+the first constant of its enum, so the settings panel lists the default first. The others are unchanged: Stacked,
+Current/max, Faded, Show weakness and Show weakness % on, linger 10 s, background 61%. Show portrait stays **Off**
+until the fix below is checked in game. If it checks out, it becomes **On** before the Plugin Hub release
+(operator).
+
+**Portraits of creatures on all fours.** A giant rat, a frog and a spider have no chathead, and their body crop (the
+top 30% of the height, seen from the front) came out as polygon blobs. The top of a creature on all fours is its back.
+Its head is at its front. So a body longer than it is tall (z extent greater than y extent) is seen from the side:
+across is z and depth is x. It is cropped to a square over the front 30% of its length, centred on the height of what
+is there. The front is the smaller-z end, as the spike's yaw-0 dumps showed. Chatheads and upright bodies are
+unchanged. The operator prefers heads to whole bodies, and this keeps every portrait a head.
+- **`[assumed]`, check in game:** the 30% share for a long body. A rat's length includes its tail, so the crop may
+  take in some of the body.
+
+## Addendum 20 — 2026-10-10: wide creatures are seen from above (supersedes addendum 19's all-fours rule)
+
+In game (operator), addendum 19 fixed the giant rat and the frog, but not the giant spider. Its legs spread it wider
+than it is long, so the side view showed a sliver. The rule is now four cases, `Portrait.View`, from the body's width
+(x), height (y) and length (z):
+
+| View | When | Drawn |
+|---|---|---|
+| CHATHEAD | the NPC has chathead models | from the front, whole |
+| UPRIGHT | length ≤ height | from the front, the top 30% (the head) |
+| SIDE | low, and length ≥ width (rat, frog) | from the side, the front 30% (the head) |
+| TOP | low, and wider than long (spider) | from above, whole, the front at the top |
+
+Each newly loaded portrait logs its view and extents at debug level (`portrait: id N drawn VIEW (width, height,
+length)`), so the rule can be checked against real models. **`[assumed]`, checked in game next:** which side of the
+width/length line the frog and the spider actually fall on.
+
+**Checked in game, 2026-10-10 (operator):** the giant spider drawn from above was "a good call", the giant rat and
+the frog from the side look right, and chatheads are unchanged. Log: Giant rat 2859 is SIDE (138 × 83 × 333), Giant
+spider 3017 is TOP (186 × 41 × 176). So **Show portrait is now On by default** (addendum 19's condition). Open: the
+spider is only about 6% wider than it is long, so a spider with tighter legs could fall to SIDE. The frog's extents
+weren't logged, so the line was left where it is rather than moved blind.
+
+## Addendum 21 — 2026-10-11: a lesser demon stands; a black demon's head fits (operator, in game)
+
+Measured in client.log: a lesser demon (7247) is 242 × 490 × 516. Its wings and tail make it 5% longer than it is
+tall, so "longer than tall" put it on all fours. A hellhound (7256) is 62 × 143 × 196, 73% as tall as it is long. A
+body is now low only when its **height is under 85% of its length** (`Portrait.LOW`). A black demon (7243, 348 × 553 ×
+516) has wingtips that rise over its head, and the top-30% crop cut its jaw off. The upright crop is now **35%**
+(`HEAD`), and the side crop stays 30% (`FRONT`).
+
+## Addendum 22 — 2026-10-15: compact bodies drawn whole; the side crop starts at the head (operator, in game)
+
+- **Rock crab** (100/102) is 123 × 112 × 124, nearly a cube, so no crop showed it. A body whose longest side is at
+  most **1.25 times** its shortest (`COMPACT`) is drawn **whole from the front** (`View.WHOLE`).
+- **Black unicorn:** the side crop was centred on the front's mean height, which on a tall animal falls between its
+  head and its legs. It now **starts at the top of the front**, where the head is. The unicorn's extents weren't in
+  the logs, so this one is reasoned, not measured `[assumed]`. Check in game, together with the frog, whose shape
+  was never logged and which could now count as compact.
+
+The views in order: CHATHEAD, WHOLE, UPRIGHT, SIDE, TOP.
+
+**README:** the hero is the operator's hobgoblin screenshot. The three comparison images (layouts, HP text, stale)
+were dropped; the settings table carries that information.
