@@ -689,3 +689,13 @@ The views in order: CHATHEAD, WHOLE, UPRIGHT, SIDE, TOP.
 
 **README:** the hero is the operator's hobgoblin screenshot. The three comparison images (layouts, HP text, stale)
 were dropped; the settings table carries that information.
+
+## Addendum 23 — 2026-10-15: portraits frame the head, not the box (supersedes the crops of addenda 19–22)
+
+Designed in `docs/superpowers/specs/2026-10-15-portrait-framing-design.md`, from the operator's whole-gallery
+review (`docs/research/2026-10-15-portrait-review.md`).
+- **Framing:** from an outline of the opaque faces, not the bounding box.
+- **Transparency:** see-through faces are drawn see-through and don't frame.
+- **UPRIGHT and SIDE:** head-and-shoulders crops on the head that was found.
+- **TOP:** only for flat, square bodies; every other low body is SIDE.
+- **Flat models:** no portrait.
