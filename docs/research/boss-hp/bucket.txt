@@ -1,0 +1,222 @@
+Gemstone Crab |  | 14779 | None | 160
+Zulrah | Serpentine | 2042 | 500 | 725
+Zulrah | Magma | 2043 | 500 | 725
+Zulrah | Tanzanite | 2044 | 500 | 725
+Vorkath | Dragon Slayer II | 8058,8060 | 460 | 392
+Vorkath | Post-quest | 8059,8061 | 750 | 732
+Alchemical Hydra | Serpentine | 8615,8616 | 1100 | 426
+Alchemical Hydra | Electric | 8619,8617 | 1100 | 426
+Alchemical Hydra | Extinguished | 8621,8622 | 1100 | 426
+Alchemical Hydra | Fire | 8620,8618 | 1100 | 426
+Hydra |  | 8609 | 300 | 194
+Vanguard | Ranged | 7528 | 180 | None
+Vanguard | Melee | 7527 | 180 | None
+Vanguard | Moving | 7526 | None | None
+Vanguard | Ranged (Challenge Mode) | 7528 | 280 | None
+Vanguard | Melee (Challenge Mode) | 7527 | 280 | None
+Vanguard | Magic | 7529 | 180 | None
+Vanguard | Magic (Challenge Mode) | 7529 | 280 | None
+The Nightmare |  | 9425,9426,9427,9428,9429,9430,9431,9432,9433,9460 | 2400 | 814
+Phosphani's Nightmare | NO ROWS
+Nex |  | 11278,11279,11280,11281,11282 | 3400 | 1001
+Great Olm | Head (Challenge Mode) | 7551,7554 | 800 | 1043
+Great Olm | Head (Normal) | 7551,7554 | 800 | 1043
+Great Olm | Left claw (Normal) | 7552,7555 | 600 | 750
+Great Olm | Left claw (Challenge Mode) | 7552,7555 | 600 | 750
+Great Olm | Right claw (Normal) | 7550,7553 | 600 | 549
+Great Olm | Right claw (Challenge Mode) | 7550,7553 | 600 | 549
+Tekton | Enraged | 7543 | 300 | None
+Tekton | Enraged (Challenge Mode) | 7544 | 450 | None
+Tekton | Normal (Challenge Mode) | 7545 | 450 | None
+Tekton | Normal | 7540,7541,7542 | 300 | None
+Vasa Nistirio | Normal | 7566,7567 | 300 | None
+Vasa Nistirio | Challenge Mode | 7566,7567 | 450 | None
+Vespula | Normal | 7530,7531,7532 | 200 | None
+Vespula | Challenge Mode | 7530,7531,7532 | 288 | None
+Muttadile | Small | 7562 | 250 | None
+Muttadile | Large (Challenge Mode) | 7561,7563 | 375 | None
+Muttadile | Small (Challenge Mode) | 7562 | 375 | None
+Muttadile | Large | 7561,7563 | 250 | None
+Ice demon | Normal | 7584 | 140 | None
+Ice demon | Challenge Mode | 7585 | 210 | None
+Guardian (Chambers of Xeric) | Normal | 7569,7571 | 250 | None
+Guardian (Chambers of Xeric) | Challenge Mode | 7570,7572 | 375 | None
+Lizardman shaman (Chambers of Xeric) | Normal | 7573,7574 | 190 | None
+Lizardman shaman (Chambers of Xeric) | Challenge Mode | 7573,7574 | 285 | None
+Skeletal Mystic | Normal | 7604,7605,7606 | 160 | None
+Skeletal Mystic | Challenge Mode | 7604,7605,7606 | 240 | None
+The Maiden of Sugadinti | Normal | 8360 | 3500 | 940
+The Maiden of Sugadinti | 50% Health | 8362 | 1750 | 940
+The Maiden of Sugadinti | Entry Mode | 10814 | 2000 | 324
+The Maiden of Sugadinti | 70% Health | 8361 | 2450 | 940
+The Maiden of Sugadinti | Hard Mode | 10822 | 3500 | 1128
+The Maiden of Sugadinti | 30% Health | 8363 | 1050 | 940
+Pestilent Bloat | Normal | 8359 | 2000 | 870
+Pestilent Bloat | Hard | 10813 | 2400 | 1044
+Pestilent Bloat | Entry | 10812 | 1280 | 312
+Nylocas Vasilias | Normal | 8354,8355,8356,8357 | 2500 | 800
+Nylocas Vasilias | Hard | 10807,10808,10809,10810 | 2500 | 800
+Nylocas Vasilias | Entry | 10786,10787,10788,10789 | 1440 | 301
+Sotetseg | Normal | 8387,8388 | 4000 | 995
+Sotetseg | Hard | 10867,10868 | 4000 | 1195
+Sotetseg | Entry | 10864,10865 | 2240 | 336
+Xarpus |  | 10768 | 3400 | 331
+Xarpus |  | 8340 | 5000 | 960
+Xarpus |  | 10772 | 6000 | 1160
+Verzik Vitur | Phase 3 | 10835,10836 | 2400 | 512
+Verzik Vitur | Phase 2 | 10833,10834 | 1600 | 488
+Verzik Vitur | Phase 1 | 10830,10831,10832 | 1200 | 425
+Verzik Vitur | Phase 3 | 8374,8375 | 3500 | 1520
+Verzik Vitur | Phase 1 | 8369,8370,8371 | 2000 | 1040
+Verzik Vitur | Phase 2 | 8372,8373 | 3500 | 1265
+Verzik Vitur | Phase 3 | 10852,10853 | 3500 | 1520
+Verzik Vitur | Phase 2 | 10850,10851 | 3500 | 1265
+Verzik Vitur | Phase 1 | 10847,10848,10849 | 2000 | 1040
+Ba-Ba |  | 11778,11779,11780 | 380 | 359
+Kephri | Aggressive | 11721 | 80 | 341
+Kephri | Shielded | 11719 | 150 | 341
+Akkha |  | 11789,11790,11791,11792,11793,11794,11795,11796 | 400 | 337
+Zebak | Normal | 11730 | 580 | 371
+Zebak | Enraged | 11732 | 580 | 371
+Tumeken's Warden | Core-ejected | 11758 | 4500 | 489
+Tumeken's Warden | Active | 11756,11757 | 140 | 489
+Tumeken's Warden | Enraged | 11762 | 880 | 544
+Tumeken's Warden | Invulnerable | 11764 | 880 | 544
+Tumeken's Warden | Damaged | 11762 | 880 | 544
+Elidinis' Warden | Core-ejected | 11755 | 4500 | 489
+Elidinis' Warden | Active | 11753,11754 | 140 | 489
+Elidinis' Warden | Enraged | 11761 | 880 | 544
+Elidinis' Warden | Invulnerable | 11763 | 880 | 544
+Elidinis' Warden | Damaged | 11761 | 880 | 544
+General Graardor |  | 2215 | 255 | 624
+Kree'arra | Normal | 3162 | 255 | 580
+Commander Zilyana |  | 2205 | 255 | 596
+K'ril Tsutsaroth |  | 3129 | 255 | 650
+Corporeal Beast |  | 319 | 2000 | 785
+Kalphite Queen | Airborne | 965,4304 | 255 | 333
+Kalphite Queen | Crawling | 963,4303 | 255 | 333
+Cerberus |  | 5862,5863,5866 | 600 | 318
+Dusk | Second form | 7887,7888,7889 | 450 | 328
+Dusk | First form | 7851,7854,7855,7882,7883,7886 | 450 | 248
+Dawn |  | 7852,7853,7884,7885 | 450 | 228
+Sarachnis |  | 8713 | 400 | 318
+Kraken | Kraken | 494 | 255 | 291
+Kraken | Whirlpool | 496 | 255 | None
+Thermonuclear smoke devil |  | 499 | 240 | 301
+Phantom Muspah | Teleporting | 12082 | 850 | 741
+Phantom Muspah | Melee | 12078 | 850 | 741
+Phantom Muspah | Shielded | 12079 | 75 | 741
+Phantom Muspah | Post-shield | 12080 | 850 | 741
+Phantom Muspah | Ranged | 12077 | 850 | 741
+Duke Sucellus | Defeated | 12192,12196 | 485 | 758
+Duke Sucellus | Asleep | 12166,12167 | 485 | 758
+Duke Sucellus | Awake | 12191 | 485 | 758
+Duke Sucellus | Defeated | 12192,12196 | 1697 | 1099
+Duke Sucellus | Asleep | 12166,12167 | 1697 | 1099
+Duke Sucellus | Awake | 12191 | 1697 | 1099
+Duke Sucellus | Awake | 12195 | 330 | 538
+Duke Sucellus | Asleep | 12193,12194 | 330 | 538
+Duke Sucellus | Defeated | 12196 | 330 | 538
+The Leviathan | Quest | 12215,12219 | 720 | 593
+The Leviathan | Awakened | 12214 | 2700 | 1157
+The Leviathan | Post-quest | 12214 | 900 | 798
+The Whisperer | Quest | 12206,12207 | 660 | 587
+The Whisperer | Awakened | 12204,12205 | 2700 | 1146
+The Whisperer | Post-quest | 12204,12205 | 900 | 791
+Vardorvis | Quest | 12224,12228,12425 | 500 | 572
+Vardorvis | Awakened | 12223,12426 | 1400 | 1136
+Vardorvis | Post-quest | 12223,12426 | 700 | 784
+Tempoross | NO ROWS
+Wintertodt | NO ROWS
+Zalcano | Weakened | 9050 | 1000 | 336
+Zalcano | Armoured | 9049 | 300 | 336
+Scurrius | Solo | 7222 | 500 | 200
+Scurrius | Group | 7221 | 1500 | 250
+Eldric the Ice King |  | 14147 | 600 | 350
+Branda the Fire Queen |  | 12596 | 600 | 350
+Sol Heredit |  | 12821 | 1500 | 1563
+Amoxliatl | Quest | 13686 | 400 | 226
+Amoxliatl | Post-quest | 13685 | 520 | 263
+The Hueycoatl | Normal | 14009,14010,14013 | 2500 | 642
+The Hueycoatl | Shielded | 14011 | 2500 | 642
+The Hueycoatl | Defeated | 14012 | 2500 | 642
+The Hueycoatl |  | 14017 | 250 | 642
+The Hueycoatl | Broken | 14015 | 300 | 642
+The Hueycoatl | Normal | 14014 | 300 | 642
+Yama | Normal | 14176 | 2500 | 1238
+Yama | Phase 3 | 14176 | 2500 | 1238
+Doom of Mokhaiotl | Delve 2 | 14707 | 550 | 608
+Doom of Mokhaiotl | Delve 4 | 14707 | 600 | 708
+Doom of Mokhaiotl | Delve 8 | 14707 | 675 | 908
+Doom of Mokhaiotl | Delve 3 | 14707 | 575 | 658
+Doom of Mokhaiotl | Delve 7 | 14707 | 650 | 858
+Doom of Mokhaiotl | Delve 1 | 14707 | 525 | 558
+Doom of Mokhaiotl | Delve 5 | 14707 | 625 | 758
+Doom of Mokhaiotl | Deep Delve | 14707 | 625 | 908
+Doom of Mokhaiotl | Delve 6 | 14707 | 650 | 808
+Doom of Mokhaiotl | Delve 2 | 14708 | 550 | 608
+Doom of Mokhaiotl | Delve 4 | 14708 | 600 | 708
+Doom of Mokhaiotl | Delve 8 | 14708 | 675 | 908
+Doom of Mokhaiotl | Delve 3 | 14708 | 575 | 658
+Doom of Mokhaiotl | Delve 7 | 14708 | 650 | 858
+Doom of Mokhaiotl | Delve 1 | 14708 | 525 | 558
+Doom of Mokhaiotl | Delve 5 | 14708 | 625 | 758
+Doom of Mokhaiotl | Deep Delve | 14708 | 625 | 908
+Doom of Mokhaiotl | Delve 6 | 14708 | 650 | 808
+Doom of Mokhaiotl | Delve 7 | 14709 | 650 | 858
+Doom of Mokhaiotl | Delve 5 | 14709 | 625 | 758
+Doom of Mokhaiotl | Delve 8 | 14709 | 675 | 908
+Doom of Mokhaiotl | Deep Delve | 14709 | 625 | 908
+Doom of Mokhaiotl | Delve 6 | 14709 | 650 | 808
+Ahrim the Blighted |  | 1672 | 100 | 98
+Dharok the Wretched |  | 1673 | 100 | 115
+Guthan the Infested |  | 1674 | 100 | 115
+Karil the Tainted |  | 1675 | 100 | 98
+Torag the Corrupted |  | 1676 | 100 | 115
+Verac the Defiled |  | 1677 | 100 | 115
+TzTok-Jad |  | 3127 | 250 | 702
+TzKal-Zuk | Normal | 7706 | 1200 | 1400
+TzKal-Zuk | Enraged | 7706 | 1200 | 1400
+JalTok-Jad |  | 7700,7704,10623 | 350 | 900
+Abyssal Sire | Phase 3 (stage 2) | 5908 | 425 | 350
+Abyssal Sire | Phase 1 | 5886,5887,5888 | 425 | 350
+Abyssal Sire | Phase 2 | 5889,5890 | 425 | 350
+Abyssal Sire | Phase 3 (stage 1) | 5891 | 425 | 350
+Araxxor | In combat | 13668 | 1020 | 890
+Araxxor | Enraged | 13668 | 1020 | 890
+Giant Mole |  | 5779 | 200 | 230
+Dagannoth Rex |  | 2267 | 255 | 303
+Dagannoth Prime |  | 2266 | 255 | 303
+Dagannoth Supreme |  | 2265 | 255 | 303
+King Black Dragon |  | 239,2642 | 240 | 276
+Chaos Elemental |  | 2054 | 250 | 305
+Scorpia |  | 6615 | 200 | 225
+Venenatis |  | 6610 | 850 | 464
+Spindel |  | 11998 | 515 | 302
+Callisto |  | 6609 | 1000 | 470
+Artio |  | 11992 | 450 | 320
+Vet'ion | Normal | 6611 | 255 | 454
+Vet'ion | Enraged | 6612 | 255 | 454
+Calvar'ion | Normal | 11993 | 150 | 264
+Calvar'ion | Enraged | 11994 | 150 | 264
+Corrupted Hunllef |  | 9035,9036,9037,9038 | 1000 | 894
+Crystalline Hunllef |  | 9021,9022,9023,9024 | 600 | 674
+Hespori |  | 8583 | 300 | 284
+Skotizo |  | 7286 | 450 | 321
+Bryophyta |  | 8195 | 115 | 128
+Obor |  | 7416 | 120 | 106
+Galvek | Air | 8097 | 1200 | 608
+Galvek | Fire | 8094,8095,8177 | 1200 | 608
+Galvek | Earth | 8098,8178,8179 | 1200 | 608
+Galvek | Water | 8096 | 1200 | 608
+Fragment of Seren |  | 8917,8918,8919,8920 | 1000 | 494
+Shellbane gryphon |  | 14860 | 400 | 235
+Blood Moon |  | 13011 | 500 | 329
+Blue Moon |  | 13013 | 500 | 329
+Eclipse Moon | Clone | 13012 | 500 | 329
+Eclipse Moon | Regular | 13012 | 500 | 329
+Tormented Demon | 1 | 13599 | 600 | 450
+Tormented Demon | 4 | 13602 | 600 | 450
+Tormented Demon | 3 | 13601 | 600 | 450
+Tormented Demon | 2 | 13600 | 600 | 450
+Mimic | NO ROWS
