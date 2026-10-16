@@ -34,9 +34,10 @@ than once per monster.
 
 Checked with `javap` against `runelite-api-1.13.1.jar`:
 
-- **No per-face transparency.** `Model` exposes only `getTransparency()` (one byte for the whole
-  model). There is no `getFaceTransparencies`. `ModelData` has `cloneTransparencies()` but no getter for
-  them. So transparent faces can't be skipped by reading their alpha, and an indirect signal is needed.
+- **Per-face transparency is available.** `getFaceTransparencies()` is on the shared `Mesh`
+  interface, which both `Model` and `ModelData` extend (`javap net.runelite.api.Mesh`). A first pass that
+  grepped only `Model` and `ModelData` missed it and wrongly said there was none. `Model` also has
+  `getFaceRenderPriorities()` and the vertex normals.
 - **The pose looks possible, but nothing has run it.** `Client.loadAnimation(int)` and
   `Client.applyTransformations(Model, Animation, int, Animation, int)` exist.
   - `NPCComposition` has no idle-animation getter. Only a live `Actor` has `getIdlePoseAnimation()`.
@@ -52,7 +53,7 @@ the faces of a few ids from each group.
 
 | # | Cause | What it looks like | Cells (id) |
 |---|---|---|---|
-| 1 | **Effect, shadow or aura faces drawn opaque** (no transparency, see above) | Black or solid slabs over or under the monster | Blood Moon 13011, Blue Moon 13013, Eclipse Moon 13012, Enraged Blood Moon 13485, Great Olm (Right claw) 7553, Bee Swarm 13658, Vardorvis 12223, Sol Heredit 15554, Branda 12596/14148, Porazdir 7515 (red), Serpent shaman 12811, Jaguar warrior 12810, Fremennik warband 12814/12815/12816 (grey-green slab), Monk of Zamorak 16271/16273 (black silhouette) |
+| 1 | **Effect, shadow or aura faces drawn opaque** (the renderer never reads `getFaceTransparencies()`) | Black or solid slabs over or under the monster | Blood Moon 13011, Blue Moon 13013, Eclipse Moon 13012, Enraged Blood Moon 13485, Great Olm (Right claw) 7553, Bee Swarm 13658, Vardorvis 12223, Sol Heredit 15554, Branda 12596/14148, Porazdir 7515 (red), Serpent shaman 12811, Jaguar warrior 12810, Fremennik warband 12814/12815/12816 (grey-green slab), Monk of Zamorak 16271/16273 (black silhouette) |
 | 2 | **Stray geometry stretches the box:** particles, sparks, a projectile ring | A field of dots, the creature small or off-frame | Zalcano 9050, Hespori 8583/11192/15615, Eldric 14147/14149, Fire elemental 1365/14150, Tz-Kih 2189, Scarab Swarm 11723, Barrelchest 600, Spiritual mage/warrior/ranger 2242/2243/2244 (red star) |
 | 3 | **A weapon or horn sets the top or the front**, so the crop frames the appendage | Only a spear, staff, horns or antlers | Tribesman 530, Tribeswoman 11955, Khazard trooper 4970, Goblin 2247/5204, Goblin Champion 3353, Hobgoblin Champion 3354, Aviansie 3170–3182, Flockleader Geerin 3164, Spiritual ranger 3167, Wingman Skree 3163, Zombie pirate 13489, Justiciar Zachariah 5977, Pyrefiend 433, Pyrelord 6762, Flaming pyrelord 7394, Revenant pyrefiend 7932, Icefiend 3140, Waterfiend 2916, Sunlight antelope 13133, Moonlight antelope 13132, Oryx 13006, Stag 1845, Impaler deer 15759, Custodian stalker 14702/14703, Commander Zilyana 2205, Penance Ranger 5757, Giant wasp 15438, Chaos Elemental 2054 |
 | 4 | **Dragons (SIDE): the crop lands on the wing.** The front slab's top is a wing, and the head may sit lower or further forward | A wing membrane, cut off at the right edge | every chromatic and metal dragon: Red 247–251, Black 253–255/14146, Baby blue 241–243, Baby red 137, Bronze 270, Iron 272, Steel 139/274, Mithril 2919, Rune 8027/8031, Lava 6593/12607, Frost 14922, Crystalline 9033, Corrupted 9047, Revenant 7940, Brutal 7274/7275, Elvarg 817, King Black Dragon 239 |
