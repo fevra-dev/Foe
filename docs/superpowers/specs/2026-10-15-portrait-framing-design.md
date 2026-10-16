@@ -158,3 +158,41 @@ every rule is proven by a mutant that the tests kill.
 - **The 128 grid is too coarse for a huge field of particles.** If a particle field is many times the
   body's size, the body covers few cells. Trimming helps, and so does the gallery count.
 - **The transparency direction** is `[assumed]` until the first gallery run.
+
+## Revision: hostile pass before the plan (2026-10-15)
+
+A third-person read of sections 3 to 5, asking "a colleague wrote this; what breaks it?", found the
+following. These points supersede the sections above where they differ.
+
+- **G1: the head band ran into the wings.**
+  - *Problem.* A winged demon's central run jumps to the full wingspan at the shoulders. A band "`W`
+    rows tall" reaches those rows, so the head's median size becomes the wingspan, and the frame is the
+    whole body. That is the very case this pass exists to fix.
+  - *Fix.* The band grows one row (or column) at a time from the head top, and stops as soon as its
+    length reaches the median run inside it. A head about as tall as it is wide stops near the neck,
+    before the shoulders.
+- **G2: the threshold was set by the wingspan.**
+  - *Problem.* With `W` as the median, a demon's wing rows lift `W` toward the wingspan, and
+    `0.2 × W` can be wider than its head, so the head top lands on the shoulders.
+  - *Fix.* The typical run is the **lower quartile** of the non-empty runs (`TYPICAL = 0.25`), not the
+    median. Horns and spikes are still far under it. `[assumed]` until the gallery shows it.
+- **G3: the centre line followed the weapon.**
+  - *Problem.* A big shield or club on one side pulls the *mean* column off the head.
+  - *Fix.* The centre column is the **median** column of the filled cells.
+- **G4: a crab-shaped kraken fell out of TOP.**
+  - *Problem.* `FLAT = 0.3` drops the Spined kraken (height/width 0.304).
+  - *Fix.* `FLAT = 0.32`.
+  - *Measured* over `build/foe-gallery/index.tsv` with the new rule. TOP becomes: the spiders, krakens,
+    scorpions (including Scorpia), rays (Manta, Stingray, Eagle, Butterfly), lobsters, Venenatis, Kalrag,
+    the scarabs, the Loar Shadow and the Spawn, plus the Shadow, Suspicious water and Whirlpool. Those
+    last three are flat or nearly flat; the height-0 ones get no portrait.
+  - The scorpions, rays and lobsters were flagged by the operator as broken side views.
+- **G5: the existing synthetic spider is height 0.**
+  - *Problem.* The "no portrait at height 0" rule would turn it into null.
+  - *Fix.* The test spider gets a 2-unit-thick body. Real flat models (the Shadow 4004, the
+    Suspicious water 5946, the Me? 12235) are ground decals or hidden, and the operator flagged them as
+    empty cells.
+- **G6: fallbacks could pass silently.**
+  - *Problem.* A frame that fell back to the whole body looks like a framing success at a glance.
+  - *Fix.* The offline gallery renderer (plan Task 2) prints, per view, how many portraits found a
+    head and how many fell back, so a tuning run is judged on a count as well as by eye.
