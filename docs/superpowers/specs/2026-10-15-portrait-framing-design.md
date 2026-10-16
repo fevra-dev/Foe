@@ -196,3 +196,20 @@ following. These points supersede the sections above where they differ.
   - *Problem.* A frame that fell back to the whole body looks like a framing success at a glance.
   - *Fix.* The offline gallery renderer (plan Task 2) prints, per view, how many portraits found a
     head and how many fell back, so a tuning run is judged on a count as well as by eye.
+
+### Corrections made while planning (2026-10-16)
+
+Two of the points above were wrong, and working through the plan's test meshes showed it.
+
+- **G2 is reversed: the typical run stays the median.**
+  - *Why.* With the lower quartile, a forward spear or a long tail gives dozens of 1-cell columns and
+    drags the quartile down to 1. The spear then counts as the head: the side-on spear test (Task 6)
+    fails with it and passes with the median.
+  - *What remains.* The winged-demon risk that G2 was about is watched by the offline count and the
+    Task 5 wingtip test, not designed away.
+- **G7: there is no "no head found" case.**
+  - *Why.* The median column always holds a filled cell, and the median run always passes its own
+    20% threshold, so a non-empty outline always yields a head. The spec's fallback, and its test row,
+    are unreachable and are dropped.
+  - *What it means.* The meaningful failure is a head-and-shoulders square larger than the whole body,
+    which gets cut to it (*clamped*). G6's offline count reports clamped frames per view instead.
